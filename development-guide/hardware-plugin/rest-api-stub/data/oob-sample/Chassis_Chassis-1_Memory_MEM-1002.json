@@ -1,0 +1,97 @@
+{
+  "@odata.context": "/redfish/v1/$metadata#Memory.Memory",
+  "@odata.id": "/redfish/v1/Chassis/Chassis-1/Memory/MEM-1002",
+  "@odata.type": "#Memory.v1_2_0.Memory",
+  "Actions": {
+    "Oem": {
+      "#Memory.MetricState": {
+        "StateType@Redfish.AllowableValues": [
+          "off",
+          "steady",
+          "low",
+          "high",
+          "action"
+        ],
+        "target": "/redfish/v1/Chassis/Chassis-1/Memory/MEM-1002/Actions/Memory.MetricState"
+      }
+    }
+  },
+  "AllocationAlignmentMiB": 123,
+  "AllocationIncrementMiB": 50,
+  "AllowedSpeedsMHz": [
+    30
+  ],
+  "BusWidthBits": 72,
+  "CXL": {
+    "LabelStorageSizeBytes": 1,
+    "StagedNonVolatileSizeMiB": 256,
+    "StagedVolatileSizeMiB": 256
+  },
+  "CapacityMiB": 4096,
+  "DataWidthBits": 64,
+  "Enabled": true,
+  "EnvironmentMetrics": {
+    "@odata.id": "/redfish/v1/Chassis/Chassis-1/Memory/MEM-1002/EnvironmentMetrics"
+  },
+  "Id": "MEM-1002",
+  "Links": {
+    "Chassis": {
+      "@odata.id": "/redfish/v1/Chassis/Chassis-1"
+    },
+    "Processors": [
+      {
+        "@odata.id": "/redfish/v1/Processors/PROC-0002"
+      }
+    ]
+  },
+  "Location": {
+    "PartLocation": {
+      "LocationOrdinalValue": 0,
+      "LocationType": "Slot"
+    },
+    "PartLocationContext": ""
+  },
+  "LogicalSizeMiB": 0,
+  "Manufacturer": "Generic",
+  "MaxTDPMilliWatts": [
+    12000
+  ],
+  "MemoryDeviceType": "DDR4",
+  "MemoryLocation": {
+    "Channel": 1,
+    "MemoryController": 1,
+    "Slot": 1,
+    "Socket": 1
+  },
+  "MemoryMedia": [
+    "DRAM"
+  ],
+  "MemoryType": "DRAM",
+  "Metrics": {
+    "@odata.id": "/redfish/v1/Chassis/Chassis-1/Memory/MEM-1002/MemoryMetrics"
+  },
+  "Model": "mem_2",
+  "Name": "Memory",
+  "NonVolatileSizeMiB": 0,
+  "OperatingMemoryModes": [
+    "Volatile"
+  ],
+  "OperatingSpeedMHz": 3200,
+  "OperatingSpeedMhz": 3200,
+  "PartNumber": "975421-B20",
+  "PersistentRegionNumberLimit": 1,
+  "PersistentRegionSizeLimitMiB": 8000,
+  "PersistentRegionSizeMaxMiB": 8000,
+  "PowerCapability": true,
+  "PowerState": "On",
+  "SerialNumber": "1002",
+  "Status": {
+    "Health": "OK",
+    "State": "Enabled"
+  },
+  "VendorID": "Generic",
+  "VolatileRegionNumberLimit": 1,
+  "VolatileRegionSizeLimitMiB": 8000,
+  "VolatileRegionSizeMaxMiB": 8000,
+  "VolatileSizeMiB": 0
+}

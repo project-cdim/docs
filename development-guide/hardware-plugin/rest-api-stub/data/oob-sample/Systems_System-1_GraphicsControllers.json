@@ -1,0 +1,11 @@
+{
+  "@odata.context": "/redfish/v1/$metadata#GraphicsControllerCollection.GraphicsControllerCollection",
+  "@odata.id": "/redfish/v1/Systems/System-1/GraphicsControllers",
+  "@odata.type": "#GraphicsControllerCollection.GraphicsControllerCollection",
+  "Members": [
+    {
+      "@odata.id": "/redfish/v1/Systems/System-1/GraphicsControllers/GC-6001"
+    }
+  ],
+  "Members@odata.count": 1
+}

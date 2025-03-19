@@ -1,0 +1,11 @@
+{
+  "@odata.context": "/redfish/v1/$metadata#MemoryCollection.MemoryCollection",
+  "@odata.id": "/redfish/v1/Systems/System-2/Memory",
+  "@odata.type": "#MemoryCollection.MemoryCollection",
+  "Members": [
+    {
+      "@odata.id": "/redfish/v1/Systems/System-2/Memory/MEM-1002"
+    }
+  ],
+  "Members@odata.count": 1
+}

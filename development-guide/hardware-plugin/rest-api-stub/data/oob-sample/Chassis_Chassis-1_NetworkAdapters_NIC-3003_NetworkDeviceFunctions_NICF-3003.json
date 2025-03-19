@@ -1,0 +1,100 @@
+{
+  "@odata.id": "/redfish/v1/Chassis/Chassis-1/NetworkAdapters/NIC-3003/NetworkDeviceFunctions/NICF-3003",
+  "@odata.type": "#NetworkDeviceFunction.v1_9_0.NetworkDeviceFunction",
+  "AssignablePhysicalNetworkPorts": [
+    {
+      "@odata.id": "/redfish/v1/Chassis/Chassis-1/NetworkAdapters/NIC-3003/NetworkDeviceFunctions/NICF-3003/Ports/PORT-3003"
+    }
+  ],
+  "BootMode": "Disabled",
+  "DeviceEnabled": true,
+  "Ethernet": {
+    "EthernetInterfaces": {
+      "@odata.id": "/redfish/v1/Chassis/Chassis-1/NetworkAdapters/NIC-3003/NetworkDeviceFunctions/NICF-3003/EthernetInterfaces"
+    },
+    "MACAddress": "52:54:00:a6:28:e9",
+    "MTUSize": 1500,
+    "MTUSizeMaximum": 5000,
+    "PermanentMACAddress": "52:54:00:a6:28:e9",
+    "VLAN": {
+      "VLANEnable": true,
+      "VLANId": 101
+    }
+  },
+  "FibreChannel": {
+    "AllowFIPVLANDiscovery": true,
+    "BootTargets": [
+      {
+        "BootPriority": 0,
+        "LUNID": "3",
+        "WWPN": "10:00:B0:5A:DD:BB:74:FA"
+      }
+    ],
+    "FCoEActiveVLANId": 2001,
+    "FCoELocalVLANId": 1001,
+    "PermanentWWNN": "10:00:B0:5A:DD:BB:A1:B3",
+    "PermanentWWPN": "10:00:B0:5A:DD:BB:74:E0",
+    "WWNN": "10:00:B0:5A:DD:C4:D3:BB",
+    "WWNSource": "ConfiguredLocally",
+    "WWPN": "10:00:B0:5A:DD:BB:74:E0"
+  },
+  "Id": "NICF-3003",
+  "Limits": [
+    {
+      "BurstBytesPerSecond": 80,
+      "BurstPacketsPerSecond": 12,
+      "Direction": "Ingress",
+      "SustainedBytesPerSecond": 20,
+      "SustainedPacketsPerSecond": 10
+    }
+  ],
+  "Links": {
+    "PCIeFunction": {
+      "@odata.id": "/redfish/v1/Systems/1/PCIeDevices/NIC/PCIeFunctions/PCIeF-3003"
+    }
+  },
+  "MaxVirtualFunctions": 16,
+  "Metrics": {
+    "@odata.id": "/redfish/v1/Chassis/Chassis-1/NetworkAdapters/NIC-3003/NetworkDeviceFunctions/NICF-3003/Metrics"
+  },
+  "Name": "Network Device Function View",
+  "NetDevFuncCapabilities": [
+    "Ethernet",
+    "FibreChannel"
+  ],
+  "NetDevFuncType": "Ethernet",
+  "Status": {
+    "Health": "OK",
+    "State": "Enabled"
+  },
+  "VirtualFunctionsEnabled": true,
+  "iSCSIBoot": {
+    "AuthenticationMethod": "CHAP",
+    "CHAPSecret": "usrpasswd",
+    "CHAPUsername": "yosemite",
+    "IPAddressType": "IPv4",
+    "IPMaskDNSViaDHCP": false,
+    "InitiatorDefaultGateway": "169.0.16.1",
+    "InitiatorIPAddress": "16.0.11.6",
+    "InitiatorName": "iqn.2005-03.com.acme:database-server",
+    "InitiatorNetmask": "255.255.252.0",
+    "MutualCHAPSecret": "usrpasswd",
+    "MutualCHAPUsername": "yosemite",
+    "PrimaryDNS": "16.0.10.21",
+    "PrimaryLUN": 5,
+    "PrimaryTargetIPAddress": "169.0.15.1",
+    "PrimaryTargetName": "iqn.2005-03.com.acme:image-server",
+    "PrimaryTargetTCPPort": 3260,
+    "PrimaryVLANEnable": true,
+    "PrimaryVLANId": 1001,
+    "RouterAdvertisementEnabled": false,
+    "SecondaryDNS": "169.0.10.22",
+    "SecondaryLUN": 5,
+    "SecondaryTargetIPAddress": "16.0.11.5",
+    "SecondaryTargetName": "iqn.2005-03.com.acme:image-server",
+    "SecondaryTargetTCPPort": 3260,
+    "SecondaryVLANEnable": true,
+    "SecondaryVLANId": 1002,
+    "TargetInfoViaDHCP": false
+  }
+}

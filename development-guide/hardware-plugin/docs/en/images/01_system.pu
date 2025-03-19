@@ -1,0 +1,27 @@
+@startuml "01_system"
+
+actor " " as consumer
+rectangle "HW Control Function" as hw_control {
+    rectangle "Hardware-independent Processing" as hw_control_hw_independent
+    rectangle "Hardware-dependent Processing" as hw_control_hw_dependent
+    file "Plugin Configuration File" as config
+    rectangle "OOB Plugin" as oob_plugin
+    rectangle "FM Plugin" as fm_plugin
+}
+
+agent "OOB Controller" <<Manager>> as oob
+agent "Fabric Manager" <<Manager>> as fm
+collections "Device" as devices
+
+hw_control_hw_dependent --> config: Read
+hw_control_hw_dependent --> oob_plugin: Load & Invoke
+hw_control_hw_dependent -->  fm_plugin: Load & Invoke
+
+consumer -> hw_control_hw_independent: REST API
+hw_control_hw_independent --> hw_control_hw_dependent: Invoke
+oob_plugin --> oob: Collect Information & Control
+fm_plugin  -->  fm: Collect Information & Control
+oob --> devices: Manage
+fm  --> devices: Manage
+
+@enduml

@@ -1,0 +1,25 @@
+{
+  "@odata.id": "/redfish/v1/Chassis/Chassis-1/NetworkAdapters/NIC-3001/EnvironmentMetrics",
+  "@odata.type": "#EnvironmentMetrics.v1_3_0.EnvironmentMetrics",
+  "EnergyJoules": {
+    "DataSourceUri": "/redfish/v1/Chassis/Chassis-1/Sensors/SENS-NIC-3001",
+    "Reading": 19
+  },
+  "FanSpeedsPercent": [
+    {
+      "DataSourceUri": "/redfish/v1/Chassis/1U/Sensors/CPUFan1",
+      "DeviceName": "CPU #1 Fan Speed",
+      "Reading": 80
+    }
+  ],
+  "Name": "Processor Environment Metrics",
+  "Oem": {},
+  "PowerWatts": {
+    "DataSourceUri": "/redfish/v1/Chassis/1U/Sensors/CPU1Power",
+    "Reading": 12.87
+  },
+  "TemperatureCelsius": {
+    "DataSourceUri": "/redfish/v1/Chassis/1U/Sensors/CPU1Temp",
+    "Reading": 44
+  }
+}

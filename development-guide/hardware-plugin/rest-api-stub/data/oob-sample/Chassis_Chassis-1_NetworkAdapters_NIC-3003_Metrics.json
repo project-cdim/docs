@@ -1,0 +1,19 @@
+{
+  "@odata.id": "/redfish/v1/Chassis/Chassis-1/NetworkAdapters/NIC-3003/Metrics",
+  "@odata.type": "#NetworkAdapterMetrics.v1_0_0.NetworkAdapterMetrics",
+  "CPUCorePercent": 8.35,
+  "HostBusRXPercent": 1.58,
+  "HostBusTXPercent": 4.73,
+  "Id": "NetworkAdapterMetrics",
+  "NCSIRXBytes": 0,
+  "NCSIRXFrames": 0,
+  "NCSITXBytes": 0,
+  "NCSITXFrames": 0,
+  "Name": "Network Adapter Metrics",
+  "RXBytes": 7754199970,
+  "RXMulticastFrames": 1941,
+  "RXUnicastFrames": 27193387,
+  "TXBytes": 9436506547,
+  "TXMulticastFrames": 153,
+  "TXUnicastFrames": 18205770
+}

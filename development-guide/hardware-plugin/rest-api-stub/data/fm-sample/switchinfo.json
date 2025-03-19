@@ -1,0 +1,22 @@
+{
+  "data": [
+    {
+      "switchId": "fmsw-01",
+      "switchManufacturer": "VENDOR1",
+      "switchModel": "samplemodel",
+      "switchSerialNumber": null,
+      "link": [
+        "fmsw-02"
+      ]
+    },
+    {
+      "switchId": "fmsw-02",
+      "switchManufacturer": "VENDOR1",
+      "switchModel": "samplemodel",
+      "switchSerialNumber": null,
+      "link": [
+        "fmsw-01"
+      ]
+    }
+  ]
+}

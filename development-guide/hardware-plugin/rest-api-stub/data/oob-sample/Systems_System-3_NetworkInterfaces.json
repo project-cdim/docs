@@ -1,0 +1,11 @@
+{
+  "@odata.context": "/redfish/v1/$metadata#NetworkInterfaceCollection.NetworkInterfaceCollection",
+  "@odata.id": "/redfish/v1/Systems/System-3/NetworkInterface",
+  "@odata.type": "#NetworkInterfaceCollection.NetworkInterfaceCollection",
+  "Members": [
+    {
+      "@odata.id": "/redfish/v1/Systems/System-3/NetworkInterfaces/NETI-3003"
+    }
+  ],
+  "Members@odata.count": 1
+}

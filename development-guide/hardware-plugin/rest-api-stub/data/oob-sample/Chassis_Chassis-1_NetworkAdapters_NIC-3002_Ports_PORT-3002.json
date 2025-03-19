@@ -1,0 +1,47 @@
+{
+  "@odata.id": "/redfish/v1/Chassis/Chassis-1/NetworkAdapters/NIC-3002/Ports/PORT-3002",
+  "@odata.type": "#Port.v1_7_0.Port",
+  "Actions": {
+    "Oem": {}
+  },
+  "CXL": {
+    "ConnectedDeviceMode": "CXL68BFlitAndVH",
+    "ConnectedDeviceType": "PCIeDevice",
+    "CurrentPortConfigurationState": "USP",
+    "MaxLogicalDeviceCount": 4,
+    "SupportedCXLModes": [
+      "CXL68BFlitAndVH"
+    ]
+  },
+  "CurrentSpeedGbps": 48,
+  "Description": "SAS Port 1",
+  "FunctionMaxBandwidth": [
+    {
+      "AllocationPercent": 80
+    }
+  ],
+  "FunctionMinBandwidth": [
+    {
+      "AllocationPercent": 80
+    }
+  ],
+  "Id": "PORT-3002",
+  "LinkConfiguration": [
+    {
+      "CapableLinkSpeedGbps": [
+        10,
+        40
+      ]
+    }
+  ],
+  "MaxSpeedGbps": 48,
+  "Name": "SAS Port 1",
+  "Oem": {},
+  "PortProtocol": "SAS",
+  "PortType": "BidirectionalPort",
+  "Status": {
+    "Health": "OK",
+    "State": "Enabled"
+  },
+  "Width": 4
+}

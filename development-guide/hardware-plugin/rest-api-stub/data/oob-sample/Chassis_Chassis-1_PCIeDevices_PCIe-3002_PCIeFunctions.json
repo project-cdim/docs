@@ -1,0 +1,11 @@
+{
+  "@odata.context": "/redfish/v1/$metadata#PCIeFunctionCollection.PCIeFunctionCollection",
+  "@odata.id": "/redfish/v1/Chassis/Chassis-1/PCIeDevices/PCIe-3002/PCIeFunctions",
+  "@odata.type": "#PCIeFunctionCollection.PCIeFunctionCollection",
+  "Members": [
+    {
+      "@odata.id": "/redfish/v1/Chassis/Chassis-1/PCIeDevices/PCIe-3002/PCIeFunctions/PCIeF-3002"
+    }
+  ],
+  "Members@odata.count": 1
+}

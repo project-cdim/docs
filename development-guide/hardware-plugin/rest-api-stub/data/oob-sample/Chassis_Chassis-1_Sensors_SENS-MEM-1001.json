@@ -1,0 +1,36 @@
+{
+  "@odata.id": "/redfish/v1/Chassis/Chassis-1/Sensors/SENS-MEM-1001",
+  "@odata.type": "#Sensor.v1_6_0.Sensor",
+  "Accuracy": 0.25,
+  "Id": "CabinetTemp",
+  "Name": "Rack Temperature",
+  "Oem": {},
+  "PhysicalContext": "Chassis",
+  "Precision": 1,
+  "Reading": 31.6,
+  "ReadingRangeMax": 70,
+  "ReadingRangeMin": 0,
+  "ReadingTime": "2024-12-24T23:50:13Z",
+  "ReadingType": "Temperature",
+  "ReadingUnits": "C",
+  "SensingInterval": "PT3S",
+  "SensorResetTime": "2024-12-21T23:50:13Z",
+  "Status": {
+    "Health": "OK",
+    "State": "Enabled"
+  },
+  "Thresholds": {
+    "LowerCaution": {
+      "Activation": "Increasing",
+      "Reading": 10
+    },
+    "UpperCaution": {
+      "Activation": "Increasing",
+      "Reading": 35
+    },
+    "UpperCritical": {
+      "Activation": "Increasing",
+      "Reading": 40
+    }
+  }
+}

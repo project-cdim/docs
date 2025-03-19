@@ -1,0 +1,18 @@
+@startuml "03_stub"
+
+actor " " as consumer
+rectangle "HW Control Function" as hw_control
+rectangle "Plugin" as plugin
+rectangle "Manager" as manager
+rectangle "Agent" <<Stub>> as agent
+rectangle "Authorization Server" <<Stub>> as authz_server
+rectangle "Secret Management Server" <<Stub>> as secret_server
+
+consumer -> hw_control: REST API
+hw_control -> plugin: Invoke
+plugin -> manager: Communicate
+hw_control --> agent: Communicate
+hw_control --> authz_server: Communicate
+hw_control --> secret_server: Communicate
+
+@enduml

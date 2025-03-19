@@ -1,0 +1,11 @@
+{
+  "@odata.context": "/redfish/v1/$metadata#NetworkDeviceFunctionCollection.NetworkDeviceFunctionCollection",
+  "@odata.id": "/redfish/v1/Chassis/Chassis-1/NetworkDeviceFunction",
+  "@odata.type": "#NetworkDeviceFunctionCollection.NetworkDeviceFunctionCollection",
+  "Members": [
+    {
+      "@odata.id": "/redfish/v1/Chassis/Chassis-1/NetworkAdapters/NIC-3003/NetworkDeviceFunctions/NICF-3003"
+    }
+  ],
+  "Members@odata.count": 1
+}

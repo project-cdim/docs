@@ -1,0 +1,119 @@
+{
+  "@odata.context": "/redfish/v1/$metadata#Processor.Processor",
+  "@odata.id": "/redfish/v1/Systems/System-1/Processors/PROC-0001",
+  "@odata.type": "#Processor.1_0_0.Processor",
+  "Actions": {
+    "#Processor.Reset": {
+      "ResetType@Redfish.AllowableValues": [
+        "On",
+        "ForceOff",
+        "GracefulShutdown",
+        "GracefulRestart",
+        "ForceRestart",
+        "ForceOn"
+      ],
+      "target": "/redfish/v1/Systems/System-1/Processors/PROC-0001/Actions/Processor.Reset"
+    },
+    "Oem": {
+      "#Processor.MetricState": {
+        "StateType@Redfish.AllowableValues": [
+          "off",
+          "steady",
+          "low",
+          "high",
+          "action"
+        ],
+        "target": "/redfish/v1/Systems/System-1/Processors/PROC-0001/Actions/Processor.MetricState"
+      }
+    }
+  },
+  "BaseSpeedMHz": 1200,
+  "Enabled": true,
+  "EnvironmentMetrics": {
+    "@odata.id": "/redfish/v1/Systems/System-1/Processors/PROC-0001/EnvironmentMetrics"
+  },
+  "Family": "",
+  "Id": "PROC-0001",
+  "InstructionSet": "x86-64",
+  "Links": {
+    "Chassis": {
+      "@odata.id": "/redfish/v1/Chassis/Chassis-1"
+    },
+    "ConnectedProcessors": [
+      {
+        "@odata.id": "/redfish/v1/Systems/System-1/Processors/PROC-0001"
+      },
+      {
+        "@odata.id": "/redfish/v1/Systems/System-1/Processors/PROC-5001"
+      }
+    ],
+    "Memory": [
+      {
+        "@odata.id": "/redfish/v1/Systems/System-1/Memory/MEM-1001"
+      }
+    ],
+    "NetworkDeviceFunctions": [
+      {
+        "@odata.id": "/redfish/v1/Chassis/Chassis-1/NetworkAdapters/NIC-3001/NetworkDeviceFunctions/NICF-3001"
+      }
+    ],
+    "PCIeDevice": {
+      "@odata.id": "/redfish/v1/Chassis/Chassis-1/PCIeDevices/PCIe-0001"
+    }
+  },
+  "Manufacturer": "Intel(R) Corporation",
+  "MaxSpeedMHz": 2200,
+  "MemorySummary": {
+    "ECCModeEnabled": true,
+    "MemoryMirroring": null,
+    "Metrics": {
+      "@odata.id": "/redfish/v1/Systems/System-1/Processors/PROC-0001/MemorySummary/MemoryMetrics"
+    },
+    "Status": {},
+    "TotalCacheSizeMiB": 4096,
+    "TotalMemorySizeMiB": 8192
+  },
+  "Metrics": {
+    "@odata.id": "/redfish/v1/Systems/System-1/Processors/PROC-0001/ProcessorMetrics"
+  },
+  "Model": "cpu_1",
+  "Name": "Processor",
+  "OperatingSpeedMHz": 3200,
+  "PartNumber": "975421-B20",
+  "Ports": {
+    "@odata.id": "/redfish/v1/Systems/System-1/Processors/PROC-0001/Ports"
+  },
+  "PowerCapability": true,
+  "PowerState": "On",
+  "ProcessorArchitecture": "x86",
+  "ProcessorId": {
+    "EffectiveFamily": "0x42",
+    "EffectiveModel": "0x61",
+    "IdentificationRegisters": "0x34AC34DC8901274A",
+    "MicrocodeInfo": "0x429943",
+    "Step": "0x1",
+    "VendorId": "GenuineIntel",
+    "ProtectedIdentificationNumber": "123456"
+  },
+  "ProcessorIndex": "1",
+  "ProcessorMemory": [
+    {
+      "CapacityMiB": 4096,
+      "IntegratedMemory": true,
+      "MemoryType": "DDR",
+      "SpeedMHz": 1200
+    }
+  ],
+  "ProcessorType": "CPU",
+  "Replaceable": true,
+  "SerialNumber": "PROCESSOR1",
+  "Socket": "CPU 1",
+  "Status": {
+    "Health": "OK",
+    "State": "Enabled"
+  },
+  "TDPWatts": 100,
+  "TotalCores": 4,
+  "TotalEnabledCores": 4,
+  "TotalThreads": 8
+}

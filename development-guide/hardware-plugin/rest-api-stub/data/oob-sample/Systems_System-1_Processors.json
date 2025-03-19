@@ -1,0 +1,14 @@
+{
+  "@odata.context": "/redfish/v1/$metadata#ProcessorCollection.ProcessorCollection",
+  "@odata.id": "/redfish/v1/Systems/System-1/Processors",
+  "@odata.type": "#ProcessorCollection.ProcessorCollection",
+  "Members": [
+    {
+      "@odata.id": "/redfish/v1/Systems/System-1/Processors/PROC-5001"
+    },
+    {
+      "@odata.id": "/redfish/v1/Systems/System-1/Processors/PROC-0001"
+    }
+  ],
+  "Members@odata.count": 2
+}

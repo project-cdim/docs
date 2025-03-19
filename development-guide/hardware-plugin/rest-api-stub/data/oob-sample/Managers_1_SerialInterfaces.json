@@ -1,0 +1,11 @@
+{
+  "@odata.context": "/redfish/v1/$metadata#SerialInterfaceCollection.SerialInterfaceCollection",
+  "@odata.id": "/redfish/v1/Managers/1/SerialInterface",
+  "@odata.type": "#SerialInterfaceCollection.SerialInterfaceCollection",
+  "Members": [
+    {
+      "@odata.id": "/redfish/v1/Managers/1/SerialInterfaces/SI-1"
+    }
+  ],
+  "Members@odata.count": 1
+}

@@ -1,0 +1,81 @@
+{
+  "@odata.id": "redfish/v1/Chassis/Chassis-1/Drives/DRI-2003",
+  "@odata.type": "#Drive.v1_15_0.Drive",
+  "Actions": {
+    "Oem": {
+      "#Drive.MetricState": {
+        "StateType@Redfish.AllowableValues": [
+          "off",
+          "steady",
+          "low",
+          "high",
+          "action"
+        ],
+        "target": "/redfish/v1/Chassis/Chassis-1/Drives/DRI-2003/Actions/Drive.MetricState"
+      }
+    }
+  },
+  "BlockSizeBytes": 512,
+  "CapableSpeedGbs": 3600,
+  "CapacityBytes": 8589934592,
+  "EncryptionAbility": "SelfEncryptingDrive",
+  "EncryptionStatus": "Unlocked",
+  "EnvironmentMetrics": {
+    "@odata.id": "/redfish/v1/Chassis/Chassis-1/Drives/DRI-2003/EnvironmentMetrics"
+  },
+  "FailurePredicted": false,
+  "HotspareType": "None",
+  "Id": "DRI-2003",
+  "Identifiers": [
+    {
+      "DurableName": "32ADF365CDRI2003",
+      "DurableNameFormat": "NAA"
+    }
+  ],
+  "Links": {
+    "Chassis": [
+      {
+        "@odata.id": "/redfish/v1/Chassis/Chassis-1"
+      }
+    ],
+    "NetworkDeviceFunctions": [],
+    "PCIeFunctions": [
+      {
+        "@odata.id": "/redfish/v1/Chassis/Chassis-1/PCIeDevices/PCIe-2003/PCIeFunctions/PCIeF-2003"
+      }
+    ],
+    "Storage": [
+      {
+        "@odata.id": "/redfish/v1/Storage/STR-2003"
+      }
+    ],
+    "StoragePools": [],
+    "Volumes": [
+      {
+        "@odata.id": "/redfish/v1/Storage/STR-2003/Volumes/VOL-2003"
+      }
+    ]
+  },
+  "LocationIndicatorActive": true,
+  "Manufacturer": "Contoso",
+  "MediaType": "HDD",
+  "Metrics": {
+    "@odata.id": "/redfish/v1/Chassis/Chassis-1/Drives/DRI-2003/Metrics"
+  },
+  "Model": "stg_3",
+  "Name": "Drive Sample",
+  "NegotiatedSpeedGbs": 12,
+  "PartNumber": "C123-1111",
+  "PhysicalLocation": {},
+  "PowerCapability": true,
+  "PowerState": "On",
+  "PredictedMediaLifeLeftPercent": 50,
+  "Protocol": "SAS",
+  "Revision": "100A",
+  "RotationSpeedRPM": 15000,
+  "SerialNumber": "2003",
+  "Status": {
+    "Health": "OK",
+    "State": "Enabled"
+  }
+}

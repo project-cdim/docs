@@ -1,0 +1,7 @@
+---
+module: oob_sample.plugin
+class: OobSamplePlugin
+specific_data:
+  base_url: http://localhost:8001/oob-sample
+  timeout_sec: 60
+  manager_uri: /redfish/v1/Managers/1

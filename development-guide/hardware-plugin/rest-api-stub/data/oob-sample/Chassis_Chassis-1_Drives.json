@@ -1,0 +1,17 @@
+{
+  "@odata.context": "/redfish/v1/$metadata#DriveCollection.DriveCollection",
+  "@odata.id": "/redfish/v1/Chassis/Chassis-1/Drives",
+  "@odata.type": "#DriveCollection.DriveCollection",
+  "Members": [
+    {
+      "@odata.id": "/redfish/v1/Chassis/Chassis-1/Drives/DRI-2001"
+    },
+    {
+      "@odata.id": "/redfish/v1/Chassis/Chassis-1/Drives/DRI-2002"
+    },
+    {
+      "@odata.id": "/redfish/v1/Chassis/Chassis-1/Drives/DRI-2003"
+    }
+  ],
+  "Members@odata.count": 26
+}

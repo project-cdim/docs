@@ -1,0 +1,33 @@
+{
+  "@odata.id": "/redfish/v1/Systems/System-1/GraphicsControllers/GC-6001",
+  "@odata.type": "#GraphicsController.v1_0_0.GraphicsController",
+  "AssetTag": "",
+  "BiosVersion": "90.02.17.00.7D",
+  "DriverVersion": "27.21.14.6079 (Contoso 460.79) DCH / Win 10 64",
+  "Id": "GC-6001",
+  "Links": {
+    "PCIeDevice": {},
+    "Processors": []
+  },
+  "Location": {
+    "PartLocation": {
+      "LocationOrdinalValue": 1,
+      "LocationType": "Slot",
+      "Orientation": "LeftToRight",
+      "Reference": "Rear",
+      "ServiceLabel": "Slot 1"
+    }
+  },
+  "Manufacturer": "Contoso",
+  "Model": "gra_1",
+  "Name": "Contoso Graphics Controller 1",
+  "Oem": {},
+  "PartNumber": "G37891",
+  "SKU": "80937",
+  "SerialNumber": "6001",
+  "SparePartNumber": "G37890",
+  "Status": {
+    "Health": "OK",
+    "State": "Enabled"
+  }
+}

@@ -1,0 +1,21 @@
+{
+    "data": [
+      {
+        "type": "storage",
+        "disk": {
+          "amountUsedDisk": 2201739264,
+          "usageIO": {
+            "readCount": 5176,
+            "writeCount": 122647,
+            "readBytes": 179915264,
+            "writeBytes": 2044911104,
+            "readTime": 15658,
+            "writeTime": 454889,
+            "readMergedCount": 1,
+            "writeMergedCount": 22253,
+            "busyRate": 1.0
+          }
+        }
+      }
+    ]
+}

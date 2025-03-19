@@ -1,0 +1,25 @@
+{
+  "@odata.id": "/redfish/v1/Chassis/Chassis-1/Drives/DRI-2002/EnvironmentMetrics",
+  "@odata.type": "#EnvironmentMetrics.v1_3_0.EnvironmentMetrics",
+  "EnergyJoules": {
+    "DataSourceUri": "/redfish/v1/Chassis/Chassis-1/Sensors/SENS-DRI-2002",
+    "Reading": 8
+  },
+  "FanSpeedsPercent": [
+    {
+      "DataSourceUri": "/redfish/v1/Chassis/1U/Sensors/CPUFan1",
+      "DeviceName": "CPU #1 Fan Speed",
+      "Reading": 80
+    }
+  ],
+  "Name": "Processor Environment Metrics",
+  "Oem": {},
+  "PowerWatts": {
+    "DataSourceUri": "/redfish/v1/Chassis/1U/Sensors/CPU1Power",
+    "Reading": 12.87
+  },
+  "TemperatureCelsius": {
+    "DataSourceUri": "/redfish/v1/Chassis/1U/Sensors/CPU1Temp",
+    "Reading": 44
+  }
+}

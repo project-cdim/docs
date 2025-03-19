@@ -1,0 +1,26 @@
+{
+  "data": [
+    {
+      "id": "e4021cb4-79d9-438a-a8e9-60939fe01deb",
+      "switchId": "fmsw-01",
+      "switchPortNumber": null,
+      "switchPortType": "USP",
+      "fabricId": "VENDOR1-samplemodel-192.168.0.5:80-fabric1",
+      "link": [],
+      "deviceType": null,
+      "PCIeVendorId": null,
+      "PCIeDeviceId": null,
+      "PCIeDeviceSerialNumber": null,
+      "PCIClassCode": null,
+      "CPUManufacturer": "Intel(R) Corporation",
+      "CPUModel": "cpu_1",
+      "CPUSerialNumber": "PROCESSOR1",
+      "LTSSMState": "L0",
+      "PortKeys": {},
+      "DeviceKeys": {
+        "SimulatedDeviceID": "0001"
+      },
+      "optional": {}
+    }
+  ]
+}

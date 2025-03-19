@@ -1,0 +1,21 @@
+@startuml "09_calling_plugin_methods"
+title Calling Plugin Methods
+
+participant "Upper Module" as caller
+participant "HW Control Function" as hwctrl
+participant Plugin as plugin
+caller -> hwctrl: "Request Information Retrieval/Operation"
+hwctrl -> hwctrl: "Necessary Processing"
+hwctrl -> plugin: "Create Instance"
+activate plugin
+hwctrl -> plugin: "Call Method"
+plugin --> hwctrl:
+opt "Case of Multiple Method Calls"
+  hwctrl -> plugin: "Call Method"
+  plugin --> hwctrl:
+end
+hwctrl -> plugin: "Destroy instance"
+deactivate plugin
+hwctrl -> hwctrl: "Necessary Processing"
+hwctrl -> caller: "Return Information Retrieval/Operation Result"
+@enduml

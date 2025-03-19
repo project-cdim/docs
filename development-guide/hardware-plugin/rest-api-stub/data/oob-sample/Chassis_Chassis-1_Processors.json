@@ -1,0 +1,23 @@
+{
+  "@odata.context": "/redfish/v1/$metadata#ProcessorCollection.ProcessorCollection",
+  "@odata.id": "/redfish/v1/Systems/Chassis-1/Processors",
+  "@odata.type": "#ProcessorCollection.ProcessorCollection",
+  "Members": [
+    {
+      "@odata.id": "/redfish/v1/Chassis/Chassis-1/Processors/PROC-5001"
+    },
+    {
+      "@odata.id": "/redfish/v1/Chassis/Chassis-1/Processors/PROC-0001"
+    },
+    {
+      "@odata.id": "/redfish/v1/Chassis/Chassis-1/Processors/PROC-0002"
+    },
+    {
+      "@odata.id": "/redfish/v1/Chassis/Chassis-1/Processors/PROC-0003"
+    },
+    {
+      "@odata.id": "/redfish/v1/Chassis/Chassis-1/Processors/PROC-5501"
+    }
+  ],
+  "Members@odata.count": 15
+}

@@ -1,0 +1,28 @@
+@startuml "04_plugin_class"
+
+abstract class ManagerPluginBase {
+    specific_data: Any
+    __init__(specific_data: Any = None): None
+}
+
+abstract class OOBPluginBase {
+    {abstract} get_device_info(): list[dict]
+    {abstract} get_spec_info(key_values: list[dict]): dict
+    {abstract} get_metric_info(key_values: list[dict]): dict
+    {abstract} get_power_state(key_values: list[dict]): dict
+    {abstract} post_power_on(key_values: list[dict]): dict
+    {abstract} post_power_off(key_values: list[dict]): dict
+    {abstract} post_cpu_reset(key_values: list[dict]): dict
+    {abstract} post_os_shutdown(key_values: list[dict]): dict
+}
+ManagerPluginBase <|-- OOBPluginBase
+
+abstract class FMPluginBase {
+    {abstract} connect(cpu_id: str, device_id: str): None
+    {abstract} disconnect(cpu_id: str, device_id: str): None
+    {abstract} get_port_info(target_id: str = None): dict
+    {abstract} get_switch_info(switch_id: str = None): dict
+}
+ManagerPluginBase <|-- FMPluginBase
+
+@enduml

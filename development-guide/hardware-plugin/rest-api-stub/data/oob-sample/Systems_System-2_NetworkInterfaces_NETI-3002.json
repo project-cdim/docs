@@ -1,0 +1,18 @@
+{
+  "@odata.context": "/redfish/v1/$metadata#NetworkInterface.NetworkInterface",
+  "@odata.id": "/redfish/v1/Systems/System-2/NetworkInterfaces/NETI-3002",
+  "@odata.type": "#NetworkInterface.v1_2_1.NetworkInterface",
+  "Id": "NETI-3002",
+  "Links": {
+    "NetworkAdapter": {
+      "@odata.id": "/redfish/v1/Chassis/Chassis-1/NetworkAdapters/NIC-3002"
+    }
+  },
+  "Name": "Network Device View",
+  "NetworkDeviceFunctions": {
+    "@odata.id": "/redfish/v1/Chassis/Chassis-1/NetworkAdapters/NIC-3002/NetworkDeviceFunctions"
+  },
+  "Ports": {
+    "@odata.id": "/redfish/v1/Chassis/Chassis-1/NetworkAdapters/NIC-3002/Ports"
+  }
+}

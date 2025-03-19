@@ -1,0 +1,148 @@
+{
+  "@Redfish.Copyright": "Copyright 2014-2019 DMTF. All rights reserved.",
+  "@odata.context": "/redfish/v1/$metadata#ComputerSystem.ComputerSystem",
+  "@odata.id": "/redfish/v1/Systems/System-1",
+  "@odata.type": "#ComputerSystem.v1_3_0.ComputerSystem",
+  "Actions": {
+    "#ComputerSystem.Reset": {
+      "@Redfish.ActionInfo": "/redfish/v1/Systems/System-1/ResetActionInfo",
+      "ResetType@Redfish.AllowableValues": [
+        "On",
+        "ForceOff",
+        "GracefulShutdown",
+        "GracefulRestart",
+        "ForceRestart",
+        "ForceOn"
+      ],
+      "target": "/redfish/v1/Systems/System-1/Actions/ComputerSystem.Reset"
+    }
+  },
+  "AssetTag": "free form asset tag",
+  "BiosVersion": "P79 v1.00 (09/20/2013)",
+  "Boot": {
+    "BootOptions": {
+      "@odata.id": "{rb}Systems/{id}/BootOptions/1"
+    },
+    "BootOrder": [],
+    "BootSourceOverrideEnabled": "Once",
+    "BootSourceOverrideMode": "UEFI",
+    "BootSourceOverrideTarget": "Pxe",
+    "BootSourceOverrideTarget@Redfish.AllowableValues": [
+      "None",
+      "Pxe",
+      "Floppy",
+      "Cd",
+      "Usb",
+      "Hdd",
+      "BiosSetup",
+      "Utilities",
+      "Diags",
+      "UefiTarget",
+      "SDCard",
+      "UefiHttp"
+    ],
+    "UefiTargetBootSourceOverride": "uefi device path"
+  },
+  "BootProgress": {
+    "LastBootTimeSeconds": 676,
+    "LastState": "OSRunning",
+    "LastStateTime": "2022-10-03T20:00:00Z"
+  },
+  "Chassis": [
+    {
+      "@odata.id": "/redfish/v1/Chassis/Chassis-1"
+    }
+  ],
+  "Description": "Description of server",
+  "EthernetInterfaces": {
+    "@odata.id": "/redfish/v1/Systems/System-1/EthernetInterfaces"
+  },
+  "FabricAdapters": {
+    "@odata.id": "/redfish/v1/Systems/System-1/FabricAdapters"
+  },
+  "GraphicsControllers": {
+    "@odata.id": "/redfish/v1/Systems/System-1/GraphicsControllers"
+  },
+  "HostName": "web-srv344",
+  "Id": "System-1",
+  "IndicatorLED": "Off",
+  "LastResetTime": "2022-10-03T20:00:00Z",
+  "Links": {
+    "Chassis": [
+      {
+        "@odata.id": "/redfish/v1/Chassis/Chassis-1"
+      }
+    ],
+    "ManagedBy": [
+      {
+        "@odata.id": "/redfish/v1/Managers/1"
+      }
+    ],
+    "Oem": {}
+  },
+  "Manufacturer": "Manufacturer Name",
+  "Memory": {
+    "@odata.id": "/redfish/v1/Systems/System-1/Memory"
+  },
+  "MemorySummary": {
+    "Status": {
+      "Health": "OK",
+      "State": "Enabled"
+    },
+    "TotalSystemMemoryGiB": 0,
+    "TotalSystemPersistentMemoryGiB": 0
+  },
+  "Model": "Model Name",
+  "Name": "My Computer System",
+  "NetworkInterfaces": {
+    "@odata.id": "/redfish/v1/Systems/System-1/NetworkInterfaces"
+  },
+  "PCIeDevices": [
+    {
+      "@odata.id": "/redfish/v1/Chassis/Chassis-1/PCIeDevices/PCIe-0001"
+    }
+  ],
+  "PartNumber": "",
+  "PowerState": "On",
+  "ProcessorSummary": {
+    "Count": 1,
+    "Model": "Multi-Core Intel(R) Xeon(R) processor 7xxx Series",
+    "Status": {
+      "Health": "OK",
+      "State": "Enabled"
+    }
+  },
+  "Processors": {
+    "@odata.id": "/redfish/v1/Systems/System-1/Processors"
+  },
+  "SKU": "",
+  "SerialNumber": "2M220100SL",
+  "SimpleStorage": {
+    "@odata.id": "/redfish/v1/Systems/System-1/SimpleStorage"
+  },
+  "Status": {
+    "Health": "OK",
+    "HealthRollup": "OK",
+    "State": "Enabled"
+  },
+  "Storage": {
+    "@odata.id": "/redfish/v1/Systems/System-1/Storage"
+  },
+  "SystemType": "Physical",
+  "TrustedModules": [
+    {
+      "FirmwareVersion": "3.1",
+      "FirmwareVersion2": "1",
+      "InterfaceTypeSelection": "None",
+      "ModuleType": "TPM2_0",
+      "Status": {
+        "Health": "OK",
+        "State": "Enabled"
+      }
+    }
+  ],
+  "UUID": "00000000-0000-0000-0000-000000000000",
+  "VirtualMedia": {
+    "@odata.id": "/redfish/v1/Systems/System-1/VirtualMedia"
+  }
+}

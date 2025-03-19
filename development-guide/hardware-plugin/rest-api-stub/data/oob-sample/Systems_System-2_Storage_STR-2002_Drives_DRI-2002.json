@@ -1,0 +1,81 @@
+{
+  "@odata.id": "/redfish/v1/Systems/System-2/Storage/STR-2002/Drives/DRI-2002",
+  "@odata.type": "#Drive.v1_15_0.Drive",
+  "Actions": {
+    "Oem": {
+      "#Drive.MetricState": {
+        "StateType@Redfish.AllowableValues": [
+          "off",
+          "steady",
+          "low",
+          "high",
+          "action"
+        ],
+        "target": "{rb}Chassis/{chassis_id}/Drives/{drive_id}/Actions/Drive.MetricState"
+      }
+    }
+  },
+  "BlockSizeBytes": 512,
+  "CapableSpeedGbs": 3200,
+  "CapacityBytes": 4294967296,
+  "EncryptionAbility": "SelfEncryptingDrive",
+  "EncryptionStatus": "Unlocked",
+  "EnvironmentMetrics": {
+    "@odata.id": "/redfish/v1/Systems/System-2/Storage/STR-2002/Drives/DRI-2002/EnvironmentMetrics"
+  },
+  "FailurePredicted": false,
+  "HotspareType": "None",
+  "Id": "DRI-2002",
+  "Identifiers": [
+    {
+      "DurableName": "32ADF365CDRI2002",
+      "DurableNameFormat": "NAA"
+    }
+  ],
+  "Links": {
+    "Chassis": [
+      {
+        "@odata.id": "/redfish/v1/Chassis/Chassis-1"
+      }
+    ],
+    "NetworkDeviceFunctions": [],
+    "PCIeFunctions": [
+      {
+        "@odata.id": "/redfish/v1/Chassis/Chassis-1/PCIeDevices/PCIe-2002/PCIeFunctions/PCIeF-2002"
+      }
+    ],
+    "Storage": [
+      {
+        "@odata.id": "/redfish/v1/Systems/System-2/Storage/STR-2002"
+      }
+    ],
+    "StoragePools": [],
+    "Volumes": [
+      {
+        "@odata.id": "/redfish/v1/Systems/System-2/Storage/STR-2002/Volumes/VOL-2002"
+      }
+    ]
+  },
+  "LocationIndicatorActive": true,
+  "Manufacturer": "Contoso",
+  "MediaType": "HDD",
+  "Metrics": {
+    "@odata.id": "/redfish/v1/Systems/System-2/Storage/STR-2002/Drives/DRI-2002/Metrics"
+  },
+  "Model": "stg_2",
+  "Name": "Drive Sample",
+  "NegotiatedSpeedGbs": 12,
+  "PartNumber": "C123-1111",
+  "PhysicalLocation": {},
+  "PowerCapability": true,
+  "PowerState": "On",
+  "PredictedMediaLifeLeftPercent": 50,
+  "Protocol": "SAS",
+  "Revision": "100A",
+  "RotationSpeedRPM": 15000,
+  "SerialNumber": "2002",
+  "Status": {
+    "Health": "OK",
+    "State": "Enabled"
+  }
+}

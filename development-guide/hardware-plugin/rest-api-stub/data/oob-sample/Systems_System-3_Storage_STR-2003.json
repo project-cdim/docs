@@ -1,0 +1,44 @@
+{
+  "@odata.id": "/redfish/v1/Systems/System-3/Storage/STR-2003",
+  "@odata.type": "#Storage.v1_13_0.Storage",
+  "Controllers": [
+    {
+      "@odata.id": "/redfish/v1/Systems/System-3/Storage/STR-2003/Controllers/STRCTR-2003"
+    }
+  ],
+  "Description": "Integrated RAID Controller",
+  "Drives": [
+    {
+      "@odata.id": "/redfish/v1/Systems/System-3/Storage/STR-2003/Drives/DRI-2003"
+    }
+  ],
+  "Enclosures": [],
+  "Id": "STR-2003",
+  "Links": {},
+  "Name": "Local Storage Controller",
+  "Redundancy": [
+    {
+      "MaxNumSupported": 2,
+      "MinNumNeeded": 1,
+      "Mode": "Sharing",
+      "Name": "Name",
+      "RedundancyEnabled": true,
+      "RedundancySet": [],
+      "Status": {
+        "Health": "OK",
+        "State": "Enabled"
+      }
+    }
+  ],
+  "Status": {
+    "Health": "OK",
+    "HealthRollup": "OK",
+    "State": "Enabled"
+  },
+  "StoragePools": [],
+  "Volumes": [
+    {
+      "@odata.id": "/redfish/v1/Systems/System-3/Storage/STR-2003/Volumes/VOL-2003"
+    }
+  ]
+}

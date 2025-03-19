@@ -1,0 +1,13 @@
+{
+	"data": [
+	  {
+		"type": "CPU",
+		"usageRate": 1.0,
+		"user": 2.0,
+		"system": 3.0,
+		"wait": 4.0,
+		"idle": 91.0,
+		"cpuWatts": 10
+	  }
+	]
+}

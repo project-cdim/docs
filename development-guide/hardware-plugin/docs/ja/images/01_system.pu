@@ -1,0 +1,27 @@
+@startuml "01_system"
+
+actor " " as consumer
+rectangle "HW制御機能" as hw_control {
+    rectangle "ハードウェア独立処理" as hw_control_hw_independent
+    rectangle "ハードウェア依存処理" as hw_control_hw_dependent
+    file "プラグイン設定ファイル" as config
+    rectangle "OOBプラグイン" as oob_plugin
+    rectangle "FMプラグイン" as fm_plugin
+}
+
+agent "OOBコントローラー" <<マネージャー>> as oob
+agent "Fabric Manager"    <<マネージャー>> as fm
+collections "デバイス" as devices
+
+hw_control_hw_dependent --> config: 読取
+hw_control_hw_dependent --> oob_plugin: ロード・呼出
+hw_control_hw_dependent -->  fm_plugin: ロード・呼出
+
+consumer -> hw_control_hw_independent: REST API
+hw_control_hw_independent --> hw_control_hw_dependent: 呼出
+oob_plugin --> oob: 情報取得／制御要求
+fm_plugin  -->  fm: 情報取得／制御要求
+oob --> devices: 管理
+fm  --> devices: 管理
+
+@enduml

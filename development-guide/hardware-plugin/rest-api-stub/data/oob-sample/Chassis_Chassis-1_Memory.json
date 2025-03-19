@@ -1,0 +1,17 @@
+{
+  "@odata.context": "/redfish/v1/$metadata#MemoryCollection.MemoryCollection",
+  "@odata.id": "/redfish/v1/Systems/Chassis-1/Memory",
+  "@odata.type": "#MemoryCollection.MemoryCollection",
+  "Members": [
+    {
+      "@odata.id": "/redfish/v1/Chassis/Chassis-1/Memory/MEM-1001"
+    },
+    {
+      "@odata.id": "/redfish/v1/Chassis/Chassis-1/Memory/MEM-1002"
+    },
+    {
+      "@odata.id": "/redfish/v1/Chassis/Chassis-1/Memory/MEM-1003"
+    }
+  ],
+  "Members@odata.count": 26
+}

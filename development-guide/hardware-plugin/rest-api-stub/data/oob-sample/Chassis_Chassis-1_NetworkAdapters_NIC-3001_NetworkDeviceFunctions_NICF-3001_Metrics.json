@@ -1,0 +1,24 @@
+{
+  "@odata.id": "/redfish/v1/Chassis/Chassis-1/NetworkAdapters/NIC-3001/NetworkDeviceFunctions/NICF-3001/Metrics",
+  "@odata.type": "#NetworkDeviceFunctionMetrics.v1_1_0.NetworkDeviceFunctionMetrics",
+  "Ethernet": {
+    "NumOffloadedIPv4Conns": 0,
+    "NumOffloadedIPv6Conns": 0
+  },
+  "Id": "NetworkDeviceFunctionMetrics",
+  "Name": "Network Device Function Metrics",
+  "RXAvgQueueDepthPercent": 21.2,
+  "RXBytes": 7754199970,
+  "RXFrames": 27193387,
+  "RXMulticastFrames": 1000000,
+  "RXQueuesEmpty": false,
+  "RXQueuesFull": 0,
+  "RXUnicastFrames": 26193387,
+  "TXAvgQueueDepthPercent": 13.7,
+  "TXBytes": 9436506547,
+  "TXFrames": 18205770,
+  "TXMulticastFrames": 1000000,
+  "TXQueuesEmpty": false,
+  "TXQueuesFull": 0,
+  "TXUnicastFrames": 17205770
+}

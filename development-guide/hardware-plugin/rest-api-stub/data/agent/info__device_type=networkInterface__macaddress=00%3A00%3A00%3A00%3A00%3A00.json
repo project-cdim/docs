@@ -1,0 +1,20 @@
+{
+    "data": [
+      {
+        "type": "networkInterface",
+        "networkInterfaceInformation": {
+          "networkSpeed": -1,
+          "networkTraffic": {
+            "receivePackets": 2119611,
+            "transmitPackets": 359877,
+            "bytesSent": 29068890,
+            "bytesRecv": 772554837,
+            "errin": 11,
+            "errout": 22,
+            "dropin": 1506670,
+            "dropout": 33
+          }
+        }
+      }
+    ]
+}

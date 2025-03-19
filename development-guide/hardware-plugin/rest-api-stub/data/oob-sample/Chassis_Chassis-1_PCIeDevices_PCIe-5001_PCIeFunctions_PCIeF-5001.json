@@ -1,0 +1,28 @@
+{
+  "@odata.id": "/redfish/v1/Chassis/Chassis-1/PCIeDevices/PCIe-5001/PCIeFunctions/PCIeF-5001",
+  "@odata.type": "#PCIeFunction.v1_4_0.PCIeFunction",
+  "ClassCode": "0x010802",
+  "Description": "FC Port 2",
+  "DeviceClass": "NetworkController",
+  "DeviceId": "0xABCD",
+  "FunctionId": 2,
+  "FunctionProtocol": "PCIe",
+  "FunctionType": "Physical",
+  "Id": "PCIeF-5001",
+  "Links": {
+    "PCIeDevice": {
+      "@odata.id": "/redfish/v1/Chassis/Chassis-1/PCIeDevices/PCIe-5001"
+    }
+  },
+  "Name": "FC Port 2",
+  "Oem": {},
+  "RevisionId": "0x00",
+  "Status": {
+    "Health": "OK",
+    "HealthRollup": "OK",
+    "State": "Enabled"
+  },
+  "SubsystemId": "0xABCD",
+  "SubsystemVendorId": "0xABCD",
+  "VendorId": "0xABCD"
+}

@@ -1,0 +1,63 @@
+{
+  "@odata.id": "/redfish/v1/Systems/System-1/Storage/STR-2001/Volumes/VOL-2001",
+  "@odata.type": "#Volume.v1_8_0.Volume",
+  "AccessCapabilities": [
+    "Append",
+    "Read"
+  ],
+  "BlockSizeBytes": 512,
+  "Capacity": {
+    "Data": {
+      "AllocatedBytes": 104857600,
+      "ConsumedBytes": 1024000,
+      "GuaranteedBytes": 104857600,
+      "ProvisionedBytes": 107374182400
+    },
+    "Metadata": {
+      "AllocatedBytes": 104857600,
+      "ConsumedBytes": 0,
+      "GuaranteedBytes": 104857600,
+      "ProvisionedBytes": 107374182400
+    },
+    "Snapshot": {
+      "AllocatedBytes": 104857600,
+      "ConsumedBytes": 0,
+      "GuaranteedBytes": 104857600,
+      "ProvisionedBytes": 107374182400
+    }
+  },
+  "CapacityBytes": 4294967296,
+  "DisplayName": "Name123",
+  "Encrypted": false,
+  "Id": "2",
+  "Identifiers": [
+    {
+      "DurableName": "32ADF365CVOL2001",
+      "DurableNameFormat": "UUID"
+    }
+  ],
+  "Links": {
+    "Drives": [
+      {
+        "@odata.id": "/redfish/v1/Systems/System-1/Storage/STR-2001/Drives/DRI-2001"
+      }
+    ]
+  },
+  "Manufacturer": "Contoso",
+  "MaxBlockSizeBytes": 1024,
+  "Metrics": {
+    "@odata.id": "/redfish/v1/Systems/System-1/Storage/STR-2001/Volumes/VOL-2001/Metrics"
+  },
+  "Model": "Modelxx123",
+  "Name": "Virtual Disk 2",
+  "OptimumIOSizeBytes": 8096,
+  "RAIDType": "RAID0",
+  "RecoverableCapacitySourceCount": 16,
+  "RemainingCapacityPercent": 12,
+  "Status": {
+    "Health": "OK",
+    "State": "Enabled"
+  },
+  "VolumeType": "Mirrored",
+  "VolumeUsage": "SystemData"
+}

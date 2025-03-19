@@ -1,0 +1,89 @@
+{
+  "data": [
+    {
+      "id": "e4021cb4-79d9-438a-a8e9-60939fe01deb",
+      "switchId": "fmsw-01",
+      "switchPortNumber": null,
+      "switchPortType": "USP",
+      "fabricId": "VENDOR1-samplemodel-192.168.0.5:80-fabric1",
+      "link": [
+        "631fb7b3-fc88-48cb-98b4-3c6a88ed610e",
+        "db456f2c-c824-4698-83b8-ba6e1d09810a"
+      ],
+      "deviceType": null,
+      "PCIeVendorId": null,
+      "PCIeDeviceId": null,
+      "PCIeDeviceSerialNumber": null,
+      "PCIClassCode": null,
+      "CPUManufacturer": "Intel(R) Corporation",
+      "CPUModel": "cpu_1",
+      "CPUSerialNumber": "PROCESSOR1",
+      "LTSSMState": "L0",
+      "PortKeys": {},
+      "DeviceKeys": {
+        "SimulatedDeviceID": "0001"
+      },
+      "optional": {}
+    },
+    {
+      "id": "f1c004a4-1347-4ed9-b213-e20b33a0058a",
+      "switchId": "fmsw-01",
+      "switchPortNumber": null,
+      "switchPortType": "DSP",
+      "fabricId": "VENDOR1-samplemodel-192.168.0.5:80-fabric1",
+      "link": [],
+      "deviceType": "CXL-Type3",
+      "PCIeVendorId": "8086",
+      "PCIeDeviceId": "0d93",
+      "PCIeDeviceSerialNumber": "2000000000000000",
+      "PCIClassCode": {
+        "base": 5,
+        "sub": 2,
+        "prog": 16
+      },
+      "CPUManufacturer": null,
+      "CPUModel": null,
+      "CPUSerialNumber": null,
+      "LTSSMState": "L0",
+      "PortKeys": {},
+      "DeviceKeys": {
+        "SimulatedDeviceID": "1005"
+      },
+      "optional": {
+        "capacity": {
+          "volatile": 1073741824,
+          "persistent": 0,
+          "total": 1073741824
+        }
+      }
+    },
+    {
+      "id": "db456f2c-c824-4698-83b8-ba6e1d09810a",
+      "switchId": "fmsw-01",
+      "switchPortNumber": null,
+      "switchPortType": "DSP",
+      "fabricId": "VENDOR1-samplemodel-192.168.0.5:80-fabric1",
+      "link": [
+        "e4021cb4-79d9-438a-a8e9-60939fe01deb"
+      ],
+      "deviceType": "PCIe",
+      "PCIeVendorId": "1af4",
+      "PCIeDeviceId": "1042",
+      "PCIeDeviceSerialNumber": "6f732d7465737431",
+      "PCIClassCode": {
+        "base": 1,
+        "sub": 0,
+        "prog": 0
+      },
+      "CPUManufacturer": null,
+      "CPUModel": null,
+      "CPUSerialNumber": null,
+      "LTSSMState": "L0",
+      "PortKeys": {},
+      "DeviceKeys": {
+        "SimulatedDeviceID": "2001"
+      },
+      "optional": {}
+    }
+  ]
+}

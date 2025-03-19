@@ -1,0 +1,118 @@
+{
+  "@odata.id": "/redfish/v1/Chassis/Chassis-1/NetworkAdapters/NIC-3001",
+  "@odata.type": "#NetworkAdapter.v1_9_0.NetworkAdapter",
+  "Actions": {
+    "Oem": {
+      "#NetworkAdapter.MetricState": {
+        "StateType@Redfish.AllowableValues": [
+          "off",
+          "steady",
+          "low",
+          "high",
+          "action"
+        ],
+        "target": "/redfish/v1/Chassis/Chassis-1/NetworkAdapters/NIC-3001/Actions/NetworkAdapter.MetricState"
+      }
+    }
+  },
+  "Controllers": [
+    {
+      "ControllerCapabilities": {
+        "DataCenterBridging": {
+          "Capable": true
+        },
+        "NPAR": {
+          "NparCapable": true,
+          "NparEnabled": false
+        },
+        "NPIV": {
+          "MaxDeviceLogins": 4,
+          "MaxPortLogins": 2
+        },
+        "NetworkDeviceFunctionCount": 8,
+        "NetworkPortCount": 2,
+        "VirtualizationOffload": {
+          "SRIOV": {
+            "SRIOVVEPACapable": true
+          },
+          "VirtualFunction": {
+            "DeviceMaxCount": 256,
+            "MinAssignmentGroupSize": 4,
+            "NetworkPortMaxCount": 128
+          }
+        }
+      },
+      "FirmwarePackageVersion": "7.4.10",
+      "Identifiers": [
+        {
+          "DurableName": "32ADF365CNIC3001",
+          "DurableNameFormat": "NAA"
+        }
+      ],
+      "Links": {
+        "NetworkDeviceFunctions": [
+          {
+            "@odata.id": "/redfish/v1/Chassis/Chassis-1/NetworkAdapters/NIC-3001/NetworkDeviceFunctions/NICF-3001"
+          }
+        ],
+        "PCIeDevices": [
+          {
+            "@odata.id": "/redfish/v1/Chassis/Chassis-1/PCIeDevices/PCIe-3001"
+          }
+        ],
+        "Ports": [
+          {
+            "@odata.id": "/redfish/v1/Chassis/Chassis-1/NetworkAdapters/NIC-3001/Ports/PORT-3001"
+          }
+        ]
+      },
+      "Location": {
+        "PartLocation": {
+          "LocationOrdinalValue": 0,
+          "LocationType": "Slot",
+          "Orientation": "LeftToRight",
+          "Reference": "Rear",
+          "ServiceLabel": "Slot 1"
+        }
+      },
+      "PCIeInterface": {
+        "LanesInUse": 1,
+        "MaxLanes": 4,
+        "MaxPCIeType": "Gen3",
+        "PCIeType": "Gen2"
+      }
+    }
+  ],
+  "EnvironmentMetrics": {
+    "@odata.id": "/redfish/v1/Chassis/Chassis-1/NetworkAdapters/NIC-3001/EnvironmentMetrics"
+  },
+  "Id": "NIC-3001",
+  "Location": {
+    "PartLocation": {
+      "LocationOrdinalValue": 1,
+      "LocationType": "Slot"
+    },
+    "PartLocationContext": ""
+  },
+  "Manufacturer": "Contoso",
+  "Metrics": {
+    "@odata.id": "/redfish/v1/Chassis/Chassis-1/NetworkAdapters/NIC-3001/Metrics"
+  },
+  "Model": "nic_1",
+  "Name": "Network Adapter View",
+  "NetworkDeviceFunctions": {
+    "@odata.id": "/redfish/v1/Chassis/Chassis-1/NetworkAdapters/NIC-3001/NetworkDeviceFunctions"
+  },
+  "PartNumber": "975421-B20",
+  "Ports": {
+    "@odata.id": "/redfish/v1/Chassis/Chassis-1/NetworkAdapters/NIC-3001/Ports"
+  },
+  "PowerCapability": false,
+  "PowerState": "On",
+  "SKU": "Contoso TPS-Net 2-Port Base-T",
+  "SerialNumber": "3001",
+  "Status": {
+    "Health": "OK",
+    "State": "Enabled"
+  }
+}

@@ -1,0 +1,243 @@
+{
+  "@odata.context": "/redfish/v1/$metadata#Chassis.Chassis",
+  "@odata.id": "/redfish/v1/Chassis/Chassis-1",
+  "@odata.type": "#Chassis.v1_0_0.Chassis",
+  "AssetTag": "Chicago-45Z-2381",
+  "ChassisType": "Enclosure",
+  "Drives": {
+    "@odata.id": "/redfish/v1/Chassis/Chassis-1/Drives"
+  },
+  "EnvironmentMetrics": {
+    "@odata.id": "/redfish/v1/Chassis/Chassis-1/EnvironmentMetrics"
+  },
+  "FabricAdapters": {
+    "@odata.id": "/redfish/v1/Chassis/Chassis-1/FabricAdapters"
+  },
+  "Id": "Chassis-1",
+  "Links": {
+    "ComputerSystems": [
+      {
+        "@odata.id": "/redfish/v1/Systems/System-1"
+      },
+      {
+        "@odata.id": "/redfish/v1/Systems/System-2"
+      },
+      {
+        "@odata.id": "/redfish/v1/Systems/System-3"
+      },
+      {
+        "@odata.id": "/redfish/v1/Systems/System-4"
+      },
+      {
+        "@odata.id": "/redfish/v1/Systems/System-5"
+      },
+      {
+        "@odata.id": "/redfish/v1/Systems/System-6"
+      },
+      {
+        "@odata.id": "/redfish/v1/Systems/System-7"
+      },
+      {
+        "@odata.id": "/redfish/v1/Systems/System-8"
+      },
+      {
+        "@odata.id": "/redfish/v1/Systems/System-9"
+      },
+      {
+        "@odata.id": "/redfish/v1/Systems/System-10"
+      },
+      {
+        "@odata.id": "/redfish/v1/Systems/System-11"
+      },
+      {
+        "@odata.id": "/redfish/v1/Systems/System-12"
+      },
+      {
+        "@odata.id": "/redfish/v1/Systems/System-13"
+      }
+    ],
+    "ContainedBy": {
+      "@odata.id": "/redfish/v1/Chassis/Chassis-1"
+    },
+    "Contains": [],
+    "Drives": [
+      {
+        "@odata.id": "/redfish/v1//Chassis/Chassis-1/Drives/DRI-2001"
+      },
+      {
+        "@odata.id": "/redfish/v1//Chassis/Chassis-1/Drives/DRI-2002"
+      },
+      {
+        "@odata.id": "/redfish/v1//Chassis/Chassis-1/Drives/DRI-2003"
+      },
+      {
+        "@odata.id": "/redfish/v1//Chassis/Chassis-1/Drives/DRI-2004"
+      },
+      {
+        "@odata.id": "/redfish/v1//Chassis/Chassis-1/Drives/DRI-2005"
+      },
+      {
+        "@odata.id": "/redfish/v1//Chassis/Chassis-1/Drives/DRI-2006"
+      },
+      {
+        "@odata.id": "/redfish/v1//Chassis/Chassis-1/Drives/DRI-2007"
+      },
+      {
+        "@odata.id": "/redfish/v1//Chassis/Chassis-1/Drives/DRI-2008"
+      },
+      {
+        "@odata.id": "/redfish/v1//Chassis/Chassis-1/Drives/DRI-2009"
+      },
+      {
+        "@odata.id": "/redfish/v1//Chassis/Chassis-1/Drives/DRI-2010"
+      },
+      {
+        "@odata.id": "/redfish/v1//Chassis/Chassis-1/Drives/DRI-2011"
+      },
+      {
+        "@odata.id": "/redfish/v1//Chassis/Chassis-1/Drives/DRI-2012"
+      },
+      {
+        "@odata.id": "/redfish/v1//Chassis/Chassis-1/Drives/DRI-2013"
+      },
+      {
+        "@odata.id": "/redfish/v1//Chassis/Chassis-1/Drives/DRI-2501"
+      },
+      {
+        "@odata.id": "/redfish/v1//Chassis/Chassis-1/Drives/DRI-2502"
+      },
+      {
+        "@odata.id": "/redfish/v1//Chassis/Chassis-1/Drives/DRI-2503"
+      },
+      {
+        "@odata.id": "/redfish/v1//Chassis/Chassis-1/Drives/DRI-2504"
+      },
+      {
+        "@odata.id": "/redfish/v1//Chassis/Chassis-1/Drives/DRI-2505"
+      },
+      {
+        "@odata.id": "/redfish/v1//Chassis/Chassis-1/Drives/DRI-2506"
+      },
+      {
+        "@odata.id": "/redfish/v1//Chassis/Chassis-1/Drives/DRI-2507"
+      },
+      {
+        "@odata.id": "/redfish/v1//Chassis/Chassis-1/Drives/DRI-2508"
+      },
+      {
+        "@odata.id": "/redfish/v1//Chassis/Chassis-1/Drives/DRI-2509"
+      },
+      {
+        "@odata.id": "/redfish/v1//Chassis/Chassis-1/Drives/DRI-2510"
+      },
+      {
+        "@odata.id": "/redfish/v1//Chassis/Chassis-1/Drives/DRI-2511"
+      },
+      {
+        "@odata.id": "/redfish/v1//Chassis/Chassis-1/Drives/DRI-2512"
+      },
+      {
+        "@odata.id": "/redfish/v1//Chassis/Chassis-1/Drives/DRI-2513"
+      }
+    ],
+    "ManagedBy": [
+      {
+        "@odata.id": "/redfish/v1/Managers/1"
+      }
+    ],
+    "ManagersInChassis": [
+      {
+        "@odata.id": "/redfish/v1/Managers/1"
+      }
+    ],
+    "PowerSupplies": [
+      {
+        "@odata.id": "/redfish/v1//Chassis/Chassis-1/PowerSubsystem/PowerSupplies/1"
+      }
+    ],
+    "Processors": [
+      {
+        "@odata.id": "/redfish/v1//Chassis/Chassis-1/Processor/PROC-0001"
+      },
+      {
+        "@odata.id": "/redfish/v1//Chassis/Chassis-1/Processor/PROC-0002"
+      },
+      {
+        "@odata.id": "/redfish/v1//Chassis/Chassis-1/Processor/PROC-0003"
+      },
+      {
+        "@odata.id": "/redfish/v1//Chassis/Chassis-1/Processor/PROC-0004"
+      },
+      {
+        "@odata.id": "/redfish/v1//Chassis/Chassis-1/Processor/PROC-0005"
+      },
+      {
+        "@odata.id": "/redfish/v1//Chassis/Chassis-1/Processor/PROC-0006"
+      },
+      {
+        "@odata.id": "/redfish/v1//Chassis/Chassis-1/Processor/PROC-0007"
+      },
+      {
+        "@odata.id": "/redfish/v1//Chassis/Chassis-1/Processor/PROC-0008"
+      },
+      {
+        "@odata.id": "/redfish/v1//Chassis/Chassis-1/Processor/PROC-0009"
+      },
+      {
+        "@odata.id": "/redfish/v1//Chassis/Chassis-1/Processor/PROC-0010"
+      },
+      {
+        "@odata.id": "/redfish/v1//Chassis/Chassis-1/Processor/PROC-0011"
+      },
+      {
+        "@odata.id": "/redfish/v1//Chassis/Chassis-1/Processor/PROC-0012"
+      },
+      {
+        "@odata.id": "/redfish/v1//Chassis/Chassis-1/Processor/PROC-0013"
+      }
+    ],
+    "ResourceBlocks": [],
+    "Storage": []
+  },
+  "Location": {
+    "LocationOrdinalValue": 1,
+    "LocationType": "Slot",
+    "PartLocationContext": "text"
+  },
+  "Manufacturer": "Redfish Computers",
+  "MaxPowerWatts": 800,
+  "Memory": {
+    "@odata.id": "/redfish/v1/Chassis/Chassis-1/Memory"
+  },
+  "MinPowerWatts": 50,
+  "Model": "3500RX",
+  "Name": "Computer System Chassis",
+  "NetworkAdapters": {
+    "@odata.id": "/redfish/v1/Chassis/Chassis-1/NetworkAdapters"
+  },
+  "PCIeDevices": {
+    "@odata.id": "/redfish/v1/Chassis/Chassis-1/PCIeDevices"
+  },
+  "PartNumber": "224071-J23",
+  "Power": {
+    "@odata.id": "/redfish/v1/Chassis/Chassis-1/Power"
+  },
+  "PowerState": "On",
+  "Processors": {
+    "@odata.id": "/redfish/v1/Chassis/Chassis-1/Processors"
+  },
+  "SKU": "8675309",
+  "Sensors": {
+    "@odata.id": "/redfish/v1/Chassis/Chassis-1/Sensors"
+  },
+  "SerialNumber": "437XR1138R2",
+  "Status": {
+    "Health": "OK",
+    "State": "Enabled"
+  },
+  "Thermal": {
+    "@odata.id": "/redfish/v1/Chassis/Chassis-1/Thermal"
+  },
+  "UUID": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+  "Version": "1.02"
+}

@@ -1,0 +1,32 @@
+{
+  "@odata.id": "/redfish/v1/Chassis/Chassis-1/Memory/MEM-1003/MemoryMetrics",
+  "@odata.type": "#MemoryMetrics.v1_5_0.MemoryMetrics",
+  "BandwidthPercent": 8,
+  "BlockSizeBytes": 4096,
+  "CapacityUtilizationPercent": 0,
+  "CurrentPeriod": {
+    "BlocksRead": 0,
+    "BlocksWritten": 0
+  },
+  "HealthData": {
+    "AlarmTrips": {
+      "CorrectableECCError": false,
+      "SpareBlock": false,
+      "Temperature": true,
+      "UncorrectableECCError": false
+    },
+    "DataLossDetected": false,
+    "LastShutdownSuccess": true,
+    "PerformanceDegraded": false,
+    "PredictedMediaLifeLeftPercent": 50,
+    "RemainingSpareBlockPercentage": 50
+  },
+  "Id": "Metrics",
+  "LifeTime": {
+    "BlocksRead": 0,
+    "BlocksWritten": 0
+  },
+  "Name": "Memory Metrics",
+  "Oem": {},
+  "OperatingSpeedMHz": 3200
+}

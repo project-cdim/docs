@@ -1,0 +1,18 @@
+@startuml "03_stub"
+
+actor " " as consumer
+rectangle "HW制御機能" as hw_control
+rectangle "プラグイン" as plugin
+rectangle "マネージャー" as manager
+rectangle "エージェント" <<スタブ>> as agent
+rectangle "認可サーバー" <<スタブ>> as authz_server
+rectangle "シークレット管理サーバー" <<スタブ>> as secret_server
+
+consumer -> hw_control: REST API
+hw_control -> plugin: 呼出
+plugin -> manager: 通信
+hw_control --> agent: 通信
+hw_control --> authz_server: 通信
+hw_control --> secret_server: 通信
+
+@enduml

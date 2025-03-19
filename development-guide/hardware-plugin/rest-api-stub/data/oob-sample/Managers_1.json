@@ -1,0 +1,105 @@
+{
+  "@Redfish.Copyright": "Copyright 2014-2019 DMTF. All rights reserved.",
+  "@odata.context": "/redfish/v1/$metadata#Manager.Manager",
+  "@odata.id": "/redfish/v1/Managers/1",
+  "@odata.type": "#Manager.v1_1_0.Manager",
+  "Actions": {
+    "#Manager.Reset": {
+      "ResetType@Redfish.AllowableValues": [
+        "ForceRestart",
+        "GracefulRestart"
+      ],
+      "target": "/redfish/v1/Managers/1/Actions/Manager.Reset"
+    }
+  },
+  "AdditionalFirmwareVersions": {
+    "Bootloader": "v2022.01",
+    "Kernel": "Linux 5.13.0-30-generic arm71"
+  },
+  "CommandShell": {
+    "ConnectTypesSupported": [
+      "Telnet",
+      "SSH"
+    ],
+    "MaxConcurrentSessions": 4,
+    "ServiceEnabled": true
+  },
+  "DateTime": "2015-03-13T04:14:33+06:00",
+  "DateTimeLocalOffset": "+06:00",
+  "Description": "BMC",
+  "EthernetInterfaces": {
+    "@odata.id": "/redfish/v1/Managers/1/EthernetInterfaces"
+  },
+  "FirmwareVersion": "1.00",
+  "GraphicalConsole": {
+    "ConnectTypesSupported": [
+      "KVMIP"
+    ],
+    "MaxConcurrentSessions": 2,
+    "ServiceEnabled": true
+  },
+  "Id": "1",
+  "LastResetTime": "2015-03-13T04:14:33+06:00",
+  "Links": {
+    "ManagerForChassis": [
+      {
+        "@odata.id": "/redfish/v1/Chassis/Chassis-1"
+      }
+    ],
+    "ManagerForServers": [
+      {
+        "@odata.id": "/redfish/v1/Systems/System-1"
+      },
+      {
+        "@odata.id": "/redfish/v1/Systems/System-2"
+      },
+      {
+        "@odata.id": "/redfish/v1/Systems/System-3"
+      }
+    ],
+    "ManagerInChassis": {
+      "@odata.id": "/redfish/v1/Chassis/Chassis-1"
+    }
+  },
+  "Location": {
+    "PartLocation": {
+      "LocationOrdinalValue": 0,
+      "LocationType": "Slot"
+    },
+    "PartLocationContext": ""
+  },
+  "LogServices": {
+    "@odata.id": "/redfish/v1/Managers/1/LogServices"
+  },
+  "ManagerType": "BMC",
+  "Manufacturer": "",
+  "Model": "Joo Janta 200",
+  "Name": "Manager",
+  "NetworkProtocol": {
+    "@odata.id": "/redfish/v1/Managers/1/NetworkProtocol"
+  },
+  "PartNumber": "Manager6789",
+  "PowerState": "On",
+  "SerialConsole": {
+    "ConnectTypesSupported": [
+      "Telnet",
+      "SSH",
+      "IPMI"
+    ],
+    "MaxConcurrentSessions": 1,
+    "ServiceEnabled": true
+  },
+  "SerialInterfaces": {
+    "@odata.id": "/redfish/v1/Managers/1/SerialInterfaces"
+  },
+  "SerialNumber": "Manager12345",
+  "ServiceEntryPointUUID": "92384634-2938-2342-8820-489239905423",
+  "Status": {
+    "Health": "OK",
+    "State": "Enabled"
+  },
+  "UUID": "00000000-0000-0000-0000-000000000000",
+  "VirtualMedia": {
+    "@odata.id": "/redfish/v1/Managers/1/VM1"
+  }
+}

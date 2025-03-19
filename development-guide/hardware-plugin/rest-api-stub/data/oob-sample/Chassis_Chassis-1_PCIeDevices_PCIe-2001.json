@@ -1,0 +1,57 @@
+{
+  "@odata.id": "/redfish/v1/Chassis/Chassis-1/PCIeDevices/PCIe-2001",
+  "@odata.type": "#PCIeDevice.v1_10_0.PCIeDevice",
+  "AssetTag": "ORD-4302015-18432RS",
+  "CXLDevice": {
+    "DeviceType": "Simulated",
+    "MaxNumberLogicalDevices": 1
+  },
+  "CXLLogicalDevices": {
+    "@odata.id": "/redfish/v1/Chassis/Chassis-1/PCIeDevices/PCIe-2001/CXLLogicalDevices"
+  },
+  "Description": "Simple Two-Port NIC PCIe Device",
+  "DeviceType": "MultiFunction",
+  "FirmwareVersion": "12.342-343",
+  "Id": "PCIe-2001",
+  "Links": {
+    "Chassis": [
+      {
+        "@odata.id": "/redfish/v1/Chassis/Chassis-1"
+      }
+    ],
+    "Oem": {}
+  },
+  "Manufacturer": "Contoso",
+  "Model": "SuperNIC 2000",
+  "Name": "Simple Two-Port NIC",
+  "Oem": {},
+  "PCIeFunctions": {
+    "@odata.id": "/redfish/v1/Chassis/Chassis-1/PCIeDevices/PCIe-2001/PCIeFunctions"
+  },
+  "PCIeInterface": {
+    "LanesInUse": 4,
+    "MaxLanes": 4,
+    "MaxPCIeType": "Gen3",
+    "PCIeType": "Gen2"
+  },
+  "PartNumber": "232-4598D7",
+  "SKU": "89587433",
+  "SerialNumber": "6f732d7465737431",
+  "Slot": {
+    "Lanes": 16,
+    "Location": {
+      "PartLocation": {
+        "LocationOrdinalValue": 0,
+        "LocationType": "Slot"
+      },
+      "PartLocationContext": ""
+    },
+    "PCIeType": "Gen5",
+    "SlotType": "OEM"
+  },
+  "Status": {
+    "Health": "OK",
+    "HealthRollup": "OK",
+    "State": "Enabled"
+  }
+}

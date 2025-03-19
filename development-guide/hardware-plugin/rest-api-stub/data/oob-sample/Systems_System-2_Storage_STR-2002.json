@@ -1,0 +1,44 @@
+{
+  "@odata.id": "/redfish/v1/Systems/System-2/Storage/STR-2002",
+  "@odata.type": "#Storage.v1_13_0.Storage",
+  "Controllers": [
+    {
+      "@odata.id": "/redfish/v1/Systems/System-2/Storage/STR-2002/Controllers/STRCTR-2002"
+    }
+  ],
+  "Description": "Integrated RAID Controller",
+  "Drives": [
+    {
+      "@odata.id": "/redfish/v1/Systems/System-2/Storage/STR-2002/Drives/DRI-2002"
+    }
+  ],
+  "Enclosures": [],
+  "Id": "STR-2002",
+  "Links": {},
+  "Name": "Local Storage Controller",
+  "Redundancy": [
+    {
+      "MaxNumSupported": 2,
+      "MinNumNeeded": 1,
+      "Mode": "Sharing",
+      "Name": "Name",
+      "RedundancyEnabled": true,
+      "RedundancySet": [],
+      "Status": {
+        "Health": "OK",
+        "State": "Enabled"
+      }
+    }
+  ],
+  "Status": {
+    "Health": "OK",
+    "HealthRollup": "OK",
+    "State": "Enabled"
+  },
+  "StoragePools": [],
+  "Volumes": [
+    {
+      "@odata.id": "/redfish/v1/Systems/System-2/Storage/STR-2002/Volumes/VOL-2002"
+    }
+  ]
+}

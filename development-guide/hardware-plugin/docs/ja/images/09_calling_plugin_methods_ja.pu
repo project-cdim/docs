@@ -1,0 +1,21 @@
+@startuml "09_calling_plugin_methods"
+title プラグインのメソッドの呼び出し
+
+participant 上位モジュール as caller
+participant HW制御機能 as hwctrl
+participant プラグイン as plugin
+caller -> hwctrl: 情報取得・操作要求
+hwctrl -> hwctrl: 必要な処理
+hwctrl -> plugin: インスタンス作成
+activate plugin
+hwctrl -> plugin: メソッド呼び出し
+plugin --> hwctrl:
+opt 複数のメソッドが呼び出されるケース
+  hwctrl -> plugin: メソッド呼び出し
+  plugin --> hwctrl:
+end
+hwctrl -> plugin: インスタンス破棄
+deactivate plugin
+hwctrl -> hwctrl: 必要な処理
+hwctrl -> caller: 情報取得・操作結果返却
+@enduml
