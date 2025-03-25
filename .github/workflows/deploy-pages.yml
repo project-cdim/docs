@@ -1,0 +1,79 @@
+name: Deploy Pages
+
+on:
+  push:
+    branches:
+      - main
+    tags-ignore:
+      - '**'
+    paths:
+      - .github/workflow/deploy-pages.yml
+      - 'api-reference/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      OUTPUT: ./artifact
+      REDOCLY_VERSION: 1.29.0
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Clone Source Code
+        uses: actions/checkout@v4
+
+      - name: Generate Artifact
+        run: |
+          rm -rf "${OUTPUT}"
+          mkdir -p "${OUTPUT}"
+
+          for SPEC in $(find . -type f -name 'openapi.yaml')
+          do
+              SPEC_DIR=$(dirname "${SPEC}")
+              SPEC_INPUT="$(pwd)/${SPEC_DIR}"
+              SPEC_OUTPUT="${OUTPUT}/${SPEC_DIR}"
+
+              mkdir -p "${SPEC_OUTPUT}"
+
+              podman run \
+                  --rm \
+                  -v "${SPEC_INPUT}":/spec:Z \
+                  -v "${SPEC_OUTPUT}":/html:Z \
+                  redocly/cli:${REDOCLY_VERSION} \
+                  build-docs openapi.yaml -o /html/index.html
+          done
+
+      - name: Upload Artifact to Workflow
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-reference
+          path: ${{ env.OUTPUT }}
+
+      - name: Upload Artifact to GitHub Pages
+        id: deployment
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ env.OUTPUT }}
+
+  deploy:
+    needs: build
+
+    permissions:
+      pages: write
+      id-token: write
+
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

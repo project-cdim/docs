@@ -1,0 +1,1252 @@
+openapi: "3.0.3"
+servers:
+  - url: http://(host address)/cdim/api/v1
+info:
+  title: 構成情報管理API
+  description: |-
+    管理対象となるComposable Disaggregated Infrastructureの構成を管理するための機能群
+  version: 0.1.0 # 改版履歴のバージョンに併せる
+tags:
+  - name: リソースグループ管理
+    description: |-
+        リソースグループに関する機能群
+  - name: リソース管理
+    description: |-
+        リソースに関する機能群
+  - name: 一部のデバイス管理
+    description: |-
+        CXLスイッチ等、各種デバイスに関する機能群
+paths:
+  /resource-groups:
+    get:
+      tags:
+        - リソースグループ管理
+      summary: 全リソースグループ一覧
+      description: |-
+        * リソースプール配下の全てのリソースグループ一覧を返却する
+        * クエリパラメータ withResources=true を加えた場合、各リソースグループ配下のリソース情報も返却値に含める
+          * 返却するリソースは、検出できなかったリソース(detected=false)も含む
+          * 返却するリソースは、全項目を返却する
+        * 返却する一覧のソート順は以下で固定
+          1. リソースグループの並び順：リソースグループID 昇順
+              * デフォルトグループIDは `00000000-0000-7000-8000-000000000000` であるため、リソースグループ一覧の先頭に出力されることとなる
+          1. リソースグループ配下のリソースの並び順：リソースID 昇順
+      parameters:
+      - name: withResources
+        in: "query"
+        required: false
+        description: |-
+          * true: 各リソースグループ配下のリソース情報も返却値に含める
+          * false, 指定無し: 各リソースグループのみを返却する
+          * true, falseは大文字小文字を問わず許容する
+          * true, false以外の文字列や空文字が指定された場合はエラーとする
+        schema:
+          type: boolean
+          default : false
+      responses:
+        200:
+          description: |-
+            正常終了：リソースグループ一覧を返す
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResourceGroups"
+        400:
+          description: |-
+            引数が不正である
+              * true, false以外の文字列や空文字を指定した
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: 内部サーバーエラー：DBアクセス失敗等
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      tags:
+        - リソースグループ管理
+      summary: リソースグループ登録
+      description: |-
+        * リソースグループを登録する
+        * リソースグループのプロパティは以下のように登録される
+          * リソースグループIDはユニークなIDとして自動採番したものが登録される
+          * 登録日時・更新日時は現在日時が登録される
+          * リソースグループ名・リソースグループの説明は、RequestBodyに記載の値が登録される
+      requestBody:
+        description: リソースグループの項目値
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                name:
+                  type: string
+                  description: リソースグループ名
+                description:
+                  type: string
+                  description: リソースグループの説明
+      responses:
+        201:
+          description: |-
+            正常終了：登録対象としたリソースグループを返却する
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResourceGroupOnly"
+        400:
+          description: |-
+            引数が不正である
+              * requestBody無し
+              * requestBody形式誤り
+              * 以下に起因するrequestBody誤り
+                * リソースグループ名（name）・リソースグループの説明（description）要素が存在しない
+                * リソースグループ名（name）・リソースグループの説明（description）要素の値が、バリデーション違反に該当する
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: 内部サーバーエラー：DBアクセス失敗等
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /resource-groups/{id}:
+    get:
+      tags:
+        - リソースグループ管理
+      summary: 任意のリソースグループ参照
+      description: |-
+        * リソースプール配下の任意のリソースグループを返却する
+        * リソースグループ配下のリソース情報も返却値に含める
+          * 返却するリソースは、検出できなかったリソース(detected=false)も含む
+          * 返却するリソースは、全項目を返却する
+        * 返却する一覧のソート順は以下で固定
+          * リソースグループ配下のリソースの並び順：リソースID 昇順
+      parameters:
+      - name: ID
+        in: "path"
+        required: true
+        description: リソースグループID
+        schema:
+          type: string
+      responses:
+        200:
+          description: |-
+            正常終了：リソースグループを返す
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResourceGroup"
+        404:
+          description: |-
+            引数指定のリソースグループが存在しない
+          content:
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: 内部サーバーエラー：DBアクセス失敗等
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      tags:
+        - リソースグループ管理
+      summary: リソースグループ更新
+      description: |-
+        * 指定されたリソースグループを更新する
+        * リソースグループのプロパティは以下のように更新される
+          * リソースグループIDは変更なし
+          * 更新日時は現在日時として更新される
+          * リソースグループ名・リソースグループの説明は、RequestBodyに記載の値で更新される
+        * デフォルトグループは更新不可
+      parameters:
+      - name: ID
+        in: "path"
+        required: true
+        description: リソースグループID
+        schema:
+          type: string
+      requestBody:
+        description: リソースグループの項目値
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                name:
+                  type: string
+                  description: リソースグループ名
+                description:
+                  type: string
+                  description: リソースグループの説明
+      responses:
+        200:
+          description: 正常終了：更新対象としたリソースグループ情報を返す
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResourceGroupOnly"
+        400:
+          description: |-
+            引数が不正である
+              * デフォルトグループを指定した
+              * requestBody無し
+              * requestBody形式誤り
+              * 以下に起因するrequestBody誤り
+                * リソースグループ名（name）・リソースグループの説明（description）要素が存在しない
+                * リソースグループ名（name）・リソースグループの説明（description）要素の値が、バリデーション違反に該当する
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        404:
+          description: |-
+            引数指定のリソースグループが存在しない
+          content:
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: 内部サーバーエラー：DBアクセス失敗等
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      tags:
+        - リソースグループ管理
+      summary: リソースグループ削除
+      description: |-
+        * 指定されたリソースグループを削除する
+        * リソースが所属しているリソースグループは削除不可
+        * デフォルトグループは削除不可
+      parameters:
+      - name: ID
+        in: "path"
+        required: true
+        description: リソースグループID
+        schema:
+          type: string
+      responses:
+        204:
+          description: 正常終了
+        400:
+          description: |-
+            引数が不正である
+              * リソースが所属しているリソースグループを指定した
+              * デフォルトグループを指定した
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        404:
+          description: |-
+            引数指定のリソースグループが存在しない
+          content:
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: 内部サーバーエラー：DBアクセス失敗等
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /resources:
+    get:
+      tags:
+        - リソース管理
+      summary: 全リソース一覧
+      description: |-
+        * リソースプール配下の全てのリソース一覧を返却する
+         * 返却する一覧には、検出できなかったリソース(detected=false)も含む
+        * 各リソースがノードに紐づいている(使用中)か否かは問わず、返却データとする
+        * 各リソースの詳細項目全て又は代表項目を返却する
+        * 代表項目は下記とする
+          * deviceID
+          * type
+          * status
+        * 返却する一覧のソート順は「リソースID昇順」固定
+      parameters:
+      - name: detail
+        in: "query"
+        description: |-
+          * true: 詳細項目全てを返却する
+          * false, 指定無し: 代表項目のみを返却する
+          * true, falseは大文字小文字を問わず許容する
+          * true, false以外の文字列や空文字が指定された場合はエラーとする
+        schema:
+          type: boolean
+          default : false
+      responses:
+        200:
+          description: |-
+            正常終了：リソース一覧を返す<br>
+            (リソースに対する項目名は構成情報収集機能での収集項目名に準拠するため、他の命名規則と異なる点がある)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    $ref: "#/components/schemas/Count"
+                    description: リソースの個数
+                  resources:
+                    description: リソースの一覧
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Resource"
+        400:
+          description: |-
+            引数が不正である
+              * true, false以外の文字列や空文字を指定した
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: 内部サーバーエラー：DBアクセス失敗等
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /resources/{id}:
+    get:
+      tags:
+        - リソース管理
+      summary: 任意のリソース参照
+      description: |-
+        * リソースプール配下の任意のリソースを返却する
+        * 各リソースがノードに紐づいている(使用中)か否かや、ハードウェア制御機能で検出できたか否かは問わず、返却データとする
+        * 各リソースの詳細項目全てを返却する
+      parameters:
+      - name: ID
+        in: "path"
+        required: true
+        description: リソースID
+        schema:
+          type: string
+      responses:
+        200:
+          description: |-
+            正常終了：リソースを返す<br>
+            (リソースに対する項目名はハードウェア制御機能での収集項目名に準拠するため、他の命名規則と異なる点がある)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Resource"
+        404:
+          description: |-
+            引数指定のリソースが存在しない
+          content:
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: 内部サーバーエラー：DBアクセス失敗等
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /resources/available:
+    get:
+      tags:
+        - リソース管理
+      summary: 利用可能リソース参照
+      description: |-
+        * 構成で利用可能なリソースの一覧を返却する
+        * 「構成で利用可能なリソース」の条件：以下を全て満たす
+          1. ハードウェア制御機能機能から取得する項目内の「Status」が下記の値であること
+            * "state": "Enabled" かつ "health": "OK"
+          2. リソース利用可不可状態が、利用可リソース(available=true)であること
+          3. リソース検出状態が、検出できたリソース(detected=true)であること
+        * 各リソースの詳細項目全てを返却する
+        <br>
+        * 返却する一覧のソート順は第一ソートKey「デバイス種別 昇順」、第二ソートKey「デバイスID 昇順」固定
+        <br>
+        * 引数に指定されたリソースグループIDで絞り込みを行う
+          * リソースグループIDの指定がない場合は、リソースプール配下の全てのリソースから利用可能なリソースを検索する 
+          * 存在しないリソースグループIDを指定された場合は、カウント0と空の配列を返却し、正常終了とする
+      parameters:
+      - name: resourceGroupID
+        in: "query"
+        required: false
+        description: |-
+          検索対象とするリソースグループIDを指定する<br>
+          resourceGroupIDが複数指定された場合は、OR条件として検索を行う<br>
+          　例) ?resourceGroupID=aaa&resourceGroupID=bbb<br>
+          　　　リソースグループIDがaaa又はbbbを検索対象とし、その配下のリソースから構成案設計で利用可能なリソースを抽出する
+        schema:
+          type: string
+      responses:
+        200:
+          description: |-
+            正常終了：リソースを返す<br>
+            (リソースに対する項目名はハードウェア制御機能での収集項目名に準拠するため、他の命名規則と異なる点がある)<br>
+            引数に指定されたリソースグループが存在しない場合や、リソースグループ配下に利用可能リソースが存在しない場合は空のリストを返却し正常終了とする
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    $ref: "#/components/schemas/Count"
+                    description: リソースの個数
+                  resources:
+                    description: リソースの一覧
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Resource"
+        500:
+          description: 内部サーバーエラー：DBアクセス失敗等
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /resources/unused:
+    get:
+      tags:
+        - リソース管理
+      summary: 未使用リソース参照
+      description: |-
+        * 現在ノードに利用されていない利用可能なリソースの一覧を返却する
+        * 条件
+          1. HW制御機能から取得する項目内の「Status」が下記の値であること
+            * "state": "Enabled" かつ "health": "OK"
+          2. リソース利用可不可状態が、利用可リソース(available=true)であること
+          3. リソース検出状態が、検出できたリソース(detected=true)であること
+          4. リソースがノードに利用されていないこと(links要素が無し, links要素に値無し)
+        * 各リソースの詳細項目全てを返却する
+        <br>
+        * 返却する一覧のソート順は第一ソートKey「デバイス種別 昇順」、第二ソートKey「デバイスID 昇順」固定
+        <br>
+        * 引数に指定されたリソースグループIDで絞り込みを行う
+          * リソースグループIDの指定がない場合は、リソースプール配下の全てのリソースから利用可能なリソースを検索する 
+          * 存在しないリソースグループIDを指定された場合は、カウント0と空の配列を返却し、正常終了とする
+      parameters:
+      - name: resourceGroupID
+        in: "query"
+        required: false
+        description: |-
+          検索対象とするリソースグループIDを指定する<br>
+          resourceGroupIDが複数指定された場合は、OR条件として検索を行う<br>
+          　例) ?resourceGroupID=aaa&resourceGroupID=bbb<br>
+          　　　リソースグループIDがaaa又はbbbを検索対象とし、その配下のリソースから構成案設計で利用可能なリソースを抽出する
+        schema:
+          type: string
+      responses:
+        200:
+          description: |-
+            正常終了：リソースを返す<br>
+            (リソースに対する項目名はハードウェア制御機能での収集項目名に準拠するため、他の命名規則と異なる点がある)<br>
+            引数に指定されたリソースグループが存在しない場合や、リソースグループ配下に利用可能リソースが存在しない場合は空のリストを返却し正常終了とする
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    $ref: "#/components/schemas/Count"
+                    description: リソースの個数
+                  resources:
+                    description: リソースの一覧
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ResourceForUnused"
+        500:
+          description: 内部サーバーエラー：DBアクセス失敗等
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /resources/{id}/annotation:
+    put:
+      tags:
+        - リソース管理
+      summary: 1リソースに対するリソース付加情報更新
+      description: |-
+        * 指定されたリソースに対する付加情報を更新する
+          * リソースを利用不可又は利用可にできる
+              * DC運用者は、故障やメンテナンスのため、リソースの使用を停止させたい場合(リソースの払い出しを停止させたい場合)や、停止状態から復旧させる場合、本APIで状態を変更する
+        * リソース検出状態が、検出できなかったリソース(detected=false)に対しても更新可能とする
+        * ノードに割り当てられたリソースに対しても更新可能とする
+      parameters:
+      - name: ID
+        in: "path"
+        required: true
+        description: リソースID
+        schema:
+          type: string
+      requestBody:
+        description: リソースに対する付加情報更新値
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                available:
+                  $ref: "#/components/schemas/Available"
+      responses:
+        200:
+          description: 正常終了：更新値を返す
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  available:
+                    $ref: "#/components/schemas/Available"
+        400:
+          description: |-
+            引数が不正である
+              * true, false以外の文字列や空文字を指定した
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        404:
+          description: |-
+            引数指定のリソースが存在しない
+          content:
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: 内部サーバーエラー：DBアクセス失敗等
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /resources/{id}/resource-groups:
+    put:
+      tags:
+        - リソース管理
+      summary: 1リソースに対する所属するリソースグループの更新
+      description: |-
+        * 指定された1つのリソースに対し、リソースが所属するリソースグループを更新する
+        * リソース検出状態が、検出できなかったリソース(detected=false)に対しても更新可能とする
+      parameters:
+      - name: ID
+        in: "path"
+        required: true
+        description: リソースID
+        schema:
+          type: string
+      requestBody:
+        description: |-
+          * リソースが所属するリソースグループのID
+          * 今後、リソースが複数リソースグループに所属できるようになることを想定し、配列としている
+              * 現在は、配列に複数リソースグループを指定した場合はBadRequestとする
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResourceGroupIDs"
+      responses:
+        200:
+          description: 正常終了：更新値を返す
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    $ref: "#/components/schemas/Count"
+                    description: リソースが所属するリソースグループの件数
+                  resourceGroupIDs:
+                    $ref: "#/components/schemas/ResourceGroupIDs"
+        400:
+          description: |-
+            引数が不正である
+              * requestBody無し
+              * requestBody形式誤り
+              * 以下に起因するrequestBody誤り
+                * 存在しないリソースグループを指定した場合
+                * 複数リソースグループを指定した場合
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        404:
+          description: |-
+            引数指定のリソースが存在しない
+          content:
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: 内部サーバーエラー：DBアクセス失敗等
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /nodes:
+    get:
+      tags:
+        - 一部のデバイス管理
+      summary: 全ノード一覧
+      description: |-
+        * リソースプール配下の全てのノード一覧と、各ノードに紐づくリソース一覧を返却する
+         * 返却する一覧には、検出できなかったリソース(detected=false)も含む
+        * リソース一覧では代表項目を返却する
+        * 代表項目は下記とする
+          * deviceID
+          * type
+          * status
+        * 返却する一覧のソート順は「ノードID昇順」固定
+        * ノードに紐づくリソース一覧のソート順は「リソースID昇順」固定
+        * 一つのリソースは一つのノードにのみ関連付く前提のため、返却するリソース情報には「ノードIDの一覧」要素は含まない
+      parameters: []
+      responses:
+        200:
+          description: |-
+            正常終了：ノード一覧を返す<br>
+            対象データが存在しない場合は空のリストを返す
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Nodes"
+        500:
+          description: 内部サーバーエラー：DBアクセス失敗等
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /nodes/{id}:
+    get:
+      tags:
+        - 一部のデバイス管理
+      summary: 任意のノード参照
+      description: |-
+        * リソースプール配下の任意のノードと、紐づくリソース一覧を返却する
+         * 返却する一覧には、検出できなかったリソース(detected=false)も含む
+        * リソース一覧では詳細項目全てを返却する
+        * 一つのリソースは一つのノードにのみ関連付く前提のため、返却するリソース情報には「ノードIDの一覧」要素は含まない
+      parameters:
+      - name: id
+        in: "path"
+        required: true
+        description: ノードID
+        schema:
+          type: string
+      responses:
+        200:
+          description: |-
+            正常終了：ノード一覧を返す
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Node"
+        404:
+          description: 引数指定のノードが存在しない
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: 内部サーバーエラー：DBアクセス失敗等
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /cxlswitches:
+    get:
+      tags:
+        - 一部のデバイス管理
+      summary: 全CXLスイッチ一覧
+      description: |-
+        * リソースプール内のデバイスが接続されているCXLスイッチの一覧と、各CXLスイッチに紐づくリソース一覧を返却する
+          * 各リソースがノードに紐づいている(使用中)か否かや、HW制御機能で検出できたか否かは問わず、返却データとする
+        * リソース一覧では詳細項目全てを返却する
+        * 返却する一覧のソート順は「CXLスイッチID昇順」固定
+        * CXLスイッチに紐づくリソース一覧のソート順は「リソースID昇順」固定
+      parameters: []
+      responses:
+        200:
+          description: |-
+            正常終了：CXLスイッチ一覧を返す
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CXLSwitches"
+        500:
+          description: 内部サーバーエラー：DBアクセス失敗等
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /cxlswitches/{id}:
+    get:
+      tags:
+        - 一部のデバイス管理
+      summary: 任意のCXLスイッチ参照
+      description: |-
+        * リソースプール内のデバイスが接続されているCXLスイッチのうち任意のCXLスイッチ情報と、そのCXLスイッチに紐づくリソース一覧を返却する
+        * 各リソースがノードに紐づいている(使用中)か否かや、ハードウェア制御機能で検出できたか否かは問わず、返却データとする
+        * リソース一覧では代表項目を返却する
+        * 代表項目は下記とする
+          * deviceID
+          * type
+          * status
+      parameters:
+      - name: id
+        in: "path"
+        required: true
+        description: CXLスイッチID
+        schema:
+          type: string
+      responses:
+        200:
+          description: |-
+            正常終了：CXLスイッチ一覧を返す
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CXLSwitchSummary"
+        404:
+          description: 引数指定のCXLスイッチが存在しない
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: 内部サーバーエラー：DBアクセス失敗等
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /racks/{id}:
+    get:
+      tags:
+        - 一部のデバイス管理
+      summary: 任意のラック参照
+      description: |-
+        * 任意のラックと、紐づくシャーシ一覧、およびシャーシに紐づくデバイス一覧を返却する
+         * 返却する一覧には、検出できなかったリソース(detected=false)も含む
+        * 各デバイスの詳細項目全て又は代表項目を返却する
+        * リソースにおける代表項目は下記とする
+          * deviceID
+          * type
+          * status
+        * CXLスイッチは詳細項目全ても代表項目も同じ項目を返却する
+        * ソート順は下記とする
+          * シャーシは「ユニット位置 昇順」固定
+          * シャーシ内に複数のデバイスがある場合、第一ソートKey「デバイス種別 昇順」、第二ソートKey「デバイスID 昇順」固定
+            * 現在はHW制御機能から取得するCXLスイッチ情報にデバイス種別がないため、CXLスイッチを先頭にソートする
+            * 今後、HW制御機能から取得するCXLスイッチ情報にデバイス種別が設定された場合は、そのデバイス種別での昇順となる          
+      parameters:
+      - name: id
+        in: "path"
+        required: true
+        description: ラックID
+        schema:
+          type: string
+      - name: detail
+        in: "query"
+        description: |-
+          * true: 詳細項目全てを返却する
+          * false, 指定無し: 代表項目のみを返却する
+          * true, falseは大文字小文字を問わず許容する
+          * true, false以外の文字列や空文字が指定された場合はエラーとする
+        schema:
+          type: boolean
+          default : false
+      responses:
+        200:
+          description: |-
+            正常終了：ラックの情報を返す<br>
+            紐づくシャーシや紐づくデバイスが存在しない場合は、空の配列を格納して返却する
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Rack"
+        400:
+          description: |-
+            引数が不正である
+              * true, false以外の文字列や空文字を指定した
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        404:
+          description: 引数指定のラックが存在しない
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: 内部サーバーエラー：DBアクセス失敗等
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /devices:
+    post:
+      tags:
+        - 一部のデバイス管理
+      summary: ハードウェア情報同期
+      description: |-
+        * 構成情報収集機能から収集した情報で、リソース情報とそれぞれの関連情報を構成情報管理DBへ登録する
+        * 複数件の登録時、JSON内の値形式エラー等が発生した場合は、それまでの登録情報をロールバックし、処理を中断する
+        * 検出不可状態
+          * 構成情報管理DBに登録済みの情報が、次の構成情報収集タイミングで情報取得できなかった場合は、構成情報管理DBからの削除せず、検出できなかった状態(detected=false)として情報保持する
+        * リソース付加情報
+          * 新たなリソースが収集された場合は、リソースに対してリソース付加情報を作成し関連付ける
+            * 新たにリソース付加情報を作成する際には、「リソース利用可不可(available)」の値として利用可(true)を設定する
+            * 構成情報管理DBに登録済みの情報が、次の構成情報収集タイミングで改めて情報収集された場合、リソース付加情報に対する更新は行わない
+        * リソースグループ
+          * 全てのリソースをデフォルトグループに関連付ける
+          * リソースグループIDは、任意文字列でユニークの値とする (今後提供するリソースグループ登録処理機能でユニーク性をチェックする)
+              * 許容文字は大文字小文字を区別しない半角英字、数字、アンダースコア、ハイフン、ピリオドとする
+              * 文字数は64文字制限とする
+          * 構成情報管理DBに登録済みの情報が、次の構成情報収集タイミングでも情報取得された場合は、既存のリソースグループ関連情報を優先させ、新たな関連付けは行わない
+          * 検出できなかった(detected=false)リソースは、リソースグループ関連情報の変更を行わない
+        * CXLスイッチ
+          * ハードウェア制御機能で作成されるリソース情報のプロパティであるdeviceSwitchInfoを基に、CXLスイッチ情報の登録とリソースとの関連付けを行う
+          * 但し、CXLスイッチに紐づかないリソースも存在する
+          * CXLスイッチに紐づく全てのリソースが検出できなかった状態となった場合でも、CXLスイッチとリソースとの関連情報は削除せず情報保持する
+          * CXLスイッチに紐づくリソースが一つもなくなった場合は、そのCXLスイッチはDBから削除せず情報保持する
+        * ノード
+          * ハードウェア制御機能で作成されるリソース情報のプロパティであるlinksを基に、ノード情報の登録とリソースとの関連付けを行う
+          * ノードを識別するノードIDには、CPUのデバイスIDを用いる
+          * linksには自身のdeviceIDが記載されない為、CPUのみのノードを生成することはない
+          * ノードに紐づく全てのリソースが検出できなかった状態となった場合でも、ノードとリソースとの関連情報は削除せず情報保持する
+          * ノードに紐づくリソースが一つもなくなった場合は、そのノードはDBから削除する
+      requestBody:
+        description: デバイス登録情報
+        $ref: "#/components/requestBodies/DevicesRequest"
+      responses:
+        201:
+          description: |-
+            正常終了：登録対象としたデバイスの件数と、デバイスIDのリストを返却する
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpResponse"
+        400:
+          description: |-
+            引数が不正である
+              * 引数無し
+              * 引数誤り
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: 内部サーバーエラー：DBアクセス失敗等
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+components:
+  requestBodies:
+    DevicesRequest:
+      content:
+        application/json:
+          schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/Device"
+  schemas:
+    Conditions:
+      type: object
+      required:
+        - key
+        - values
+      properties:
+        key:
+          type: string
+          description: |-
+            条件対象項目名<br>
+            * 指定可能項目は下記とする
+              * deviceID: リソースID
+              * type: デバイス種別
+              * status_state: リソース状態
+              * status_health: ヘルス状態
+              * deviceSwitchInfo: CXLスイッチ
+              * nodeID: ノードID
+              * resourceGroupID: リソースグループID
+        values:
+          type: array
+          items:
+            type: string
+            description: |-
+              検索値一覧<br>
+              * 条件対象項目に対する値を指定する
+              * 検索対象項目名に想定しない項目名や文字列が指定された場合は、空のリストを返却し正常終了とする
+        expression:
+          type: string
+          description: |-
+            * 一つのconditions内の検索値に対する論理結合子
+              * 理演算子"AND", "OR"
+              * 指定項目全てにおける論理否定"NOT"(全ての指定値以外を返却する)
+              * 検索値が一つの場合は指定不要
+              * 検索値が複数あり、当値未指定時は"OR"とする
+              * "AND", "OR", "NOT"は大文字小文字を問わず許容する
+              * "AND", "OR", "NOT"以外の文字列や空文字が指定された場合はエラーとする
+    Resource:
+      properties:
+        device:
+          $ref: "#/components/schemas/Device"
+        resourceGroupIDs:
+          $ref: "#/components/schemas/ResourceGroupIDs"
+        annotation:
+          $ref: "#/components/schemas/Annotation"
+        detected:
+          type: boolean
+          description: 検出状態フラグ<br>
+           * true - '検出できた'<br>
+           * false - '検出できなかった'<br>
+          enum: [true, false] 
+        nodeIDs:
+          $ref: "#/components/schemas/NodeIDs"
+    ResourceSummary:
+      properties:
+        device:
+          $ref: "#/components/schemas/DeviceSummary"
+        resourceGroupIDs:
+          $ref: "#/components/schemas/ResourceGroupIDs"
+        annotation:
+          $ref: "#/components/schemas/Annotation"
+        detected:
+          type: boolean
+          description: 検出状態フラグ<br>
+           * true - '検出できた'<br>
+           * false - '検出できなかった'<br>
+          enum: [true, false] 
+        nodeIDs:
+          $ref: "#/components/schemas/NodeIDs"
+    ResourceForUnused:
+      properties:
+        device:
+          $ref: "#/components/schemas/DeviceUnused"
+        resourceGroupIDs:
+          $ref: "#/components/schemas/ResourceGroupIDs"
+        annotation:
+          $ref: "#/components/schemas/Annotation"
+    ResourceSummaryForNodeList:
+      properties:
+        device:
+          $ref: "#/components/schemas/DeviceSummary"
+        resourceGroupIDs:
+          $ref: "#/components/schemas/ResourceGroupIDs"
+        annotation:
+          $ref: "#/components/schemas/Annotation"
+        detected:
+          type: boolean
+          description: 検出状態フラグ<br>
+           * true - '検出できた'<br>
+           * false - '検出できなかった'<br>
+          enum: [true, false] 
+    ResourceForNodeList:
+      properties:
+        device:
+          $ref: "#/components/schemas/Device"
+        resourceGroupIDs:
+          $ref: "#/components/schemas/ResourceGroupIDs"
+        annotation:
+          $ref: "#/components/schemas/Annotation"
+        detected:
+          type: boolean
+          description: 検出状態フラグ<br>
+           * true - '検出できた'<br>
+           * false - '検出できなかった'<br>
+          enum: [true, false] 
+    Device:
+      description: |-
+        * ハードウェア制御機能での収集項目。実際のpropertiesには他の項目がある。
+      properties:
+        deviceID:
+          type: string
+          description: デバイスID
+        type:
+          type: string
+          description: デバイス種別
+        attribute:
+          type: object
+          description: 属性
+        status:
+          type: object
+          description: ステータス
+          properties:
+            state:
+              type: string
+              description: デバイス状態
+            health:
+              type: string
+              description: ヘルス状態
+        deviceSwitchInfo:
+          type: string
+          description: CXLスイッチ情報
+        links:
+          type: array
+          items:
+            type: object
+            description: 関連する他のリソースのデバイス情報
+            properties:
+              type:
+                type: string
+                description: デバイス種別
+              deviceID:
+                type: string
+                description: デバイスの固有ID
+    DeviceUnused:
+      description: |-
+        * ハードウェア制御機能での収集項目。実際のpropertiesには他の項目がある。
+      properties:
+        deviceID:
+          type: string
+          description: デバイスID
+        type:
+          type: string
+          description: デバイス種別
+        attribute:
+          type: object
+          description: 属性
+        status:
+          type: object
+          description: ステータス
+          properties:
+            state:
+              type: string
+              description: デバイス状態
+            health:
+              type: string
+              description: ヘルス状態
+        deviceSwitchInfo:
+          type: string
+          description: CXLスイッチ情報
+        links:
+          type: array
+          example: []
+    DeviceSummary:
+      description: |-
+        * ハードウェア制御機能機能での収集項目における代表項目
+      properties:
+        deviceID:
+          type: string
+          description: デバイスID
+        type:
+          type: string
+          description: デバイス種別
+        status:
+          type: object
+          description: ステータス
+          properties:
+            state:
+              type: string
+              description: デバイス状態
+            health:
+              type: string
+              description: ヘルス状態
+    ResourceGroupIDs:
+      description: リソースが所属しているリソースグループIDの一覧
+      type: array
+      items:
+        type: string
+    NodeIDs:
+      description: リソースが所属しているノードIDの一覧
+      type: array
+      items:
+        type: string
+    Available:
+      description: |-
+        * リソース利用可不可
+          * true: 構成案設計として利用可能
+          * false: 無効化(メンテナンス中等)されている, 利用不可
+      type: boolean
+    Annotation:
+      description: リソース付加情報
+      properties:
+        available:
+          $ref: "#/components/schemas/Available"
+    Count:
+      type: integer
+      format: int32
+      example: 1
+    ResourceGroups:
+      properties:
+        count:
+          $ref: "#/components/schemas/Count"
+          description: リソースグループの件数
+        resourceGroups:
+          type: array
+          items:
+            $ref: "#/components/schemas/ResourceGroup"
+    ResourceGroup:
+      properties:
+        id:
+          type: string
+          description: リソースグループID
+        name:
+          type: string
+          description: リソースグループ名
+        description:
+          type: string
+          description: リソースグループの説明
+        createdAt:
+          type: string
+          description: 登録日時
+        updatedAt:
+          type: string
+          description: 更新日時
+        resources:
+          type: array
+          items:
+            $ref: "#/components/schemas/Resource"
+    ResourceGroupOnly:
+      properties:
+        id:
+          type: string
+          description: リソースグループID
+        name:
+          type: string
+          description: リソースグループ名
+        description:
+          type: string
+          description: リソースグループの説明
+        createdAt:
+          type: string
+          description: 登録日時
+        updatedAt:
+          type: string
+          description: 更新日時
+    Nodes:
+      properties:
+        count:
+          $ref: "#/components/schemas/Count"
+          description: ノードの件数
+        nodes:
+          type: array
+          items:
+            $ref: "#/components/schemas/NodeSummary"
+    Node:
+      properties:
+        id:
+          type: string
+          description: ノードID
+        resources:
+          type: array
+          items:
+            $ref: "#/components/schemas/ResourceForNodeList"
+    NodeSummary:
+      properties:
+        id:
+          type: string
+          description: ノードID
+        resources:
+          type: array
+          items:
+            $ref: "#/components/schemas/ResourceSummaryForNodeList"
+    CXLSwitches:
+      properties:
+        count:
+          $ref: "#/components/schemas/Count"
+          description: CXLスイッチの件数
+        CXLSwitches:
+          type: array
+          items:
+            $ref: "#/components/schemas/CXLSwitch"
+    CXLSwitch:
+      properties:
+        id:
+          type: string
+          description: CXLスイッチID
+        resources:
+          type: array
+          items:
+            $ref: "#/components/schemas/Resource"
+    CXLSwitchSummary:
+      properties:
+        id:
+          type: string
+          description: CXLスイッチID
+        resources:
+          type: array
+          items:
+            $ref: "#/components/schemas/ResourceSummary"
+    Rack:
+      properties:
+        id:
+          type: string
+          description: ラックID
+        name:
+          type: string
+          description: ラック名
+        height:
+          type: integer
+          format: int32
+          description: Height(U) ラックのユニット数
+        chassis:
+          type: array
+          items:
+            $ref: "#/components/schemas/Chassis"
+    Chassis:
+      properties:
+        id:
+          type: string
+          description: シャーシID
+        name:
+          type: string
+          description: シャーシ名
+        modelName:
+          type: string
+          description: モデル名
+        description:
+          type: string
+          description: 説明
+        unitPosition:
+          type: integer
+          format: int32
+          description: ユニット位置
+        facePosition:
+          type: string
+          description: 設置側面
+          enum: ["Front", "Rear"]
+          default : "Front"
+        height:
+          type: integer
+          format: int32
+          description: 高さ
+        depth:
+          type: string
+          description: 奥行き
+          enum: ["Full", "Half"]
+          default : "Full"
+        createdAt:
+          type: string
+          description: 登録日時
+        updatedAt:
+          type: string
+          description: 更新日時
+        resources:
+          type: array
+          items:
+            $ref: "#/components/schemas/Resource"
+    UpResponse:
+      properties:
+        count:
+          $ref: "#/components/schemas/Count"
+          description: デバイスの件数
+        deviceIDs:
+          type: array
+          items:
+            type: string
+          description: デバイスIDリスト
+    ErrorResponse:
+      properties:
+        code:
+          type: string
+          description: エラーコード
+        message:
+          type: string
+          description: エラー概要メッセージ
+        details:
+          type: string
+          description: エラー詳細メッセージ

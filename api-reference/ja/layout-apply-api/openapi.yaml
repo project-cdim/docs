@@ -1,0 +1,1881 @@
+openapi: 3.0.3
+servers:
+  - url: http://(host address)/cdim/api/v1
+info:
+  title: 構成反映API
+  description: |-
+    管理対象となるComposable Disaggregated Infrastructureの構成変更を行うための機能群
+  version: 0.1.0 # 改版履歴のバージョンに合わせる
+tags:
+  - name: 構成案反映
+    description: |-
+      構成案を反映するための機能群
+  - name: 移行手順生成
+    description: |-
+      移行手順を生成するための機能群
+paths:
+  /layout-apply:
+    post:
+      summary: 構成案反映要求
+      description: |-
+        構成案反映要求を受け付けて構成案反映ID(applyID)を返却する。<br>
+        返却された構成案反映IDを指定して構成案反映状態参照API「GET /layout-apply/{applyID}」を実行することで反映のステータスおよび反映結果を取得することができる。<br>
+        構成案反映要求時に構成案反映管理DBに特定のstatusおよびrollbackStatusのデータが存在している場合、二重起動により実行できない。<br>
+        二重起動となるケースは以下表のとおり。
+        | status | rollbackStatus | 実行結果 |
+        | ---- | ---- | ---- |
+        | IN_PROGRESS、CANCELING | - | 実行中の構成案反映要求があるため、二重起動として異常終了 |
+        | SUSPENDED | - | エラーにより中断状態の構成案反映要求があるため、実行不可として異常終了 |
+        | CANCELED | IN_PROGRESS | ロールバック実行中の構成案反映要求があるため、二重起動として異常終了 |
+        | CANCELED | SUSPENDED | エラーによりロールバックが中断状態のため、実行不可として異常終了 |
+
+        ※status、rollbackStatusの詳細については構成案反映状態参照(ID指定)を参照<br>
+        ※ロールバックについては構成案反映キャンセルを参照
+      tags:
+        - 構成案反映
+
+      deprecated: false
+      requestBody:
+        description: |-
+          移行手順リスト  
+          ※移行手順リストが空の場合は変更する内容がないものとして、正常応答となる
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/ApplyRequest"
+              example:
+                procedures:
+                  - operationID: 1
+                    operation: disconnect
+                    targetCPUID: 3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6
+                    targetDeviceID: 895DFB43-68CD-41D6-8996-EAC8D1EA1E3F
+                    dependencies: []
+                  - operationID: 2
+                    operation: connect
+                    targetCPUID: 2CA6D4DF-2739-45BA-ACA4-6ABE93E81E15
+                    targetDeviceID: 895DFB43-68CD-41D6-8996-EAC8D1EA1E3F
+                    dependencies: [1]
+                  - operationID: 3
+                    operation: boot
+                    targetDeviceID: 2CA6D4DF-2739-45BA-ACA4-6ABE93E81E15
+                    dependencies: [2]
+      responses:
+        202:
+          description: 正常
+          content:
+            application/json:
+              schema:
+                properties:
+                  applyID:
+                    type: string
+                    description: 構成案反映ID。0123456789abcdefで構成された10桁のランダム文字列を構成案反映IDとして利用する。
+                    example: 636ddde1ba
+        400:
+          description: 不正なリクエストボディ。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+        409:
+          description: |-
+            構成案反映の排他制御に際してエラーが発生した場合
+            または、反映状態が「SUSPENDED」もしくはロールバック状態が「SUSPENDED」のデータが存在する場合
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConflictErrorResponse"
+              examples:
+                構成案反映の排他制御に際してエラーが発生した場合:
+                  value:
+                    code: E40010
+                    message: Already running. Cannot start multiple instances.
+                ? 反映状態が「SUSPENDED」もしくはロールバック状態が「SUSPENDED」のデータが存在する場合
+                : value:
+                    code: E40027
+                    message: Suspended data exist. Please resume layoutapply. applyID:[123456789a]
+        500:
+          description: |-
+            内部サーバエラーまたは他コンポーネントからエラーが発生。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                code: E40002
+                message: Failed to load layoutapply_config.yaml.
+    get:
+      tags:
+        - 構成案反映
+      summary: 構成案反映状態一覧取得
+      description: |-
+        構成案反映DBから構成案反映状態の一覧を取得する。取得する構成案反映状態が無い場合は空のリストを返却する。<br>
+        sortByおよびorderByに指定があった場合、sortByで指定された値を基準に、orderByに指定された順序で並び替えを行う  
+          - sortByのみに指定があった場合、sortByで指定された値を基準に、降順に並び替えを行う  
+          - orderByのみに指定があった場合、startedAtを基準にorderByで指定された値で並び替え行う  
+
+        sortByにstartedAtまたはendedAtが指定され、orderByがascの場合は古い日付順、descの場合は新しい日付順になる。   
+
+        offsetに指定があり、sortBy、orderByに指定があった場合、sortBy、orderByの指定に従い並び替えを行ったデータの指定した行から取得を行う。<br>
+
+        各statusごとのレスポンスに出力されるキーについては以下表を参照。また、statusの詳細については構成案反映状態参照(ID指定)を参照<br>
+        <b>【凡例】〇：出力、×：出力されない、△：条件付きで出力</b><br>
+        | 項目名 | statusがIN_PROGRESS |statusがCANCELING |statusがCOMPLETED |statusがFAILED | statusがSUSPENDED | statusがCANCELED |  
+        | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
+        | applyID                               | 〇 | 〇 | 〇 | 〇 | 〇 | 〇 |
+        | status                                | 〇 | 〇 | 〇 | 〇 | 〇 | 〇 |
+        | procedures<br>(fields指定可能)         | ×  | ×  | 〇 | 〇 | 〇 | 〇 |
+        | applyResult<br>(fields指定可能)        | ×  | ×  | 〇 | 〇 | 〇 | 〇 |
+        | rollbackProcedures<br>(fields指定可能) | ×  | ×  | ×  | ×  | ×  | 〇 |
+        | startedAt                             | 〇 | 〇 | 〇 | 〇 | 〇 | 〇 |
+        | endedAt                               | ×  | ×  | 〇 | 〇 | ×  | △<br>(rollbackStatusがSUSPENDEDの場合は出力されない) |
+        | canceledAt                            | ×  | 〇 | ×  | △<br>(キャンセル要求後にエラーとなった場合のみ) | ×  | 〇 |
+        | executeRollback                       | ×  | 〇  | ×  | △<br>(キャンセル要求後にエラーとなった場合のみ) | ×  | 〇 |
+        | rollbackStatus                        | ×  | ×  | ×  | ×  | ×  | △<br>(executeRollbackがtrue時のみ) |
+        | rollbackResult<br>(fields指定可能)     | ×  | ×  | ×  | ×  | ×  | △<br>(executeRollbackがtrue時のみ) |
+        | rollbackStartedAt                     | ×  | △<br>（executeRollbackがtrueでロールバック実行中の場合のみ）  | ×  | ×  | ×  | △<br>(executeRollbackがtrue時のみ) |
+        | rollbackEndedAt                       | ×  | ×  | ×  | ×  | ×  | △<br>(executeRollbackがtrue時のみ、rollbackStatusがSUSPENDEDの場合は出力されない) |
+        | resumeProcedures<br>(fields指定可能)  | ×  | ×  | △<br>（再開要求で実行した場合のみ）  | △<br>（再開要求で実行した場合のみ）  | 〇 | △<br>（再開要求で実行した場合のみ） |
+        | resumeResult<br>(fields指定可能)      | ×  | ×  | △<br>（再開要求で実行した場合のみ）  | △<br>（再開要求で実行した場合のみ）  | △<br>（再開要求で実行した場合のみ） | △<br>（再開要求で実行した場合のみ） |
+        | suspendedAt                             | ×  | ×  | △<br>（再開要求で実行した場合のみ） | △<br>（再開要求で実行した場合のみ） | 〇 | △<br>（再開要求で実行した場合のみ） |
+        | resumedAt                               | △<br>（再開要求で実行した場合のみ） | △<br>（再開要求で実行した場合のみ） | △<br>（再開要求で実行した場合のみ） | △<br>（再開要求で実行した場合のみ） | △<br>（再開要求で実行した場合のみ） | △<br>（再開要求で実行した場合のみ） |
+
+        statusがIN_PROGRESS(実行中）の構成案反映IDに対して、構成案反映キャンセルAPI「PUT /layout-apply/{applyID}?action=cancel」を実行することで、実行中の構成案反映をキャンセルすることができる。  
+        statusがSUSPENDED(重大なエラーが発生し中断中）の構成案反映IDに対して、エラー原因を解消した後、構成案反映再開API「PUT /layout-apply/{applyID}?action=resume」を実行することで、中断中の構成案反映を再開することができる。
+      parameters:
+        - name: status
+          in: query
+          description: |-
+            指定したstatusの構成案反映状態を取得対象とする。<br>
+            指定しない場合は全てのstatusを対象に取得する。
+          schema:
+            type: string
+            enum:
+              - IN_PROGRESS
+              - COMPLETED
+              - FAILED
+              - CANCELING
+              - CANCELED
+              - SUSPENDED
+            example: COMPLETED
+        - name: startedAtSince
+          in: query
+          description: |-
+            startedAtSinceのみ指定された場合、指定した開始時間（始点）以降の項目を取得対象とする。<br>
+            startedAtSince、startedAtUntilの双方が指定された場合、指定した開始時間（始点）以降、開始時間（終点）以前の項目を取得対象とする。<br>
+            双方指定しない場合は全ての開始時間を検索対象とする。<br>
+            フォーマットは下記の通りとする。<br>
+            　・UTC時間の場合<br>
+            　・yyyy-MM-ddThh:mm:ssZ<br>
+            　・ローカルタイムゾーン指定の日時形式の場合<br>
+            　・yyyy-MM-ddThh:mm:ss±hh:mm<br>
+          schema:
+            type: string
+            example: "2024-01-29T10:00:00Z"
+        - name: startedAtUntil
+          in: query
+          description: |-
+            startedAtUntilのみ指定された場合、指定した開始時間（終点）以前の項目を取得対象とする。<br>
+            startedAtSince、startedAtUntilの双方が指定された場合、指定した開始時間（始点）以降、開始時間（終点）以前の項目を取得対象とする。<br>
+            双方指定しない場合は全ての開始時間を検索対象とする。<br>
+            フォーマットは下記の通りとする。<br>
+            　・UTC時間の場合<br>
+            　・yyyy-MM-ddThh:mm:ssZ<br>
+            　・ローカルタイムゾーン指定の日時形式の場合<br>
+            　・yyyy-MM-ddThh:mm:ss±hh:mm<br>
+          schema:
+            type: string
+            example: "2024-01-29T10:00:00+09:00"
+        - name: endedAtSince
+          in: query
+          description: |-
+            endedAtSinceのみ指定された場合、指定した終了時間（始点）以降の項目を取得対象とする。<br>
+            endedAtSince、endedAtUntilの双方が指定された場合、指定した終了時間（始点）以降、終了時間（終点）以前の項目を取得対象とする。<br>
+            双方指定しない場合は全ての終了時間を検索対象とする。<br>
+            フォーマットは下記の通りとする。<br>
+            　・UTC時間の場合<br>
+            　・yyyy-MM-ddThh:mm:ssZ<br>
+            　・ローカルタイムゾーン指定の日時形式の場合<br>
+            　・yyyy-MM-ddThh:mm:ss±hh:mm<br>
+          schema:
+            type: string
+            example: "2024-01-29T17:00:00+09:00"
+        - name: endedAtUntil
+          in: query
+          description: |-
+            endedAtUntilのみ指定された場合、指定した終了時間（終点）以前の項目を取得対象とする。<br>
+            endedAtSince、endedAtUntilの双方が指定された場合、指定した終了時間（始点）以降、終了時間（終点）以前の項目を取得対象とする。<br>
+            双方指定しない場合は全ての終了時間を検索対象とする。<br>
+            フォーマットは下記の通りとする。<br>
+            　・UTC時間の場合<br>
+            　・yyyy-MM-ddThh:mm:ssZ<br>
+            　・ローカルタイムゾーン指定の日時形式の場合<br>
+            　・yyyy-MM-ddThh:mm:ss±hh:mm<br>
+          schema:
+            type: string
+            example: "2024-01-29T17:00:00Z"
+        - name: fields
+          in: query
+          description: |
+            レスポンスボディに含める構成案反映状態の項目を指定するパラメータ。<br>
+            指定可能な項目は下記の6種。
+            - procedures: 移行手順
+            - applyResult: 反映結果
+            - rollbackProcedures: ロールバック手順
+            - rollbackResult: ロールバック結果
+            - resumeProcedures: 再開手順
+            - resumeResult: 再開結果
+
+             fieldsが未指定の場合は、statusに応じた各項目を返却する。<br>
+             fieldsを指定した場合、statusに応じた各項目と、fieldsに指定した項目を返却する。<br>
+             fieldsに指定しなかった項目はレスポンスに出力されない。<br>
+             また、fieldsに指定した項目が構成案反映状態に存在しない場合、指定の項目は出力されない。
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - procedures
+                - applyResult
+                - rollbackProcedures
+                - rollbackResult
+                - resumeProcedures
+                - resumeResult
+        - name: sortBy
+          in: query
+          description: |-
+            ソート対象。<br>並び替えの基準となる項目を指定し、未指定時にはstartedAtを基準に並び替えを行う。<br>並び替え結果は、クエリの結果に依存する。
+            - startedAt:開始日時
+            - endedAt:終了日時
+          required: false
+          schema:
+            type: string
+            default: startedAt
+            enum:
+              - startedAt
+              - endedAt
+            example: startedAt
+        - name: orderBy
+          in: query
+          description: |-
+            並び替え順序。<br>未指定時には、降順で並び替えを行う。<br>
+            sortByおよびorderByに指定があった場合、sortByで指定された値を基準に、orderByに指定された方法で並び替えを行う。<br>
+            sortByのみに指定があった場合、sortByで指定された値を基準に、降順(desc)に並び替えを行う。<br>
+            orderByのみに指定があった場合、startedAtをソート対象としorderByで指定された値で並び替え行う。
+            sortByにstartedAtまたはendedAtが指定され、orderByがascの場合は古い日付順、descの場合は新しい日付順になる。 
+            - asc:昇順
+            - desc:降順
+          required: false
+          schema:
+            type: string
+            default: desc
+            enum:
+              - asc
+              - desc
+            example: desc
+        - name: limit
+          in: query
+          description: |-
+            取得件数。<br>指定した件数分、構成案反映状態を取得する。<br>
+            未指定の場合、20件の構成案反映状態を取得する。<br>
+            構成案反映状態の取得件数を1以上の整数値で指定する。<br>
+            データベースに登録されている構成案反映状態の件数が、limitで指定した件数に満たない場合、登録されているすべての構成案反映状態を取得する。<br>
+
+
+          required: false
+          schema:
+            type: integer
+            default: 20
+            example: 20
+        - name: offset
+          in: query
+          description: |-
+            取得開始行。<br>指定した行から構成案反映状態を取得する。<br>
+            未指定時、あるいは0の場合は、先頭行から取得する。<br>
+            データベースから取得する構成案反映状態の取得行を0以上の整数値で指定する。<br>
+            データベースで登録されている構成案反映状態の件数が、offsetで指定した行数に満たない場合、取得結果は空となる。<br>
+            sortBy、orderByに指定があった場合、sortBy、orderByの指定に従い並び替えを行ったデータの指定した行から取得を行う。<br>
+            仮に20を指定した場合は、21件目以降の構成案を取得する。<br>
+          required: false
+          schema:
+            type: integer
+            default: 0
+            example: 0
+      responses:
+        200:
+          description: |-
+            取得した構成案反映状態の一覧を返す
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/GetAllResponse"
+              examples:
+                取得出来た構成案反映状態が1件以上でfieldsの指定が無い場合:
+                  value:
+                    "count": 2
+                    "totalCount": 2
+                    "applyResults":
+                      [
+                        {
+                          "applyID": "<構成案反映ID>",
+                          "status": "IN_PROGRESS",
+                          "startedAt": "2023-05-10T00:00:00Z",
+                        },
+                        {
+                          "applyID": "<構成案反映ID>",
+                          "status": "COMPLETED",
+                          "procedures": <移行手順>,
+                          "applyResult":
+                            [
+                              {
+                                "operationID": 1,
+                                "status": "COMPLETED",
+                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                                "method": "PUT",
+                                "requestBody":
+                                  {
+                                    "action": "disconnect",
+                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "statusCode": 200,
+                                "responseBody":
+                                  {
+                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "startedAt": "2023-05-10T00:00:01Z",
+                                "endedAt": "2023-05-10T00:05:00Z",
+                              },
+                              {
+                                "operationID": 2,
+                                "status": "COMPLETED",
+                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7/aggregations",
+                                "method": "PUT",
+                                "requestBody":
+                                  {
+                                    "action": "disconnect",
+                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
+                                  },
+                                "statusCode": 200,
+                                "responseBody":
+                                  {
+                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7",
+                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
+                                  },
+                                "startedAt": "2023-05-10T00:00:02Z",
+                                "endedAt": "2023-05-10T00:05:01Z",
+                              },
+                            ],
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "endedAt": "2023-05-10T00:10:00Z",
+                        },
+                      ]
+                取得出来た構成案反映状態が0件の場合:
+                  value:
+                    "count": 0
+                    "totalCount": 0
+                    "applyResults": []
+                statusがFAILEDの構成案反映状態を取得対象に指定した場合:
+                  value:
+                    "count": 2
+                    "totalCount": 2
+                    "applyResults":
+                      [
+                        {
+                          "applyID": "<構成案反映ID>",
+                          "status": "FAILED",
+                          "procedures": <移行手順>,
+                          "applyResult":
+                            [
+                              {
+                                "operationID": 1,
+                                "status": "COMPLETED",
+                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                                "method": "PUT",
+                                "requestBody":
+                                  {
+                                    "action": "disconnect",
+                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "statusCode": 200,
+                                "responseBody":
+                                  {
+                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "startedAt": "2023-05-10T00:00:01Z",
+                                "endedAt": "2023-05-10T00:05:00Z",
+                              },
+                              {
+                                "operationID": 2,
+                                "status": "FAILED",
+                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7/aggregations",
+                                "method": "PUT",
+                                "requestBody":
+                                  {
+                                    "action": "disconnect",
+                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
+                                  },
+                                "statusCode": 500,
+                                "responseBody":
+                                  {
+                                    "code": "XXXXXX",
+                                    "message": "INTERNAL SERVER ERROR",
+                                  },
+                                "startedAt": "2023-05-10T00:00:02Z",
+                                "endedAt": "2023-05-10T00:05:01Z",
+                              },
+                            ],
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "endedAt": "2023-05-10T00:10:00Z",
+                        },
+                        {
+                          "applyID": "<構成案反映ID>",
+                          "status": "FAILED",
+                          "procedures": <移行手順>,
+                          "applyResult":
+                            [
+                              {
+                                "operationID": 1,
+                                "status": "COMPLETED",
+                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                                "requestBody":
+                                  {
+                                    "action": "disconnect",
+                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "method": "PUT",
+                                "statusCode": 200,
+                                "responseBody":
+                                  {
+                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "startedAt": "2023-05-11T00:00:01Z",
+                                "endedAt": "2023-05-11T00:05:00Z",
+                              },
+                              {
+                                "operationID": 2,
+                                "status": "FAILED",
+                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7/aggregations",
+                                "requestBody":
+                                  {
+                                    "action": "disconnect",
+                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
+                                  },
+                                "method": "PUT",
+                                "statusCode": 500,
+                                "responseBody":
+                                  {
+                                    "code": "XXXXXX",
+                                    "message": "INTERNAL SERVER ERROR",
+                                  },
+                                "startedAt": "2023-05-11T00:00:02Z",
+                                "endedAt": "2023-05-11T00:05:01Z",
+                              },
+                            ],
+                          "startedAt": "2023-05-11T00:00:00Z",
+                          "endedAt": "2023-05-11T00:10:00Z",
+                        },
+                      ]
+                fieldsにapplyResultを指定した場合:
+                  value:
+                    "count": 2
+                    "totalCount": 2
+                    "applyResults":
+                      [
+                        {
+                          "applyID": "<構成案反映ID>",
+                          "status": "COMPLETED",
+                          "applyResult":
+                            [
+                              {
+                                "operationID": 1,
+                                "status": "COMPLETED",
+                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                                "method": "PUT",
+                                "requestBody":
+                                  {
+                                    "action": "disconnect",
+                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "statusCode": 200,
+                                "responseBody":
+                                  {
+                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "startedAt": "2023-05-10T00:00:01Z",
+                                "endedAt": "2023-05-10T00:05:01Z",
+                              },
+                              {
+                                "operationID": 2,
+                                "status": "COMPLETED",
+                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7/aggregations",
+                                "requestBody":
+                                  {
+                                    "action": "disconnect",
+                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
+                                  },
+                                "method": "PUT",
+                                "statusCode": 200,
+                                "responseBody":
+                                  {
+                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7",
+                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
+                                  },
+                                "startedAt": "2023-05-10T00:00:02Z",
+                                "endedAt": "2023-05-10T00:05:02Z",
+                              },
+                            ],
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "endedAt": "2023-05-10T00:10:00Z",
+                        },
+                        {
+                          "applyID": "<構成案反映ID>",
+                          "status": "CANCELED",
+                          "applyResult":
+                            [
+                              {
+                                "operationID": 1,
+                                "status": "COMPLETED",
+                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                                "requestBody":
+                                  {
+                                    "action": "connect",
+                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "method": "PUT",
+                                "statusCode": 200,
+                                "responseBody":
+                                  {
+                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "startedAt": "2023-05-11T00:00:01Z",
+                                "endedAt": "2023-05-11T00:05:01Z",                                  
+                              },
+                              { "operationID": 2, "status": "CANCELED" },
+                            ],
+                          "startedAt": "2023-05-11T00:00:00Z",
+                          "endedAt": "2023-05-11T00:10:00Z",
+                          "canceledAt": "2023-05-10T00:05:00Z",
+                          "executeRollback": false,
+                        },
+                      ]
+                ? statusがCANCELEDの構成案反映状態を取得対象に指定し、fieldsにapplyResultを指定した場合
+                : value:
+                    "count": 2
+                    "totalCount": 2
+                    "applyResults":
+                      [
+                        {
+                          "applyID": "<構成案反映ID>",
+                          "status": "CANCELED",
+                          "applyResult":
+                            [
+                              {
+                                "operationID": 1,
+                                "status": "COMPLETED",
+                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                                "method": "PUT",
+                                "requestBody":
+                                  {
+                                    "action": "disconnect",
+                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "statusCode": 200,
+                                "responseBody":
+                                  {
+                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "startedAt": "2023-05-10T00:00:01Z",
+                                "endedAt": "2023-05-10T00:05:01Z",
+                              },
+                              { "operationID": 2, "status": "CANCELED" },
+                            ],
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "endedAt": "2023-05-10T00:10:00Z",
+                          "canceledAt": "2023-05-10T00:05:00Z",
+                          "executeRollback": false,
+                        },
+                        {
+                          "applyID": "<構成案反映ID>",
+                          "status": "CANCELED",
+                          "applyResult":
+                            [
+                              {
+                                "operationID": 1,
+                                "status": "COMPLETED",
+                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                                "method": "PUT",
+                                "requestBody":
+                                  {
+                                    "action": "disconnect",
+                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "statusCode": 200,
+                                "responseBody":
+                                  {
+                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "startedAt": "2023-05-11T00:00:01Z",
+                                "endedAt": "2023-05-11T00:19:00Z",
+                              },
+                              { "operationID": 2, "status": "CANCELED" },
+                            ],
+                          "startedAt": "2023-05-11T00:00:00Z",
+                          "endedAt": "2023-05-11T00:20:00Z",
+                          "canceledAt": "2023-05-11T00:05:00Z",
+                          "executeRollback": true,
+                          "rollbackStatus": "COMPLETED",
+                          "rollbackStartedAt": "2023-05-10T00:10:00Z",
+                          "rollbackEndedAt": "2023-05-10T00:20:00Z",
+                        },
+                      ]
+                ? statusがSUSPENDEDの構成案反映状態を取得対象に指定し、fieldsにresumeProceduresを指定した場合
+                : value:
+                    "count": 2
+                    "totalCount": 2
+                    "applyResults":
+                      [
+                        {
+                          "applyID": "<構成案反映ID>",
+                          "status": "SUSPENDED",
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "suspendedAt": "2023-05-10T00:10:00Z",
+                          "resumeProcedures": <再開手順>,
+                        },
+                        {
+                          "applyID": "<構成案反映ID>",
+                          "status": "SUSPENDED",
+                          "startedAt": "2023-05-11T00:00:00Z",
+                          "suspendedAt": "2023-05-11T00:20:00Z",
+                          "resumeProcedures": <再開手順>,
+                        },
+                      ]
+                ? statusがCANCELINGの構成案反映状態を取得対象に指定し、fieldsにproceduresを指定した場合
+                : value:
+                    "count": 1
+                    "totalCount": 1
+                    "applyResults":
+                      [
+                        {
+                          "applyID": "<構成案反映ID>",
+                          "status": "CANCELING",
+                          "startedAt": "2023-05-11T00:00:00Z",
+                          "canceledAt": "2023-05-11T00:20:00Z",
+                          "executeRollback": true,
+                          "rollbackStartedAt": "2023-05-11T00:30:00Z",
+                        },
+                      ]
+                ? startedAtSinceに["2023-05-10T00:00:00Z"]、startedAtUntilに["2023-05-10T10:00:00Z"]、endedAtSinceに["2023-05-10T00:00:00Z"]、endedAtUntilに["2023-05-10T10:00:00Z"]を指定した場合
+                : value:
+                    "count": 1
+                    "totalCount": 1
+                    "applyResults":
+                      [
+                        {
+                          "applyID": "<構成案反映ID>",
+                          "status": "CANCELED",
+                          "applyResult":
+                            [
+                              {
+                                "operationID": 1,
+                                "status": "COMPLETED",
+                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                                "requestBody":
+                                  {
+                                    "action": "disconnect",
+                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "method": "PUT",
+                                "statusCode": 200,
+                                "responseBody":
+                                  {
+                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "startedAt": "2023-05-10T00:00:01Z",
+                                "endedAt": "2023-05-10T00:09:00Z",
+                              },
+                              { "operationID": 2, "status": "CANCELED" },
+                            ],
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "endedAt": "2023-05-10T00:10:00Z",
+                          "canceledAt": "2023-05-10T00:05:00Z",
+                          "executeRollback": false,
+                        },
+                      ]
+                sortByにstartedAtが指定された場合(startedAtを基準に降順に並び替える):
+                  value:
+                    "count": 2
+                    "totalCount": 2
+                    "applyResults":
+                      [
+                        {
+                          "applyID": "<構成案反映ID>",
+                          "status": "COMPLETED",
+                          "procedures": <移行手順>,
+                          "applyResult":
+                            [
+                              {
+                                "operationID": 1,
+                                "status": "COMPLETED",
+                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                                "method": "PUT",
+                                "requestBody":
+                                  {
+                                    "action": "disconnect",
+                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "statusCode": 200,
+                                "responseBody":
+                                  {
+                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "startedAt": "2023-05-11T00:00:01Z",
+                                "endedAt": "2023-05-11T00:09:00Z",
+                              },
+                              {
+                                "operationID": 2,
+                                "status": "COMPLETED",
+                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7/aggregations",
+                                "method": "PUT",
+                                "requestBody":
+                                  {
+                                    "action": "disconnect",
+                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
+                                  },
+                                "statusCode": 200,
+                                "responseBody":
+                                  {
+                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7",
+                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
+                                  },
+                                "startedAt": "2023-05-11T00:00:02Z",
+                                "endedAt": "2023-05-11T00:09:01Z",
+                              },
+                            ],
+                          "startedAt": "2023-05-11T00:00:00Z",
+                          "endedAt": "2023-05-11T00:10:00Z",
+                        },
+                        {
+                          "applyID": "<構成案反映ID>",
+                          "status": "IN_PROGRESS",
+                          "startedAt": "2023-05-10T00:00:00Z",
+                        },
+                      ]
+                sortByにendedAt,orderByにdescが指定された場合(endedAtを基準に降順に並び替える):
+                  value:
+                    "count": 2
+                    "totalCount": 2
+                    "applyResults":
+                      [
+                        {
+                          "applyID": "<構成案反映ID>",
+                          "status": "COMPLETED",
+                          "procedures": <移行手順>,
+                          "applyResult":
+                            [
+                              {
+                                "operationID": 1,
+                                "status": "COMPLETED",
+                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                                "method": "PUT",
+                                "requestBody":
+                                  {
+                                    "action": "disconnect",
+                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "statusCode": 200,
+                                "responseBody":
+                                  {
+                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "startedAt": "2023-05-10T00:09:01Z",
+                                "endedAt": "2023-05-10T00:09:30Z",
+                              },
+                              {
+                                "operationID": 2,
+                                "status": "COMPLETED",
+                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7/aggregations",
+                                "method": "PUT",
+                                "requestBody":
+                                  {
+                                    "action": "disconnect",
+                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
+                                  },
+                                "statusCode": 200,
+                                "responseBody":
+                                  {
+                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7",
+                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
+                                  },
+                                "startedAt": "2023-05-10T00:09:02Z",
+                                "endedAt": "2023-05-10T00:09:31Z",
+                              },
+                            ],
+                          "startedAt": "2023-05-10T00:09:00Z",
+                          "endedAt": "2023-05-10T00:10:00Z",
+                        },
+                        {
+                          "applyID": "<構成案反映ID>",
+                          "status": "COMPLETED",
+                          "procedures": <移行手順>,
+                          "applyResult":
+                            [
+                              {
+                                "operationID": 1,
+                                "status": "COMPLETED",
+                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                                "method": "PUT",
+                                "requestBody":
+                                  {
+                                    "action": "disconnect",
+                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "statusCode": 200,
+                                "responseBody":
+                                  {
+                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "startedAt": "2023-05-10T00:07:01Z",
+                                "endedAt": "2023-05-10T00:07:30Z",
+                              },
+                              {
+                                "operationID": 2,
+                                "status": "COMPLETED",
+                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7/aggregations",
+                                "method": "PUT",
+                                "requestBody":
+                                  {
+                                    "action": "disconnect",
+                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
+                                  },
+                                "statusCode": 200,
+                                "responseBody":
+                                  {
+                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7",
+                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
+                                  },
+                                "startedAt": "2023-05-10T00:07:02Z",
+                                "endedAt": "2023-05-10T00:07:31Z",
+                              },
+                            ],
+                          "startedAt": "2023-05-10T00:07:00Z",
+                          "endedAt": "2023-05-10T00:08:00Z",
+                        },
+                      ]
+                limitに1を指定した場合:
+                  value:
+                    "count": 1
+                    "totalCount": 20
+                    "applyResults":
+                      [
+                        {
+                          "applyID": "<構成案反映ID>",
+                          "status": "COMPLETED",
+                          "procedures": <移行手順>,
+                          "applyResult":
+                            [
+                              {
+                                "operationID": 1,
+                                "status": "COMPLETED",
+                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                                "method": "PUT",
+                                "requestBody":
+                                  {
+                                    "action": "disconnect",
+                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "statusCode": 200,
+                                "responseBody":
+                                  {
+                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "startedAt": "2023-05-11T00:00:01Z",
+                                "endedAt": "2023-05-11T00:09:01Z",
+                              },
+                              {
+                                "operationID": 2,
+                                "status": "COMPLETED",
+                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7/aggregations",
+                                "method": "PUT",
+                                "requestBody":
+                                  {
+                                    "action": "disconnect",
+                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
+                                  },
+                                "statusCode": 200,
+                                "responseBody":
+                                  {
+                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7",
+                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
+                                  },
+                                "startedAt": "2023-05-11T00:00:02Z",
+                                "endedAt": "2023-05-11T00:09:02Z",
+                              },
+                            ],
+                          "startedAt": "2023-05-11T00:00:00Z",
+                          "endedAt": "2023-05-11T00:10:00Z",
+                        },
+                      ]
+        400:
+          description: |-
+            不正なパラメータ指定
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponseGetAll"
+
+        500:
+          description: |-
+            内部サーバエラーまたは他コンポーネントからエラーが発生。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                code: E40002
+                message: Failed to load layoutapply_config.yaml.
+
+  /layout-apply/{applyID}:
+    put:
+      summary: 構成案反映キャンセル/構成案反映再開
+      description: |-
+        ・キャンセル要求<br>
+        実行中の構成案反映処理をキャンセルする。<br>
+        キャンセル要求時にrollbackOnCancelが指定された場合は、実施した構成変更を元に戻すロールバック処理が実施され、その実行状況はrollbackStatusで確認できる。<br>
+        キャンセルのロールバック実行中に、構成案反映要求のキャンセルを実行した場合、ロールバックのキャンセルは実行されない。<br>
+        上記の場合、正常系として現在のステータス(status=「CANCELING」)が返却される。<br>
+        指定した構成案反映IDのstatus、rollbackStatusによって以下表のようにstatus、rollbackStatusを変更する。<br>
+        status、rollbackStatusの詳細については構成案反映状態参照(ID指定)を参照
+        | 実行前のstatus | 実行後のstatus | 実行前のrollbackStatus | 実行後のrollbackStatus | 備考 | 
+        | ---- | ---- | ---- | ---- | ---- |
+        | IN_PROGRESS | CANCELING | - | - | 実行中の構成案反映をキャンセルする |
+        | IN_PROGRESS | FAILED | - | - | 指定された構成案反映IDのプロセスに異常があり、正常のキャンセル処理が不能な場合FAILEDとなる |
+        | SUSPENDED | FAILED | - | - | 中断中の構成案反映をキャンセルする<br>※中断は構成案反映のエラーにより遷移するstatusのため、キャンセルされた際はFAILEDとなる |
+        | CANCELED、CANCELING | CANCELED、CANCELING(変更されない) | - | - | キャンセル済みのため遷移無し |
+        | COMPLETED、FAILED | COMPLETED、FAILED(変更されない) | - | - | 既に実行済みのステータスのため遷移無し |
+        | CANCELED | CANCELED(変更されない) | IN_PROGRESS | IN_PROGRESS(変更されない) | 指定された構成案反映IDのプロセスに異常がない場合、既にキャンセル要求済みのステータスのため遷移無し |
+        | CANCELED | CANCELED(変更されない) | IN_PROGRESS | FAILED | 指定された構成案反映IDのプロセスに異常があり、ロールバック処理中の状態から遷移が出来ていない状態でキャンセル要求された場合FAILEDとなる |
+        | CANCELED | CANCELED(変更されない) | SUSPENDED | FAILED | ロールバック中断中の構成案反映をキャンセルする<br>※ロールバック中断はロールバック処理のエラーにより遷移するrollbackStatusのため、キャンセルされた際はFAILEDとなる |
+        | CANCELED | CANCELED(変更されない) | COMPLETED、FAILED | COMPLETED、FAILED(変更されない) | キャンセル済みのため遷移無し |
+
+        ・再開要求<br>
+        中断中の構成案反映処理を再開する。<br>
+        指定した構成案反映IDのstatus、rollbackStatusによって以下表のようにstatus、rollbackStatusを変更する。<br>
+        status、rollbackStatusの詳細については構成案反映状態参照(ID指定)を参照
+        | 実行前のstatus | 実行後のstatus | 実行前のrollbackStatus | 実行後のrollbackStatus | 備考 | 
+        | ---- | ---- | ---- | ---- | ---- |
+        | SUSPENDED | IN_PROGRESS | - | - | 中断中の構成案反映を再開する |
+        | IN_PROGRESS、CANCELING | IN_PROGRESS、CANCELING(変更されない) | - | - | 実行中(キャンセル中)のため遷移無し |
+        | COMPLETED、FAILED、CANCELED | COMPLETED、FAILED、CANCELED (変更されない) | - | - | 実行済みのため遷移無し |
+        | CANCELED | CANCELED(変更されない) | SUSPENDED | IN_PROGRESS | 中断中の構成案反映を再開する |
+        | CANCELED | CANCELED(変更されない) | IN_PROGRESS | IN_PROGRESS(変更されない) | 実行中(キャンセル中)のため遷移無し |
+        | CANCELED | CANCELED(変更されない) | COMPLETED、FAILED | COMPLETED、FAILED(変更されない) | 実行済みのため遷移無し |
+      tags:
+        - 構成案反映
+      deprecated: false
+      parameters:
+        - name: applyID
+          in: path
+          description: 構成案反映ID。構成案反映要求時に受け取った構成案反映IDを指定する。
+          required: true
+          example: 636ddde1ba
+          schema:
+            type: string
+        - name: action
+          in: query
+          description: |-
+            構成案反映機能に要求するアクション種別。
+            - cancel: 構成案反映処理をキャンセル要求する。
+            - resume: 構成案反映処理を再開要求する。
+          required: true
+          schema:
+            type: string
+            enum:
+              - cancel
+              - resume
+        - name: rollbackOnCancel
+          in: query
+          description: |-
+            キャンセルした後にロールバックを実行するかを選択するフラグ。  
+            「cancel」以外のactionと同時に指定されている場合、本パラメータは無視される(バリデーションエラーにならない)
+            - true: ロールバックを実行する。
+            - false: ロールバックを実行しない。
+          schema:
+            type: boolean
+            enum:
+              - true
+              - false
+            default: false
+      responses:
+        200:
+          description: |-
+            正常。指定された構成案反映IDの反映状態の遷移が既に完了している  
+            [キャンセル要求]反映状態がキャンセル中もしくはキャンセル済み(CANCELED、CANCELING）または反映状態が「CANCELED」でロールバック状態が「COMPLETED」もしくは「FAILED」  
+            [再開要求]反映状態が実行済み(COMPLETED」もしくは「FAILED」もしくは「CANCELED」)  またはロールバック状態が実行済み(COMPLETED」もしくは「FAILED」)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplyIDPutResponse"
+              examples:
+                ? キャンセル要求でキャンセル中もしくはキャンセル済み(反映状態が「CANCELING]もしくは「CANCELED」）の場合
+                : value:
+                    "status": "CANCELED"
+                ? キャンセル要求でキャンセル済み(反映状態が「CANCELED」、ロールバック状態が「COMPLETED」)の場合
+                : value:
+                    "status": "CANCELED"
+                    "rollbackStatus": "COMPLETED"
+                再開要求で実行済み(反映状態が「COMPLETED」)の場合:
+                  value:
+                    "status": "COMPLETED"
+                ? 再開要求で実行済み(反映状態が「CANCELED」、ロールバック状態が「COMPLETED」)の場合
+                : value:
+                    "status": "CANCELED"
+                    "rollbackStatus": "COMPLETED"
+        202:
+          description: |-
+            正常。指定された構成案反映IDの反映状態の遷移の要求が受け付けられた場合。  
+            [キャンセル要求]  
+            実行中の構成案反映をキャンセル(IN_PROGRESSからCANCELINGに反映状態が遷移)  
+            中断中の構成案反映をキャンセル(SUSPENDEDからFAILEDに反映状態が遷移)   
+            ロールバック中断中の構成案反映をキャンセル(SUSPENDEDからFAILEDにロールバック状態が遷移)   
+            [再開要求]  
+            中断中の構成案反映を再開(SUSPENDEDからIN_PROGRESSに反映状態が遷移)  
+            ロールバック中断中の構成案反映を再開(SUSPENDEDからIN_PROGRESSにロールバック状態が遷移)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplyIDPutResponse"
+              examples:
+                実行中の構成案反映をキャンセルした場合:
+                  value:
+                    "status": "CANCELING"
+                中断中の構成案反映をキャンセルした場合:
+                  value:
+                    "status": "FAILED"
+                ロールバック中断中の構成案反映をキャンセルした場合:
+                  value:
+                    "status": "CANCELED"
+                    "rollbackStatus": "FAILED"
+                中断中の構成案反映を再開した場合:
+                  value:
+                    "status": "IN_PROGRESS"
+                ロールバック中断中の構成案反映を再開した場合:
+                  value:
+                    "status": "CANCELED"
+                    "rollbackStatus": "IN_PROGRESS"
+        400:
+          description: 不正なパラメータ指定
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+        404:
+          description: |-
+            存在しない構成案反映IDが指定された
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotExistErrorResponse"
+        409:
+          description: |-
+            現在の反映状態から遷移ができない場合。  
+            [キャンセル要求]  
+            指定された構成案反映IDの反映状態が「COMPLETED」「FAILED」の場合、反映完了済みのため遷移不可  
+            指定された構成案反映IDのプロセスに異常があり、正常のキャンセル処理が不能で遷移不可(※)  
+            指定された構成案反映IDのプロセスに異常があり、ロールバック処理中の状態から遷移が出来ていない場合(※)  
+            ※反映状態もしくはロールバック状態「IN_PROGRESS」の構成案反映IDが存在すると多重起動の抑止により構成案反映が実行できないため、反映状態またはロールバック状態を「FAILED」に変更する    
+            指定された構成案反映IDの反映状態が「CANCELED」、ロールバック状態が「IN_PROGRESS」でプロセスに異常がない場合、キャンセル要求済みのため遷移不可  
+            [再開要求]  
+            指定された構成案反映IDの反映状態が「IN_PROGRESS」「CANCELING」の場合、反映実行中のため遷移不可  
+            指定された構成案反映IDのロールバック状態が「IN_PROGRESS」の場合、ロールバック実行中のため遷移不可
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: number
+                    description: エラーコード
+                    enum:
+                      - E40022
+                      - E40027
+                      - E40028
+                  message:
+                    type: string
+                    description: メッセージ
+                    enum:
+                      - "This layoutapply has already executed."
+                      - "Since the process with the specified ID does not exist, change the status from IN_PROGRESS to FAILED."
+                      - "Suspended data exist. Please resume layoutapply. applyID:[123456789a]"
+                  status:
+                    type: string
+                    description: 反映状態
+                    enum:
+                      - "FAILED"
+                      - "CANCELED"
+                  rollbackStatus:
+                    type: string
+                    description: ロールバック状態
+                    enum:
+                      - "FAILED"
+              examples:
+                キャンセル要求・再開要求で現在の反映状態から遷移ができない場合:
+                  value:
+                    "code": "E40022"
+                    "message": "This layoutapply has already executed."
+                ? キャンセル要求で指定された構成案反映IDの反映状態が「CANCELED」、ロールバック状態が「IN_PROGRESS」でプロセスに異常がない場合
+                : value:
+                    "code": "E40022"
+                    "message": "This layoutapply has already executed."
+                ? キャンセル要求で構成案反映IDのプロセスに異常があり、正常のキャンセル処理が不能で遷移不可
+                : value:
+                    "code": "E40028"
+                    "message": "Since the process with the specified ID does not exist, change the status from IN_PROGRESS to FAILED."
+                    "status": "FAILED"
+                ? キャンセル要求で構成案反映IDのプロセスに異常があり、ロールバック処理中の状態から遷移が出来ていない場合
+                : value:
+                    "code": "E40028"
+                    "message": "Since the process with the specified ID does not exist, change the rollbackStatus from IN_PROGRESS to FAILED."
+                    "status": "CANCELED"
+                    "rollbackStatus": "FAILED"
+
+        500:
+          description: |-
+            内部サーバエラーまたは他コンポーネントからエラーが発生。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                code: E40002
+                message: Failed to load layoutapply_config.yaml.
+
+    get:
+      tags:
+        - 構成案反映
+      summary: 構成案反映状態参照(ID指定)
+      description: |-
+        構成案反映DBから指定したIDの構成案反映状態を取得する。<br>
+        各statusごとのレスポンスに出力されるキーについては以下表を参照<br>
+        <b>【凡例】〇：出力、×：出力されない、△：条件付きで出力</b><br>
+        | 項目名 | statusがIN_PROGRESS |statusがCANCELING |statusがCOMPLETED |statusがFAILED | statusがSUSPENDED | statusがCANCELED |  
+        | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
+        | applyID                               | 〇 | 〇 | 〇 | 〇 | 〇 | 〇 |
+        | status                                | 〇 | 〇 | 〇 | 〇 | 〇 | 〇 |
+        | procedures<br>(fields指定可能)         | ×  | ×  | 〇 | 〇 | 〇 | 〇 |
+        | applyResult<br>(fields指定可能)        | ×  | ×  | 〇 | 〇 | 〇 | 〇 |
+        | rollbackProcedures<br>(fields指定可能) | ×  | ×  | ×  | ×  | ×  | 〇 |
+        | startedAt                             | 〇 | 〇 | 〇 | 〇 | 〇 | 〇 |
+        | endedAt                               | ×  | ×  | 〇 | 〇 | × | △<br>(rollbackStatusがSUSPENDEDの場合は出力されない) |
+        | canceledAt                            | ×  | 〇 | ×  | △<br>(キャンセル要求後にエラーとなった場合のみ) | ×  | 〇 |
+        | executeRollback                       | ×  | 〇  | ×  | △<br>(キャンセル要求後にエラーとなった場合のみ) | ×  | 〇 |
+        | rollbackStatus                        | ×  | ×  | ×  | ×  | ×  | △<br>(executeRollbackがtrue時のみ) |
+        | rollbackResult<br>(fields指定可能)     | ×  | ×  | ×  | ×  | ×  | △<br>(executeRollbackがtrue時のみ) |
+        | rollbackStartedAt                     | ×  | △<br>（executeRollbackがtrueでロールバック実行中の場合のみ）  | ×  | ×  | ×  | △<br>(executeRollbackがtrue時のみ) |
+        | rollbackEndedAt                       | ×  | ×  | ×  | ×  | ×  | △<br>(executeRollbackがtrue時のみ、rollbackStatusがSUSPENDEDの場合は出力されない) |
+        | resumeProcedures<br>(fields指定可能)  | ×  | ×  | △<br>（再開要求で実行した場合のみ）  | △<br>（再開要求で実行した場合のみ）  | 〇 | △<br>（再開要求で実行した場合のみ） |
+        | resumeResult<br>(fields指定可能)      | ×  | ×  | △<br>（再開要求で実行した場合のみ）  | △<br>（再開要求で実行した場合のみ）  | △<br>（再開要求で実行した場合のみ） | △<br>（再開要求で実行した場合のみ） |
+        | suspendedAt                             | ×  | ×  | △<br>（再開要求で実行した場合のみ） | △<br>（再開要求で実行した場合のみ） | 〇 | △<br>（再開要求で実行した場合のみ） |
+        | resumedAt                               | △<br>（再開要求で実行した場合のみ） | △<br>（再開要求で実行した場合のみ） | △<br>（再開要求で実行した場合のみ） | △<br>（再開要求で実行した場合のみ） | △<br>（再開要求で実行した場合のみ） | △<br>（再開要求で実行した場合のみ） |
+
+        当IFで取得したstatusの情報をもとに、各機能を使用する。<br>
+        【例】<br>
+        statusがIN_PROGRESS(実行中）の構成案反映IDに対して、構成案反映キャンセルAPI「PUT /layout-apply/{applyID}?action=cancel」を実行することで、実行中の構成案反映をキャンセルすることができる。  
+        statusがSUSPENDED(重大なエラーが発生し中断中）の構成案反映IDに対して、エラー原因を解消した後、構成案反映再開API「PUT /layout-apply/{applyID}?action=resume」を実行することで、中断中の構成案反映を再開することができる。  
+
+        各statusについての詳細は以下表を参照
+
+        | status | 説明 |
+        | ---- | ---- |
+        | IN_PROGRESS | 構成案反映実行中<br>構成案反映要求を受領した場合、あるいは中断中の構成案反映が再開要求を受領した場合当statusに移行 |
+        | CANCELING   | 構成案反映キャンセル中<br>実行中の構成案反映がキャンセル要求を受領した場合当statusに移行 |
+        | COMPLETED   | 構成案反映完了<br>実行中の構成案反映が正常終了した場合当statusに移行 |
+        | FAILED      | 構成案反映失敗<br>実行中の構成案反映が異常終了した場合、あるいは中断中の構成案反映がキャンセル要求を受領した場合当statusに移行 |
+        | SUSPENDED   | 構成案反映中断<br>構成案反映がレスポンス異常で重大なエラーとなったとき当statusに移行 |
+        | CANCELED    | 構成案反映キャンセル<br>キャンセル中の構成案反映キャンセル処理が完了した場合当statusに移行 |
+
+      parameters:
+        - name: applyID
+          in: path
+          description: 構成案反映ID。構成案反映要求時に受け取った構成案反映IDを指定する。
+          required: true
+          example: 636ddde1ba
+          schema:
+            type: string
+        - name: fields
+          in: query
+          description: |
+            レスポンスボディに含める構成案反映状態の項目を指定するパラメータ。<br>
+            指定可能な項目は下記の6種。
+            - procedures: 移行手順
+            - applyResult: 反映結果
+            - rollbackProcedures: ロールバック手順
+            - rollbackResult: ロールバック結果
+            - resumeProcedures: 再開手順
+            - resumeResult: 再開結果
+
+             fieldsが未指定の場合は、statusに応じた各項目を返却する。<br>
+             fieldsを指定した場合、statusに応じた各項目と、fieldsに指定した項目を返却する。<br>
+             fieldsに指定しなかった項目はレスポンスに出力されない。<br>
+             また、fieldsに指定した項目が構成案反映状態に存在しない場合、指定の項目は出力されない。
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - procedures
+                - applyResult
+                - rollbackProcedures
+                - rollbackResult
+                - resumeProcedures
+                - resumeResult
+      responses:
+        200:
+          description: |-
+            構成案反映IDを指定して取得した構成案反映状態を返す
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/ApplyIDGetResponse"
+              examples:
+                構成案反映が正常終了した場合:
+                  value:
+                    applyID: "<構成案反映ID>"
+                    status: "COMPLETED"
+                    procedures: <移行手順>
+                    applyResult:
+                      [
+                        {
+                          "operationID": 1,
+                          "status": "COMPLETED",
+                          "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                          "requestBody":
+                            {
+                              "action": "disconnect",
+                              "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                            },
+                          "method": "PUT",
+                          "statusCode": 200,
+                          "responseBody":
+                            {
+                              "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                              "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                            },
+                          "startedAt": "2023-05-10T00:00:01Z",
+                          "endedAt": "2023-05-10T00:09:01Z",
+                        },
+                        {
+                          "operationID": 2,
+                          "status": "COMPLETED",
+                          "uri": "http://cdim/api/v1/devices/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/power",
+                          "requestBody": { "action": "on" },
+                          "method": "PUT",
+                          "statusCode": 200,
+                          "responseBody":
+                            {
+                              "deviceID ": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                            },
+                          "isOSBoot":
+                            {
+                              "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/is-os-ready?timeOut=2",
+                              "queryParameter": { "timeOut": 2 },
+                              "method": "GET",
+                              "statusCode": 200,
+                              "responseBody":
+                                {
+                                  "status": true,
+                                  "IpAddress": "xxx.xxx.xxx.xxx",
+                                },
+                            },
+                          "startedAt": "2023-05-10T00:00:02Z",
+                          "endedAt": "2023-05-10T00:09:02Z",
+                        },
+                        {
+                          "operationID": 3,
+                          "status": "COMPLETED",
+                          "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/power",
+                          "requestBody": { "action": "off" },
+                          "method": "PUT",
+                          "statusCode": 200,
+                          "responseBody":
+                            {
+                              "deviceID ": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                            },
+                          "getInformation":
+                            { "responseBody": { "powerState": "Off" } },
+                          "startedAt": "2023-05-10T00:00:03Z",
+                          "endedAt": "2023-05-10T00:09:03Z",
+                        },
+                      ]
+                    startedAt: "2023-05-10T00:00:00Z"
+                    endedAt: "2023-05-10T00:10:00Z"
+                構成案反映の途中で異常終了してスキップされる手順があった場合:
+                  value:
+                    applyID: "<構成案反映ID>"
+                    status: "FAILED"
+                    procedures: <移行手順>
+                    applyResult:
+                      [
+                        {
+                          "operationID": 1,
+                          "status": "FAILED",
+                          "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                          "requestBody":
+                            {
+                              "action": "disconnect",
+                              "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                            },
+                          "method": "PUT",
+                          "statusCode": 500,
+                          "responseBody":
+                            {
+                              "code": "XXXXXX",
+                              "message": "INTERNAL SERVER ERROR",
+                            },
+                          "startedAt": "2023-05-10T00:00:01Z",
+                          "endedAt": "2023-05-10T00:09:01Z",
+                        },
+                        { "operationID": 2, "status": "SKIPPED" },
+                      ]
+                    startedAt: "2023-05-10T00:00:00Z"
+                    endedAt: "2023-05-10T00:10:00Z"
+                ? 構成案反映の途中でロールバックする設定でキャンセル要求があった場合
+                : value:
+                    applyID: "<構成案反映ID>"
+                    status: "CANCELED"
+                    procedures: <移行手順>
+                    applyResult:
+                      [
+                        {
+                          "operationID": 1,
+                          "status": "COMPLETED",
+                          "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                          "requestBody":
+                            {
+                              "action": "disconnect",
+                              "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                            },
+                          "method": "PUT",
+                          "statusCode": 200,
+                          "responseBody":
+                            {
+                              "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                              "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                            },
+                          "startedAt": "2023-05-10T00:00:01Z",
+                          "endedAt": "2023-05-10T00:09:01Z",
+                        },
+                        { "operationID": 2, "status": "CANCELED" },
+                      ]
+                    rollbackProcedures:
+                      [
+                        {
+                          "operationID": 1,
+                          "operation": "connect",
+                          "targetCPUID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                          "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                          "dependencies": [],
+                        },
+                      ]
+                    startedAt: "2023-05-10T00:00:00Z"
+                    endedAt: "2023-05-10T00:20:00Z"
+                    canceledAt: "2023-05-10T00:05:00Z"
+                    executeRollback: true
+                    rollbackStatus: "COMPLETED"
+                    rollbackResult:
+                      [
+                        {
+                          "operationID": 1,
+                          "status": "COMPLETED",
+                          "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                          "requestBody":
+                            {
+                              "action": "disconnect",
+                              "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                            },
+                          "method": "PUT",
+                          "statusCode": 200,
+                          "responseBody":
+                            {
+                              "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                              "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                            },
+                          "startedAt": "2023-05-10T00:00:02Z",
+                          "endedAt": "2023-05-10T00:09:02Z",
+                        },
+                      ]
+                    rollbackStartedAt: "2023-05-10T00:10:00Z"
+                    rollbackEndedAt: "2023-05-10T00:20:00Z"
+                ? 構成案反映の途中でロールバックしない設定でキャンセル要求があった場合
+                : value:
+                    applyID: "<構成案反映ID>"
+                    status: "CANCELED"
+                    procedures: <移行手順>
+                    applyResult:
+                      [
+                        {
+                          "operationID": 1,
+                          "status": "COMPLETED",
+                          "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                          "requestBody":
+                            {
+                              "action": "disconnect",
+                              "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                            },
+                          "method": "PUT",
+                          "statusCode": 200,
+                          "responseBody":
+                            {
+                              "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                              "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                            },
+                          "startedAt": "2023-05-10T00:00:01Z",
+                          "endedAt": "2023-05-10T00:09:01Z",
+                        },
+                        { "operationID": 2, "status": "CANCELED" },
+                      ]
+                    rollbackProcedures:
+                      [
+                        {
+                          "operationID": 1,
+                          "operation": "connect",
+                          "targetCPUID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                          "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                          "dependencies": [],
+                        },
+                      ]
+                    startedAt: "2023-05-10T00:00:00Z"
+                    endedAt: "2023-05-10T00:10:00Z"
+                    canceledAt: "2023-05-10T00:05:00Z"
+                    executeRollback: false
+                ? リトライ上限までHW制御からのレスポンスで200以外を受け取る重大なエラーが発生し中断された場合
+                : value:
+                    applyID: "<構成案反映ID>"
+                    status: "SUSPENDED"
+                    procedures: <移行手順>
+                    applyResult:
+                      [
+                        {
+                          "operationID": 1,
+                          "status": "FAILED",
+                          "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                          "requestBody":
+                            {
+                              "action": "disconnect",
+                              "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                            },
+                          "method": "PUT",
+                          "statusCode": 500,
+                          "responseBody":
+                            {
+                              "code": "XXXXXX",
+                              "message": "INTERNAL SERVER ERROR",
+                            },
+                          "startedAt": "2023-05-10T00:00:01Z",
+                          "endedAt": "2023-05-10T00:09:01Z",
+                        },
+                        { "operationID": 2, "status": "SKIPPED" },
+                      ]
+                    startedAt: "2023-05-10T00:00:00Z"
+                    suspendedAt: "2023-05-10T00:10:00Z"
+                    resumeProcedures: <再開手順>
+                中断された構成案反映を再開して正常終了した場合:
+                  value:
+                    applyID: "<構成案反映ID>"
+                    status: "COMPLETED"
+                    procedures: <移行手順>
+                    applyResult:
+                      [
+                        {
+                          "operationID": 1,
+                          "status": "FAILED",
+                          "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                          "requestBody":
+                            {
+                              "action": "disconnect",
+                              "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                            },
+                          "method": "PUT",
+                          "statusCode": 500,
+                          "responseBody":
+                            {
+                              "code": "XXXXXX",
+                              "message": "INTERNAL SERVER ERROR",
+                            },
+                          "startedAt": "2023-05-10T00:00:01Z",
+                          "endedAt": "2023-05-10T00:09:01Z",
+                        },
+                        { "operationID": 2, "status": "SKIPPED" },
+                      ]
+                    startedAt: "2023-05-10T00:00:00Z"
+                    suspendedAt: "2023-05-10T00:10:00Z"
+                    resumeProcedures: <再開手順>
+                    resumedAt: "2023-05-10T01:00:00Z"
+                    resumeResult: <再開結果>
+                    endedAt: "2023-05-10T01:10:00Z"
+                構成案反映実行中の場合:
+                  value:
+                    applyID: "<構成案反映ID>"
+                    status: "IN_PROGRESS"
+                    startedAt: "2023-05-10T00:00:00Z"
+                構成案反映キャンセル実行中の場合(ロールバック実行が無い場合):
+                  value:
+                    applyID: "<構成案反映ID>"
+                    status: "CANCELING"
+                    startedAt: "2023-05-10T00:00:00Z"
+                    canceledAt: "2023-05-10T00:05:00Z"
+                    executeRollback: false
+                構成案反映キャンセル実行中の場合(ロールバック実行がある場合):
+                  value:
+                    applyID: "<構成案反映ID>"
+                    status: "CANCELING"
+                    startedAt: "2023-05-10T00:00:00Z"
+                    canceledAt: "2023-05-10T00:05:00Z"
+                    executeRollback: true
+                    rollbackStartedAt: "2023-05-10T00:06:00Z"
+                fieldsにapplyResultのみを指定した場合:
+                  value:
+                    applyID: "<構成案反映ID>"
+                    status: "COMPLETED"
+                    applyResult:
+                      [
+                        {
+                          "operationID": 1,
+                          "status": "COMPLETED",
+                          "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                          "requestBody":
+                            {
+                              "action": "disconnect",
+                              "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                            },
+                          "method": "PUT",
+                          "statusCode": 200,
+                          "responseBody":
+                            {
+                              "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                              "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                            },
+                          "startedAt": "2023-05-10T00:00:01Z",
+                          "endedAt": "2023-05-10T00:09:01Z",
+                        },
+                        {
+                          "operationID": 2,
+                          "status": "COMPLETED",
+                          "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7/aggregations",
+                          "requestBody":
+                            {
+                              "action": "disconnect",
+                              "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                            },
+                          "method": "PUT",
+                          "statusCode": 200,
+                          "responseBody":
+                            {
+                              "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7",
+                              "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
+                            },
+                          "startedAt": "2023-05-10T00:00:02Z",
+                          "endedAt": "2023-05-10T00:09:02Z",
+                        },
+                      ]
+                    startedAt: "2023-05-10T00:00:00Z"
+                    endedAt: "2023-05-10T00:10:00Z"
+                fieldsにrollbackProceduresとrollbackResultを指定した場合:
+                  value:
+                    applyID: "<構成案反映ID>"
+                    status: "CANCELED"
+                    rollbackProcedures:
+                      [
+                        {
+                          "operationID": 1,
+                          "operation": "connect",
+                          "targetCPUID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                          "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                          "dependencies": [],
+                        },
+                      ]
+                    startedAt: "2023-05-10T00:00:00Z"
+                    endedAt: "2023-05-10T00:20:00Z"
+                    canceledAt: "2023-05-10T00:05:00Z"
+                    executeRollback: true
+                    rollbackStatus: "COMPLETED"
+                    rollbackResult:
+                      [
+                        {
+                          "operationID": 1,
+                          "status": "COMPLETED",
+                          "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                          "requestBody":
+                            {
+                              "action": "disconnect",
+                              "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                            },
+                          "method": "PUT",
+                          "statusCode": 200,
+                          "responseBody":
+                            {
+                              "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                              "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                            },
+                          "startedAt": "2023-05-10T00:00:01Z",
+                          "endedAt": "2023-05-10T00:09:01Z",
+                        },
+                      ]
+                    rollbackStartedAt: "2023-05-10T00:10:00Z"
+                    rollbackEndedAt: "2023-05-10T00:20:00Z"
+
+        404:
+          description: |-
+            存在しない構成案反映IDが指定された
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotExistErrorResponse"
+        400:
+          description: |-
+            不正なパラメータ指定
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+        500:
+          description: |-
+            内部サーバエラーまたは他コンポーネントからエラーが発生。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                code: E40002
+                message: Failed to load layoutapply_config.yaml.
+    delete:
+      summary: 構成案反映状態削除
+      description: |-
+        指定された構成案反映ID(applyID)の構成案反映状態を削除する。<br>
+        指定した構成案反映IDのstatus、rollbackStatusによっては削除できない。<br>
+        詳細は以下表を参照。また、status、rollbackStatusの詳細については構成案反映状態参照(ID指定)を参照
+        | status | rollbackStatus | 実行結果 |
+        | ---- | ---- | ---- |
+        | COMPLETED、FAILED、CANCELED | - | 削除可能 |
+        | IN_PROGRESS、CANCELING | - | 実行中の構成案反映であるため、削除不可として異常終了 |
+        | SUSPENDED | - | 中断中の構成案反映であるため、削除不可として異常終了 |
+        | CANCELED | COMPLETED、FAILED | 削除可能 |
+        | CANCELED | IN_PROGRESS | 実行中の構成案反映であるため、削除不可として異常終了 |
+        | CANCELED | SUSPENDED | 中断中の構成案反映であるため、削除不可として異常終了 |
+      tags:
+        - 構成案反映
+      deprecated: false
+      parameters:
+        - name: applyID
+          in: path
+          description: 構成案反映ID。削除する構成案反映状態の構成案反映IDを指定する。
+          required: true
+          example: 636ddde1ba
+          schema:
+            type: string
+      responses:
+        204:
+          description: |-
+            正常
+        400:
+          description: 不正なパラメータ指定
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+        404:
+          description: |-
+            存在しない構成案反映IDが指定された
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotExistErrorResponse"
+        409:
+          description: |-
+            実行中、あるいは中断中の構成案反映ID（statusが「IN_PROGRESS」、「CANCELING」、「SUSPENDED」のいずれか、もしくはrollbackStatusが「IN_PROGRESS」、「SUSPENDED」のいずれか）に対して削除処理を実行してエラーが発生した
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteConflictErrorResponse"
+        500:
+          description: |-
+            内部サーバエラーまたは他コンポーネントからエラーが発生。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                code: E40002
+                message: Failed to load layoutapply_config.yaml.
+  /migration-procedures:
+    post:
+      summary: 移行手順作成要求
+      description: |-
+        変更後のノードのデバイス構成(以下、新ノード構成)を引数に移行手順作成要求を受け付けて、<br>
+        既存のノードのデバイス構成(以下、現ノード構成)から新ノード構成へとノードを変更する「移行手順」を返却する。<br>
+        返却された移行手順を指定して構成案反映要求API「POST /layout-apply」を実行することで構成案を反映することができる。<br>
+        ・新ノード構成には現ノード構成から変更しないノード/デバイスも含めて、新ノード構成の全てのノード/デバイスを記載する<br>
+        ・現ノード構成に存在し、新ノード構成に記載されないノード/デバイスは、新ノード構成から削除される<br>
+        ・現ノード構成に存在せず、新ノード構成に追加されたノード/デバイスは新規追加となる<br>
+        現ノード構成から変更するノード/デバイスを限定したい場合はtargetNodeIDs(以下、ノードID一覧)を指定する<br>
+        変更するノード/デバイスを限定した際の指定イメージは以下の通り<br>
+        ・新規ノードの追加だけ実行したい<br>
+        　⇒ノードID一覧に空リスト指定、新ノード構成に新規ノードの構成を指定<br>
+        ・特定のノードだけを更新したい<br>
+        　⇒ノードID一覧に更新したいノードを指定、新ノード構成に更新後のノード構成を指定<br>
+        ・特定のノードだけを削除したい<br>
+        　⇒ノードID一覧に削除したいノードを指定、新ノード構成に空リストを指定
+      tags:
+        - 移行手順生成
+      deprecated: false
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/DesiredLayout"
+              example:
+                targetNodeIDs: [2c0af93a-ef04-4393-a805-86e30e054e74, 3as34r45-ert4-3454-s332-4det0s3ss3sd]
+                desiredLayout:
+                  nodes:
+                    - device:
+                        cpu:
+                          deviceIDs:
+                            - 3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6
+                        memory:
+                          deviceIDs:
+                            - A4D1A195-4A54-11EF-A1DC-000C29C8CA82
+                        storage:
+                          deviceIDs:
+                            - 895DFB43-68CD-41D6-8996-EAC8D1EA1E3F
+                        networkInterface:
+                          deviceIDs:
+                            - 5DFB4893-C16D-4968-89D6-8D1EAECEA31F
+                    - device:
+                        cpu:
+                          deviceIDs:
+                            - 2CA6D4DF-2739-45BA-ACA4-6ABE93E81E15
+                        memory:
+                          deviceIDs:
+                            - 035AA32D-6C3F-488E-9602-62286A509288
+                        storage:
+                          deviceIDs:
+                            - 42243124-9655-4B12-B638-A15BFE021065
+                        networkInterface:
+                          deviceIDs:
+                            - 0E9A2838-6AA9-40D2-B3E0-EA7B15E8F18D
+      responses:
+        200:
+          description: 正常
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/ProcedureList"
+                example:
+                  procedures:
+                    - operationID: 1
+                      operation: disconnect
+                      targetCPUID: 2CA6D4DF-2739-45BA-ACA4-6ABE93E81E15
+                      targetDeviceID: 895DFB43-68CD-41D6-8996-EAC8D1EA1E3F
+                      dependencies: []
+                    - operationID: 2
+                      operation: connect
+                      targetCPUID: 2CA6D4DF-2739-45BA-ACA4-6ABE93E81E15
+                      targetDeviceID: 895DFB43-68CD-41D6-8996-EAC8D1EA1E3F
+                      dependencies: [1]
+                    - operationID: 3
+                      operation: boot
+                      targetDeviceID: 2CA6D4DF-2739-45BA-ACA4-6ABE93E81E15
+                      dependencies: [2]
+        400:
+          description: 不正なリクエストボディ。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+              example:
+                code: E50001
+                message: Unexpected strings 'nodes' is a required property
+        404:
+          description: |-
+            存在しないNodeIDが指定された
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotExistTargetNodeIDsErrorResponse"
+        500:
+          description: |-
+            内部サーバエラーまたは他コンポーネントからエラーが発生。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                code: E50002
+                message: Failed to load layoutapply_config.yaml.
+
+components:
+  schemas:
+    ApplyRequest:
+      $ref: "./openapi_schema.yaml#/components/schemas/ApplyRequest"
+    ProcedureList:
+      $ref: "./openapi_schema.yaml#/components/schemas/ProcedureList"
+    Procedure:
+      $ref: "./openapi_schema.yaml#/components/schemas/Procedure"
+    ApplyResult:
+      $ref: "./openapi_schema.yaml#/components/schemas/ApplyResult"
+    ApplyResponse:
+      $ref: "./openapi_schema.yaml#/components/schemas/ApplyResponse"
+    ApplyErrorResponse:
+      $ref: "./openapi_schema.yaml#/components/schemas/ApplyErrorResponse"
+    ApplyResponseCanceled:
+      $ref: "./openapi_schema.yaml#/components/schemas/ApplyResponseCanceled"
+    ValidationErrorResponse:
+      $ref: "./openapi_schema.yaml#/components/schemas/ValidationErrorResponse"
+    ValidationErrorResponseGetAll:
+      $ref: "./openapi_schema.yaml#/components/schemas/ValidationErrorResponseGetAll"
+    NotExistErrorResponse:
+      $ref: "./openapi_schema.yaml#/components/schemas/NotExistErrorResponse"
+    NotExistTargetNodeIDsErrorResponse:
+      $ref: "./openapi_schema.yaml#/components/schemas/NotExistTargetNodeIDsErrorResponse"
+    ConflictErrorResponse:
+      $ref: "./openapi_schema.yaml#/components/schemas/ConflictErrorResponse"
+    ErrorResponse:
+      $ref: "./openapi_schema.yaml#/components/schemas/ErrorResponse"
+    CancelResponse:
+      $ref: "./openapi_schema.yaml#/components/schemas/CancelResponse"
+    ApplyIDGetResponse:
+      $ref: "./openapi_schema.yaml#/components/schemas/ApplyIDGetResponse"
+    GetAllResponse:
+      $ref: "./openapi_schema.yaml#/components/schemas/GetAllResponse"
+    DeleteConflictErrorResponse:
+      $ref: "./openapi_schema.yaml#/components/schemas/DeleteConflictErrorResponse"
+    ApplyIDPutResponse:
+      $ref: "./openapi_schema.yaml#/components/schemas/ApplyIDPutResponse"
+    DesiredLayout:
+      $ref: "./openapi_schema.yaml#/components/schemas/DesiredLayout"
+    Layout:
+      $ref: "./openapi_schema.yaml#/components/schemas/Layout"
+    NodeList:
+      $ref: "./openapi_schema.yaml#/components/schemas/NodeList"
+    DeviceInfo:
+      $ref: "./openapi_schema.yaml#/components/schemas/DeviceInfo"
+    DeviceIDList:
+      $ref: "./openapi_schema.yaml#/components/schemas/DeviceIDList"
+    DeviceID:
+      $ref: "./openapi_schema.yaml#/components/schemas/DeviceID"

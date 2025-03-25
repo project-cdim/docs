@@ -1,0 +1,1879 @@
+openapi: 3.0.3
+servers:
+  - url: http://(host address)/cdim/api/v1
+info:
+  title: Layout Apply API
+  description: |-
+    A suite of functions for making layout applies to the managed Composable Disaggregated Infrastructure
+  version: 0.1.0 # Matches the version of the revision history
+tags:
+  - name: Layout Apply
+    description: |-
+      A suite of functions to apply a layout
+  - name: Migration Procedure Genaration
+    description: |-
+      A suite of functions to generate migration procedures
+paths:
+  /layout-apply:
+    post:
+      summary: Layout Apply Request
+      description: |-
+        Accepts a layout apply request and returns a Layout Apply ID (applyID).<br>
+        You can obtain the status and results of the application by specifying the returned Layout Apply ID and executing the Layout Apply Status Reference API "GET /layout-apply/{applyID}".<br>
+        If data with specific status and rollbackStatus exists in the Layout Apply Management DB at the time of the layout apply request, it cannot be executed due to double initiation.<br>
+        The cases of double initiation are as shown in the table below.
+        | status | rollbackStatus | Execution result |
+        | ---- | ---- | ---- |
+        | IN_PROGRESS, CANCELING | - | There is a layout apply request in progress, resulting in abnormal termination due to double initiation |
+        | SUSPENDED | - | Due to an error, there is a suspended layout apply request, resulting in abnormal termination as it cannot be executed |
+        | CANCELED | IN_PROGRESS | There is a rollback execution in progress that results in abnormal termination due to double initiation for the layout apply request |
+        | CANCELED | SUSPENDED | Due to an error, the rollback is in a suspended state, resulting in abnormal termination as it cannot be executed |
+
+        ※For details on status and rollbackStatus, refer to Layout Apply Status Reference (ID specified)<br>
+        ※Regarding rollback, refer to Layout Apply Cancel
+      tags:
+        - Layout Apply
+
+      deprecated: false
+      requestBody:
+        description: |-
+          Migration procedure list  
+          Note:<br>
+           - If the migration procedure list is empty, it will be a normal response as there is nothing to change
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/ApplyRequest"
+              example:
+                procedures:
+                  - operationID: 1
+                    operation: disconnect
+                    targetCPUID: 3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6
+                    targetDeviceID: 895DFB43-68CD-41D6-8996-EAC8D1EA1E3F
+                    dependencies: []
+                  - operationID: 2
+                    operation: connect
+                    targetCPUID: 2CA6D4DF-2739-45BA-ACA4-6ABE93E81E15
+                    targetDeviceID: 895DFB43-68CD-41D6-8996-EAC8D1EA1E3F
+                    dependencies: [1]
+                  - operationID: 3
+                    operation: boot
+                    targetDeviceID: 2CA6D4DF-2739-45BA-ACA4-6ABE93E81E15
+                    dependencies: [2]
+      responses:
+        202:
+          description: Normal
+          content:
+            application/json:
+              schema:
+                properties:
+                  applyID:
+                    type: string
+                    description: Configuration proposal reflection ID. A 10-character random string consisting of 0123456789abcdef is used as the layout apply ID.
+                    example: 636ddde1ba
+        400:
+          description: Invalid request body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+        409:
+          description: |-
+            Error occurred during exclusive control of layout apply
+            Or, there is data with the reflection status "SUSPENDED" or rollback status "SUSPENDED"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConflictErrorResponse"
+              examples:
+                Error occurred during exclusive control of layout apply:
+                  value:
+                    code: E40010
+                    message: Already running. Cannot start multiple instances.
+                ? Data with the reflection status "SUSPENDED" or rollback status "SUSPENDED" exists:
+                : value:
+                    code: E40027
+                    message: Suspended data exist. Please resume layoutapply. applyID:[123456789a]
+        500:
+          description: |-
+            Internal server error or an error occurred from another component.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                code: E40002
+                message: Failed to load layoutapply_config.yaml.
+    get:
+      tags:
+        - Layout Apply
+      summary: Retrieve List of Layout Apply Statuses
+      description: |-
+        Retrieves the list of layout apply statuses from the Layout Apply DB. If there are no layout apply statuses to retrieve, an empty list is returned.<br>
+        If sortBy and orderBy are specified, sorting is performed based on the value specified in sortBy and in the order specified in orderBy  
+          - If only sortBy is specified, sorting is performed based on the value specified in sortBy and in descending order  
+          - If only orderBy is specified, sorting is performed based on startedAt in the order specified in orderBy  
+
+        If startedAt or endedAt is specified in sortBy and orderBy is asc, the order is old to new, and if desc, the order is new to old.   
+
+        If offset is specified and sortBy and orderBy are also specified, retrieval is performed starting from the specified line of the data sorted according to the specifications of sortBy and orderBy.<br>
+
+        For keys output in responses for each status, refer to the table below. Also, for details on status, refer to Layout Apply Status Reference (ID specified)<br>
+        | Item | status IN_PROGRESS |status CANCELING |status COMPLETED |status FAILED | status SUSPENDED | status CANCELED |  
+        | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
+        | applyID                               | Output | Output | Output | Output | Output | Output |
+        | status                                | Output | Output | Output | Output | Output | Output |
+        | procedures<br>(field selectable)         | Not output | Not output  | Output | Output | Output | Output |
+        | applyResult<br>(field selectable)        | Not output | Not output | Output | Output | Output | Output |
+        | rollbackProcedures<br>(field selectable) | Not output | Not output | Not output | Not output | Not output | Output |
+        | startedAt                             | Output | Output | Output | Output | Output | Output |
+        | endedAt                               | Not output | Not output | Output | Output | Not output | Output<br>(Not output if rollbackStatus is SUSPENDED) |
+        | canceledAt                            | Not output | Output | Not output | Output<br>(Only if there was an error after the cancel request) | Not output | Output |
+        | executeRollback                       | Not output | Output  | Not output | Output<br>(Only if there was an error after the cancel request) | Not output | Output |
+        | rollbackStatus                        | Not output | Not output | Not output | Not output | Not output | Output<br>(Only when executeRollback is true) |
+        | rollbackResult<br>(field selectable)     | Not output | Not output | Not output | Not output | Not output | Output<br>(Only when executeRollback is true) |
+        | rollbackStartedAt                     | Not output | Output<br>(Only when executeRollback is true and rollback is in progress)  | Not output | Not output | Not output | Output<br>(Only when executeRollback is true) |
+        | rollbackEndedAt                       | Not output | Not output | Not output | Not output | Not output | Output<br>(Only when executeRollback is true, not output if rollbackStatus is SUSPENDED) |
+        | resumeProcedures<br>(field selectable)  | Not output | Not output | Output<br>(Only when executed by resume request)  | Output<br>(Only when executed by resume request)  | Output | Output<br>(Only when executed by resume request) |
+        | resumeResult<br>(field selectable)      | Not output | Not output | Output<br>(Only when executed by resume request)  | Output<br>(Only when executed by resume request)  | Output<br>(Only when executed by resume request) | Output<br>(Only when executed by resume request) |
+        | suspendedAt                             | Not output | Not output | Output<br>(Only when executed by resume request) | Output<br>(Only when executed by resume request) | Output | Output<br>(Only when executed by resume request) |
+        | resumedAt                               | Output<br>(Only when executed by resume request) | Output<br>(Only when executed by resume request) | Output<br>(Only when executed by resume request) | Output<br>(Only when executed by resume request) | △<br>(Only when executed by resume request) | △<br>(Only when executed by resume request) |
+
+        By executing the Layout Apply Cancel API "PUT /layout-apply/{applyID}?action=cancel" on a layout apply ID with status IN_PROGRESS (in progress), the ongoing layout apply can be canceled.  
+        By executing the Layout Apply Resume API "PUT /layout-apply/{applyID}?action=resume" on a layout apply ID with status SUSPENDED (suspended due to a critical error) after resolving the error cause, you can resume the suspended layout apply.
+      parameters:
+        - name: status
+          in: query
+          description: |-
+            Retrieve the layout apply statuses with the specified status.<br>
+            If not specified, all statuses will be retrieved.
+          schema:
+            type: string
+            enum:
+              - IN_PROGRESS
+              - COMPLETED
+              - FAILED
+              - CANCELING
+              - CANCELED
+              - SUSPENDED
+            example: COMPLETED
+        - name: startedAtSince
+          in: query
+          description: |-
+            If only startedAtSince is specified, the items from the specified start time (starting point) onward are subject to retrieval.<br>
+            If both startedAtSince and startedAtUntil are specified, items from the specified start time (starting point) onward, to the start time (endpoint) before will be subject to retrieval.<br>
+            If neither is specified, all start times will be searched.<br>
+            The format is as follows.<br>
+             - If in UTC time<br>
+             - yyyy-MM-ddThh:mm:ssZ<br>
+             - When in local time zone datetime format<br>
+             - yyyy-MM-ddThh:mm:ss±hh:mm<br>
+          schema:
+            type: string
+            example: "2024-01-29T10:00:00Z"
+        - name: startedAtUntil
+          in: query
+          description: |-
+            If only startedAtUntil is specified, the items before the specified start time (endpoint) are subject to retrieval.<br>
+            If both startedAtSince and startedAtUntil are specified, items from the specified start time (starting point) onward, to the start time (endpoint) before will be subject to retrieval.<br>
+            If neither is specified, all start times will be searched.<br>
+            The format is as follows.<br>
+             - If in UTC time<br>
+             - yyyy-MM-ddThh:mm:ssZ<br>
+             - When in local time zone datetime format<br>
+             - yyyy-MM-ddThh:mm:ss±hh:mm<br>
+          schema:
+            type: string
+            example: "2024-01-29T10:00:00+09:00"
+        - name: endedAtSince
+          in: query
+          description: |-
+            If only endedAtSince is specified, the items from the specified end time (starting point) onward are subject to retrieval.<br>
+            If both endedAtSince and endedAtUntil are specified, items from the specified end time (starting point) onward, to the end time (endpoint) before will be subject to retrieval.<br>
+            If neither is specified, all end times will be searched.<br>
+            The format is as follows.<br>
+             - If in UTC time<br>
+             - yyyy-MM-ddThh:mm:ssZ<br>
+             - When in local time zone datetime format<br>
+             - yyyy-MM-ddThh:mm:ss±hh:mm<br>
+          schema:
+            type: string
+            example: "2024-01-29T17:00:00+09:00"
+        - name: endedAtUntil
+          in: query
+          description: |-
+            If only endedAtUntil is specified, the items before the specified end time (endpoint) are subject to retrieval.<br>
+            If both endedAtSince and endedAtUntil are specified, items from the specified end time (starting point) onward, to the end time (endpoint) before will be subject to retrieval.<br>
+            If neither is specified, all end times will be searched.<br>
+            The format is as follows.<br>
+             - If in UTC time<br>
+             - yyyy-MM-ddThh:mm:ssZ<br>
+             - When in local time zone datetime format<br>
+             - yyyy-MM-ddThh:mm:ss±hh:mm<br>
+          schema:
+            type: string
+            example: "2024-01-29T17:00:00Z"
+        - name: fields
+          in: query
+          description: |
+            A parameter to specify the layout apply status items included in the response body.<br>
+            Six types of items can be specified as follows:
+            - procedures: Migration procedure
+            - applyResult: Reflection result
+            - rollbackProcedures: Rollback procedure
+            - rollbackResult: Rollback result
+            - resumeProcedures: Resume procedure
+            - resumeResult: Resume result
+
+             If fields are not specified, the items for each status will be returned.<br>
+             If fields are specified, the items for each status and the items specified in fields will be returned.<br>
+             Items that are not specified in fields will not be output to the response.<br>
+             Also, if the items specified in fields do not exist in the layout apply status, the specified items will not be output.
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - procedures
+                - applyResult
+                - rollbackProcedures
+                - rollbackResult
+                - resumeProcedures
+                - resumeResult
+        - name: sortBy
+          in: query
+          description: |-
+            Sorting target.<br>Specifies the criteria items for sorting, and if not specified, sorting will be performed based on startedAt.<br>The sorting results depend on the query results.
+            - startedAt:Start date and time
+            - endedAt:End date and time
+          required: false
+          schema:
+            type: string
+            default: startedAt
+            enum:
+              - startedAt
+              - endedAt
+            example: startedAt
+        - name: orderBy
+          in: query
+          description: |-
+            Sorting order.<br>If not specified, sorting will be performed in descending order.<br>
+            If sortBy and orderBy are specified, sorting is performed based on the value specified in sortBy in the manner specified in orderBy.<br>
+            If only sortBy is specified, sorting is performed based on the value specified in sortBy and in descending order (desc).<br>
+            If only orderBy is specified, startedAt will be the sorting target, and sorting will be performed in the manner specified in orderBy.
+            If startedAt or endedAt is specified in sortBy and orderBy is asc, the order is old to new, and if desc, the order is new to old. 
+            - asc:Ascending order
+            - desc:Descending order
+          required: false
+          schema:
+            type: string
+            default: desc
+            enum:
+              - asc
+              - desc
+            example: desc
+        - name: limit
+          in: query
+          description: |-
+            Number of items retrieved.<br>Retrieves the specified number of layout apply statuses.<br>
+            If not specified, 20 layout apply statuses will be retrieved.<br>
+            Specify the number of layout apply statuses to be retrieved as an integer value of 1 or more.<br>
+            If the number of layout apply statuses registered in the database is less than the number specified in the limit, all registered layout apply statuses will be retrieved.<br>
+          required: false
+          schema:
+            type: integer
+            default: 20
+            example: 20
+        - name: offset
+          in: query
+          description: |-
+            Retrieval start line.<br>Retrieves layout apply statuses from the specified line.<br>
+            If not specified or 0, retrieval starts from the first line.<br>
+            Specify the retrieval line for the layout apply statuses to be obtained from the database as an integer value of 0 or more.<br>
+            If the number of layout apply statuses registered in the database is less than the number of lines specified in the offset, the retrieval result will be empty.<br>
+            If sortBy and orderBy are specified, retrieval is performed starting from the specified line of the data sorted according to the specifications of sortBy and orderBy.<br>
+            If 20 is specified, the layouts from the 21st onwards will be retrieved.<br>
+          required: false
+          schema:
+            type: integer
+            default: 0
+            example: 0
+      responses:
+        200:
+          description: |-
+            Returns a list of retrieved layout apply statuses
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/GetAllResponse"
+              examples:
+                If at least one layout apply status is retrieved and no fields are specified:
+                  value:
+                    "count": 2
+                    "totalCount": 2
+                    "applyResults":
+                      [
+                        {
+                          "applyID": "<Layout Apply ID>",
+                          "status": "IN_PROGRESS",
+                          "startedAt": "2023-05-10T00:00:00Z",
+                        },
+                        {
+                          "applyID": "<Layout Apply ID>",
+                          "status": "COMPLETED",
+                          "procedures": <Migration procedure>,
+                          "applyResult":
+                            [
+                              {
+                                "operationID": 1,
+                                "status": "COMPLETED",
+                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                                "method": "PUT",
+                                "requestBody":
+                                  {
+                                    "action": "disconnect",
+                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "statusCode": 200,
+                                "responseBody":
+                                  {
+                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "startedAt": "2023-05-10T00:00:01Z",
+                                "endedAt": "2023-05-10T00:05:00Z",
+                              },
+                              {
+                                "operationID": 2,
+                                "status": "COMPLETED",
+                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7/aggregations",
+                                "method": "PUT",
+                                "requestBody":
+                                  {
+                                    "action": "disconnect",
+                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
+                                  },
+                                "statusCode": 200,
+                                "responseBody":
+                                  {
+                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7",
+                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
+                                  },
+                                "startedAt": "2023-05-10T00:00:02Z",
+                                "endedAt": "2023-05-10T00:05:01Z",
+                              },
+                            ],
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "endedAt": "2023-05-10T00:10:00Z",
+                        },
+                      ]
+                If 0 layout apply statuses were retrieved:
+                  value:
+                    "count": 0
+                    "totalCount": 0
+                    "applyResults": []
+                If layout apply statuses with status FAILED are specified as the target for retrieval:
+                  value:
+                    "count": 2
+                    "totalCount": 2
+                    "applyResults":
+                      [
+                        {
+                          "applyID": "<Layout Apply ID>",
+                          "status": "FAILED",
+                          "procedures": <Migration procedure>,
+                          "applyResult":
+                            [
+                              {
+                                "operationID": 1,
+                                "status": "COMPLETED",
+                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                                "method": "PUT",
+                                "requestBody":
+                                  {
+                                    "action": "disconnect",
+                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "statusCode": 200,
+                                "responseBody":
+                                  {
+                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "startedAt": "2023-05-10T00:00:01Z",
+                                "endedAt": "2023-05-10T00:05:00Z",
+                              },
+                              {
+                                "operationID": 2,
+                                "status": "FAILED",
+                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7/aggregations",
+                                "method": "PUT",
+                                "requestBody":
+                                  {
+                                    "action": "disconnect",
+                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
+                                  },
+                                "statusCode": 500,
+                                "responseBody":
+                                  {
+                                    "code": "XXXXXX",
+                                    "message": "INTERNAL SERVER ERROR",
+                                  },
+                                "startedAt": "2023-05-10T00:00:02Z",
+                                "endedAt": "2023-05-10T00:05:01Z",
+                              },
+                            ],
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "endedAt": "2023-05-10T00:10:00Z",
+                        },
+                        {
+                          "applyID": "<Layout Apply ID>",
+                          "status": "FAILED",
+                          "procedures": <Migration procedure>,
+                          "applyResult":
+                            [
+                              {
+                                "operationID": 1,
+                                "status": "COMPLETED",
+                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                                "requestBody":
+                                  {
+                                    "action": "disconnect",
+                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "method": "PUT",
+                                "statusCode": 200,
+                                "responseBody":
+                                  {
+                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "startedAt": "2023-05-11T00:00:01Z",
+                                "endedAt": "2023-05-11T00:05:00Z",
+                              },
+                              {
+                                "operationID": 2,
+                                "status": "FAILED",
+                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7/aggregations",
+                                "requestBody":
+                                  {
+                                    "action": "disconnect",
+                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
+                                  },
+                                "method": "PUT",
+                                "statusCode": 500,
+                                "responseBody":
+                                  {
+                                    "code": "XXXXXX",
+                                    "message": "INTERNAL SERVER ERROR",
+                                  },
+                                "startedAt": "2023-05-11T00:00:02Z",
+                                "endedAt": "2023-05-11T00:05:01Z",
+                              },
+                            ],
+                          "startedAt": "2023-05-11T00:00:00Z",
+                          "endedAt": "2023-05-11T00:10:00Z",
+                        },
+                      ]
+                If applyResult is specified in fields:
+                  value:
+                    "count": 2
+                    "totalCount": 2
+                    "applyResults":
+                      [
+                        {
+                          "applyID": "<Layout Apply ID>",
+                          "status": "COMPLETED",
+                          "applyResult":
+                            [
+                              {
+                                "operationID": 1,
+                                "status": "COMPLETED",
+                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                                "method": "PUT",
+                                "requestBody":
+                                  {
+                                    "action": "disconnect",
+                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "statusCode": 200,
+                                "responseBody":
+                                  {
+                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "startedAt": "2023-05-10T00:00:01Z",
+                                "endedAt": "2023-05-10T00:05:01Z",
+                              },
+                              {
+                                "operationID": 2,
+                                "status": "COMPLETED",
+                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7/aggregations",
+                                "requestBody":
+                                  {
+                                    "action": "disconnect",
+                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
+                                  },
+                                "method": "PUT",
+                                "statusCode": 200,
+                                "responseBody":
+                                  {
+                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7",
+                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
+                                  },
+                                "startedAt": "2023-05-10T00:00:02Z",
+                                "endedAt": "2023-05-10T00:05:02Z",
+                              },
+                            ],
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "endedAt": "2023-05-10T00:10:00Z",
+                        },
+                        {
+                          "applyID": "<Layout Apply ID>",
+                          "status": "CANCELED",
+                          "applyResult":
+                            [
+                              {
+                                "operationID": 1,
+                                "status": "COMPLETED",
+                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                                "requestBody":
+                                  {
+                                    "action": "connect",
+                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "method": "PUT",
+                                "statusCode": 200,
+                                "responseBody":
+                                  {
+                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "startedAt": "2023-05-11T00:00:01Z",
+                                "endedAt": "2023-05-11T00:05:01Z",                                  
+                              },
+                              { "operationID": 2, "status": "CANCELED" },
+                            ],
+                          "startedAt": "2023-05-11T00:00:00Z",
+                          "endedAt": "2023-05-11T00:10:00Z",
+                          "canceledAt": "2023-05-10T00:05:00Z",
+                          "executeRollback": false,
+                        },
+                      ]
+                ? If the CANCELED status of layout apply statuses is specified as the target for retrieval and applyResult is specified in the fields
+                : value:
+                    "count": 2
+                    "totalCount": 2
+                    "applyResults":
+                      [
+                        {
+                          "applyID": "<Layout Apply ID>",
+                          "status": "CANCELED",
+                          "applyResult":
+                            [
+                              {
+                                "operationID": 1,
+                                "status": "COMPLETED",
+                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                                "method": "PUT",
+                                "requestBody":
+                                  {
+                                    "action": "disconnect",
+                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "statusCode": 200,
+                                "responseBody":
+                                  {
+                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "startedAt": "2023-05-10T00:00:01Z",
+                                "endedAt": "2023-05-10T00:05:01Z",
+                              },
+                              { "operationID": 2, "status": "CANCELED" },
+                            ],
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "endedAt": "2023-05-10T00:10:00Z",
+                          "canceledAt": "2023-05-10T00:05:00Z",
+                          "executeRollback": false,
+                        },
+                        {
+                          "applyID": "<Layout Apply ID>",
+                          "status": "CANCELED",
+                          "applyResult":
+                            [
+                              {
+                                "operationID": 1,
+                                "status": "COMPLETED",
+                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                                "method": "PUT",
+                                "requestBody":
+                                  {
+                                    "action": "disconnect",
+                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "statusCode": 200,
+                                "responseBody":
+                                  {
+                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "startedAt": "2023-05-11T00:00:01Z",
+                                "endedAt": "2023-05-11T00:19:00Z",
+                              },
+                              { "operationID": 2, "status": "CANCELED" },
+                            ],
+                          "startedAt": "2023-05-11T00:00:00Z",
+                          "endedAt": "2023-05-11T00:20:00Z",
+                          "canceledAt": "2023-05-11T00:05:00Z",
+                          "executeRollback": true,
+                          "rollbackStatus": "COMPLETED",
+                          "rollbackStartedAt": "2023-05-10T00:10:00Z",
+                          "rollbackEndedAt": "2023-05-10T00:20:00Z",
+                        },
+                      ]
+                ? If the SUSPENDED status of layout apply statuses is specified as the target for retrieval and resumeProcedures is specified in the fields
+                : value:
+                    "count": 2
+                    "totalCount": 2
+                    "applyResults":
+                      [
+                        {
+                          "applyID": "<Layout Apply ID>",
+                          "status": "SUSPENDED",
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "suspendedAt": "2023-05-10T00:10:00Z",
+                          "resumeProcedures": <Resume procedure>,
+                        },
+                        {
+                          "applyID": "<Layout Apply ID>",
+                          "status": "SUSPENDED",
+                          "startedAt": "2023-05-11T00:00:00Z",
+                          "suspendedAt": "2023-05-11T00:20:00Z",
+                          "resumeProcedures": <Resume procedure>,
+                        },
+                      ]
+                ? If the CANCELING status of layout apply statuses is specified as the target for retrieval and procedures is specified in the fields
+                : value:
+                    "count": 1
+                    "totalCount": 1
+                    "applyResults":
+                      [
+                        {
+                          "applyID": "<Layout Apply ID>",
+                          "status": "CANCELING",
+                          "startedAt": "2023-05-11T00:00:00Z",
+                          "canceledAt": "2023-05-11T00:20:00Z",
+                          "executeRollback": true,
+                          "rollbackStartedAt": "2023-05-11T00:30:00Z",
+                        },
+                      ]
+                ? If startedAtSince is specified as ["2023-05-10T00:00:00Z"], startedAtUntil as ["2023-05-10T10:00:00Z"], endedAtSince as ["2023-05-10T00:00:00Z"], and endedAtUntil as ["2023-05-10T10:00:00Z"]
+                : value:
+                    "count": 1
+                    "totalCount": 1
+                    "applyResults":
+                      [
+                        {
+                          "applyID": "<Layout Apply ID>",
+                          "status": "CANCELED",
+                          "applyResult":
+                            [
+                              {
+                                "operationID": 1,
+                                "status": "COMPLETED",
+                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                                "requestBody":
+                                  {
+                                    "action": "disconnect",
+                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "method": "PUT",
+                                "statusCode": 200,
+                                "responseBody":
+                                  {
+                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "startedAt": "2023-05-10T00:00:01Z",
+                                "endedAt": "2023-05-10T00:09:00Z",
+                              },
+                              { "operationID": 2, "status": "CANCELED" },
+                            ],
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "endedAt": "2023-05-10T00:10:00Z",
+                          "canceledAt": "2023-05-10T00:05:00Z",
+                          "executeRollback": false,
+                        },
+                      ]
+                If sortBy is specified as startedAt (sorting in descending order based on startedAt):
+                  value:
+                    "count": 2
+                    "totalCount": 2
+                    "applyResults":
+                      [
+                        {
+                          "applyID": "<Layout Apply ID>",
+                          "status": "COMPLETED",
+                          "procedures": <Migration procedure>,
+                          "applyResult":
+                            [
+                              {
+                                "operationID": 1,
+                                "status": "COMPLETED",
+                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                                "method": "PUT",
+                                "requestBody":
+                                  {
+                                    "action": "disconnect",
+                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "statusCode": 200,
+                                "responseBody":
+                                  {
+                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "startedAt": "2023-05-11T00:00:01Z",
+                                "endedAt": "2023-05-11T00:09:00Z",
+                              },
+                              {
+                                "operationID": 2,
+                                "status": "COMPLETED",
+                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7/aggregations",
+                                "method": "PUT",
+                                "requestBody":
+                                  {
+                                    "action": "disconnect",
+                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
+                                  },
+                                "statusCode": 200,
+                                "responseBody":
+                                  {
+                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7",
+                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
+                                  },
+                                "startedAt": "2023-05-11T00:00:02Z",
+                                "endedAt": "2023-05-11T00:09:01Z",
+                              },
+                            ],
+                          "startedAt": "2023-05-11T00:00:00Z",
+                          "endedAt": "2023-05-11T00:10:00Z",
+                        },
+                        {
+                          "applyID": "<Layout Apply ID>",
+                          "status": "IN_PROGRESS",
+                          "startedAt": "2023-05-10T00:00:00Z",
+                        },
+                      ]
+                If sortBy is specified as endedAt and orderBy is specified as desc (sorting in descending order based on endedAt):
+                  value:
+                    "count": 2
+                    "totalCount": 2
+                    "applyResults":
+                      [
+                        {
+                          "applyID": "<Layout Apply ID>",
+                          "status": "COMPLETED",
+                          "procedures": <Migration procedure>,
+                          "applyResult":
+                            [
+                              {
+                                "operationID": 1,
+                                "status": "COMPLETED",
+                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                                "method": "PUT",
+                                "requestBody":
+                                  {
+                                    "action": "disconnect",
+                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "statusCode": 200,
+                                "responseBody":
+                                  {
+                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "startedAt": "2023-05-10T00:09:01Z",
+                                "endedAt": "2023-05-10T00:09:30Z",
+                              },
+                              {
+                                "operationID": 2,
+                                "status": "COMPLETED",
+                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7/aggregations",
+                                "method": "PUT",
+                                "requestBody":
+                                  {
+                                    "action": "disconnect",
+                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
+                                  },
+                                "statusCode": 200,
+                                "responseBody":
+                                  {
+                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7",
+                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
+                                  },
+                                "startedAt": "2023-05-10T00:09:02Z",
+                                "endedAt": "2023-05-10T00:09:31Z",
+                              },
+                            ],
+                          "startedAt": "2023-05-10T00:09:00Z",
+                          "endedAt": "2023-05-10T00:10:00Z",
+                        },
+                        {
+                          "applyID": "<Layout Apply ID>",
+                          "status": "COMPLETED",
+                          "procedures": <Migration procedure>,
+                          "applyResult":
+                            [
+                              {
+                                "operationID": 1,
+                                "status": "COMPLETED",
+                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                                "method": "PUT",
+                                "requestBody":
+                                  {
+                                    "action": "disconnect",
+                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "statusCode": 200,
+                                "responseBody":
+                                  {
+                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "startedAt": "2023-05-10T00:07:01Z",
+                                "endedAt": "2023-05-10T00:07:30Z",
+                              },
+                              {
+                                "operationID": 2,
+                                "status": "COMPLETED",
+                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7/aggregations",
+                                "method": "PUT",
+                                "requestBody":
+                                  {
+                                    "action": "disconnect",
+                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
+                                  },
+                                "statusCode": 200,
+                                "responseBody":
+                                  {
+                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7",
+                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
+                                  },
+                                "startedAt": "2023-05-10T00:07:02Z",
+                                "endedAt": "2023-05-10T00:07:31Z",
+                              },
+                            ],
+                          "startedAt": "2023-05-10T00:07:00Z",
+                          "endedAt": "2023-05-10T00:08:00Z",
+                        },
+                      ]
+                If 1 is specified in the limit:
+                  value:
+                    "count": 1
+                    "totalCount": 20
+                    "applyResults":
+                      [
+                        {
+                          "applyID": "<Layout Apply ID>",
+                          "status": "COMPLETED",
+                          "procedures": <Migration procedure>,
+                          "applyResult":
+                            [
+                              {
+                                "operationID": 1,
+                                "status": "COMPLETED",
+                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                                "method": "PUT",
+                                "requestBody":
+                                  {
+                                    "action": "disconnect",
+                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "statusCode": 200,
+                                "responseBody":
+                                  {
+                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                  },
+                                "startedAt": "2023-05-11T00:00:01Z",
+                                "endedAt": "2023-05-11T00:09:01Z",
+                              },
+                              {
+                                "operationID": 2,
+                                "status": "COMPLETED",
+                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7/aggregations",
+                                "method": "PUT",
+                                "requestBody":
+                                  {
+                                    "action": "disconnect",
+                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
+                                  },
+                                "statusCode": 200,
+                                "responseBody":
+                                  {
+                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7",
+                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
+                                  },
+                                "startedAt": "2023-05-11T00:00:02Z",
+                                "endedAt": "2023-05-11T00:09:02Z",
+                              },
+                            ],
+                          "startedAt": "2023-05-11T00:00:00Z",
+                          "endedAt": "2023-05-11T00:10:00Z",
+                        },
+                      ]
+        400:
+          description: |-
+            Invalid parameter specification
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponseGetAll"
+
+        500:
+          description: |-
+            Internal server error or an error occurred from another component.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                code: E40002
+                message: Failed to load layoutapply_config.yaml.
+
+  /layout-apply/{applyID}:
+    put:
+      summary: Layout Apply Cancel/Resume
+      description: |-
+        ・Cancel Request<br>
+        Cancels the ongoing layout apply process.<br>
+        If rollbackOnCancel is specified at the time of the cancel request, a rollback process will be executed to revert the layout applies made, and its execution status can be checked with rollbackStatus.<br>
+        If a cancel request is made during the rollback execution, the rollback will not be canceled.<br>
+        In such cases, the current status (status="CANCELING") is returned as a normal case.<br>
+        Changes to status and rollbackStatus based on the status and rollbackStatus of the specified Layout Apply ID are shown in the table below.<br>
+        Refer to Layout Apply Status (ID specified) for details of status and rollbackStatus.
+        | Status Before Execution | Status After Execution | RollbackStatus Before Execution | RollbackStatus After Execution | Remarks | 
+        | ---- | ---- | ---- | ---- | ---- |
+        | IN_PROGRESS | CANCELING | - | - | Cancel ongoing layout apply |
+        | IN_PROGRESS | FAILED | - | - | FAILED if there's an anomaly in the process of the specified Layout Apply ID and normal cancel processing is not possible |
+        | SUSPENDED | FAILED | - | - | Cancel the suspended layout apply<br>※Failed if canceled because SUSPENDED results from errors during layout apply |
+        | CANCELED, CANCELING | CANCELED, CANCELING (no change) | - | - | No transition due to already canceled |
+        | COMPLETED, FAILED | COMPLETED, FAILED (no change) | - | - | No transition due to already executed status |
+        | CANCELED | CANCELED (no change) | IN_PROGRESS | IN_PROGRESS (no change) | No transition due to already submitted cancel request if no anomaly in the process of specified Layout Apply ID |
+        | CANCELED | CANCELED (no change) | IN_PROGRESS | FAILED | Transition to FAILED if an anomaly exists in the process of specified Layout Apply ID and unable to transition from rollback processing state |
+        | CANCELED | CANCELED (no change) | SUSPENDED | FAILED | Cancel the suspended rollback of layout apply<br>※Failed if canceled because SUSPENDED results from errors during rollback processing |
+        | CANCELED | CANCELED (no change) | COMPLETED, FAILED | COMPLETED, FAILED (no change) | No transition due to already canceled |
+
+        ・Resume Request<br>
+        Resumes the suspended layout apply process.<br>
+        Changes to status and rollbackStatus based on the status and rollbackStatus of the specified Layout Apply ID are shown in the table below.<br>
+        Refer to Layout Apply Status (ID specified) for details of status and rollbackStatus.
+        | Status Before Execution | Status After Execution | RollbackStatus Before Execution | RollbackStatus After Execution | Remarks | 
+        | ---- | ---- | ---- | ---- | ---- |
+        | SUSPENDED | IN_PROGRESS | - | - | Resume the suspended layout apply |
+        | IN_PROGRESS, CANCELING | IN_PROGRESS, CANCELING (no change) | - | - | No transition due to in execution (canceling) |
+        | COMPLETED, FAILED, CANCELED | COMPLETED, FAILED, CANCELED (no change) | - | - | No transition due to already executed |
+        | CANCELED | CANCELED (no change) | SUSPENDED | IN_PROGRESS | Resume the suspended layout apply |
+        | CANCELED | CANCELED (no change) | IN_PROGRESS | IN_PROGRESS (no change) | No transition due to in execution (canceling) |
+        | CANCELED | CANCELED (no change) | COMPLETED, FAILED | COMPLETED, FAILED (no change) | No transition due to already executed |
+      tags:
+        - Layout Apply
+      deprecated: false
+      parameters:
+        - name: applyID
+          in: path
+          description: Layout Apply ID. Specify the Layout Apply ID received at the time of the layout apply request.
+          required: true
+          example: 636ddde1ba
+          schema:
+            type: string
+        - name: action
+          in: query
+          description: |-
+            Type of action to be requested on the layout apply function.
+            - cancel: Make a cancel request for the layout apply process.
+            - resume: Make a resume request for the layout apply process.
+          required: true
+          schema:
+            type: string
+            enum:
+              - cancel
+              - resume
+        - name: rollbackOnCancel
+          in: query
+          description: |-
+            Flag to select whether to execute a rollback after canceling.  
+            If specified with actions other than "cancel", this parameter is ignored (not a validation error)
+            - true: Execute rollback.
+            - false: Do not execute rollback.
+          schema:
+            type: boolean
+            enum:
+              - true
+              - false
+            default: false
+      responses:
+        200:
+          description: |-
+            Normal. The transition of the apply state for the specified Layout Apply ID is already completed.  
+            [Cancel Request] Apply state is in canceling or canceled (CANCELED, CANCELING) or apply state is CANCELED and rollback state is COMPLETED or FAILED  
+            [Resume Request] Apply state is already executed (COMPLETED or FAILED or CANCELED) or rollback state is already executed (COMPLETED or FAILED)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplyIDPutResponse"
+              examples:
+                ? In case of cancel request with the state being canceling or canceled (apply state is CANCELING or CANCELED)
+                : value:
+                    "status": "CANCELED"
+                ? In case of cancel request with the state being canceled (apply state is CANCELED and rollback state is COMPLETED)
+                : value:
+                    "status": "CANCELED"
+                    "rollbackStatus": "COMPLETED"
+                In case of resume request with state being already executed (apply state is "COMPLETED"):
+                  value:
+                    "status": "COMPLETED"
+                ? In case of resume request with state being already executed (apply state is "CANCELED" and rollback state is "COMPLETED")
+                : value:
+                    "status": "CANCELED"
+                    "rollbackStatus": "COMPLETED"
+        202:
+          description: |-
+            Normal. If the request to transition the apply state for the specified Layout Apply ID is accepted.  
+            [Cancel Request]  
+            Cancel ongoing layout apply (transition from IN_PROGRESS to CANCELING)  
+            Cancel suspended layout apply (transition from SUSPENDED to FAILED)   
+            Cancel suspended rollback of layout apply (transition rollback state from SUSPENDED to FAILED)   
+            [Resume Request]  
+            Resume the suspended layout apply (transition from SUSPENDED to IN_PROGRESS)  
+            Resume suspended rollback of layout apply (transition rollback state from SUSPENDED to IN_PROGRESS)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplyIDPutResponse"
+              examples:
+                In case of canceling an ongoing layout apply:
+                  value:
+                    "status": "CANCELING"
+                In case of canceling a suspended layout apply:
+                  value:
+                    "status": "FAILED"
+                In case of canceling a suspended rollback of layout apply:
+                  value:
+                    "status": "CANCELED"
+                    "rollbackStatus": "FAILED"
+                In case of resuming a suspended layout apply:
+                  value:
+                    "status": "IN_PROGRESS"
+                In case of resuming a suspended rollback of layout apply:
+                  value:
+                    "status": "CANCELED"
+                    "rollbackStatus": "IN_PROGRESS"
+        400:
+          description: Invalid parameter specified
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+        404:
+          description: |-
+            Specified Layout Apply ID does not exist
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotExistErrorResponse"
+        409:
+          description: |-
+            When unable to transition from the current application status.  
+            [Cancel Request]  
+            Unable to transition if the application status of the specified Layout Apply ID is "COMPLETED" or "FAILED" as it is already completed.  
+            Unable to transition if there's an anomaly in the process for the specified Layout Apply ID, making normal cancel processing not possible (※)  
+            Unable to transition if there's an anomaly and unable to transition from a rollback processing state (※)  
+            ※ A Layout Apply ID with a status or rollback status of "IN_PROGRESS" exists, preventing multiple instances from executing, and changes status or rollback status to "FAILED"  
+            Unable to transition if the application status of the specified Layout Apply ID is "CANCELED" and the rollback status is "IN_PROGRESS" without any anomaly in the process as the cancel request has already been submitted  
+            [Resume Request]  
+            Unable to transition if the application status of the specified Layout Apply ID is "IN_PROGRESS" or "CANCELING" due to being in execution  
+            Unable to transition if the rollback status of the specified Layout Apply ID is "IN_PROGRESS" due to being in execution
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: number
+                    description: Error code
+                    enum:
+                      - E40022
+                      - E40027
+                      - E40028
+                  message:
+                    type: string
+                    description: Message
+                    enum:
+                      - "This layoutapply has already executed."
+                      - "Since the process with the specified ID does not exist, change the status from IN_PROGRESS to FAILED."
+                      - "Suspended data exist. Please resume layoutapply. applyID:[123456789a]"
+                  status:
+                    type: string
+                    description: Status
+                    enum:
+                      - "FAILED"
+                      - "CANCELED"
+                  rollbackStatus:
+                    type: string
+                    description: RollbackStatus
+                    enum:
+                      - "FAILED"
+              examples:
+                When unable to transition from the current state due to cancel or resume request:
+                  value:
+                    "code": "E40022"
+                    "message": "This layoutapply has already executed."
+                ? In case of cancel request when the application status is "CANCELED" and rollback status is "IN_PROGRESS" without any anomaly
+                : value:
+                    "code": "E40022"
+                    "message": "This layoutapply has already executed."
+                ? In case of cancel request where there's an anomaly in the process of the Layout Apply ID and normal cancel processing is not possible
+                : value:
+                    "code": "E40028"
+                    "message": "Since the process with the specified ID does not exist, change the status from IN_PROGRESS to FAILED."
+                    "status": "FAILED"
+                ? In case of cancel request where there's an anomaly in the process and unable to transition from the rollback processing state
+                : value:
+                    "code": "E40028"
+                    "message": "Since the process with the specified ID does not exist, change the rollbackStatus from IN_PROGRESS to FAILED."
+                    "status": "CANCELED"
+                    "rollbackStatus": "FAILED"
+
+        500:
+          description: |-
+            Internal server error or an error occurred from another component.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                code: E40002
+                message: Failed to load layoutapply_config.yaml.
+
+    get:
+      tags:
+        - Layout Apply
+      summary: View Layout Apply Status (ID specified)
+      description: |-
+        Retrieve the layout apply status for the specified ID from the layout apply DB.<br>
+        Refer to the table below for keys output for each status<br>
+        | Item Name | status is IN_PROGRESS | status is CANCELING | status is COMPLETED | status is FAILED | status is SUSPENDED | status is CANCELED |  
+        | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
+        | applyID                               | Output | Output | Output | Output | Output | Output |
+        | status                                | Output | Output | Output | Output | Output | Output |
+        | procedures (fields can be specified) | Not output | Not output | Output | Output | Output | Output |
+        | applyResult (fields can be specified) | Not output | Not output | Output | Output | Output | Output |
+        | rollbackProcedures (fields can be specified) | Not output | Not output | Not output | Not output | Not output | Output |
+        | startedAt                             | Output | Output | Output | Output | Output | Output |
+        | endedAt                               | Not output | Not output | Output | Output | Not output | Output (Not output if rollbackStatus is SUSPENDED) |
+        | canceledAt                            | Not output | Output | Not output | Output (Only output if it becomes an error after cancel request) | Not output | Output |
+        | executeRollback                       | Not output | Output | Not output | Output (Only output if it becomes an error after cancel request) | Not output | Output |
+        | rollbackStatus                        | Not output | Not output | Not output | Not output | Not output | Output (Only output if executeRollback is true) |
+        | rollbackResult (fields can be specified) | Not output | Not output | Not output | Not output | Not output | Output (Only output if executeRollback is true) |
+        | rollbackStartedAt                     | Not output | Output (Only output if executeRollback is true and rollback is ongoing) | Not output | Not output | Not output | Output (Only output if executeRollback is true) |
+        | rollbackEndedAt                       | Not output | Not output | Not output | Not output | Not output | Output (Only output if executeRollback is true, not output if rollbackStatus is SUSPENDED) |
+        | resumeProcedures (fields can be specified)  | Not output | Not output | Output (Only output if resume request is executed) | Output (Only output if resume request is executed) | Output | Output (Only output if resume request is executed) |
+        | resumeResult (fields can be specified)      | Not output | Not output | Output (Only output if resume request is executed) | Output (Only output if resume request is executed) | Output (Only output if resume request is executed) | Output (Only output if resume request is executed) |
+        | suspendedAt                             | Not output | Not output | Output (Only output if resume request is executed) | Output (Only output if resume request is executed) | Output | Output (Only output if resume request is executed) |
+        | resumedAt                               | Output (Only output if resume request is executed) | Output (Only output if resume request is executed) | Output (Only output if resume request is executed) | Output (Only output if resume request is executed) | Output (Only output if resume request is executed) | △ (Only output if resume request is executed) |
+
+        Use each function based on the status information acquired from this IF.<br>
+        【Example】<br>
+        For a Layout Apply ID with status IN_PROGRESS (in execution), executing the layout apply cancel API "PUT /layout-apply/{applyID}?action=cancel" can cancel the ongoing layout apply.  
+        For a Layout Apply ID with status SUSPENDED (suspended due to critical error), after resolving the cause of the error, executing the layout apply resume API "PUT /layout-apply/{applyID}?action=resume" can resume the suspended layout apply.  
+
+        Refer to the table below for details of each status
+
+        | status | Description |
+        | ---- | ---- |
+        | IN_PROGRESS | Layout apply in execution<br>Transition to this status when a layout apply request is received or when a resume request is received for a suspended layout apply |
+        | CANCELING   | Layout apply canceling<br>Transition to this status when a cancel request is received for an executing layout apply |
+        | COMPLETED   | Layout apply completed<br>Transition to this status when an executing layout apply ends normally |
+        | FAILED      | Layout apply failed<br>Transition to this status when an executing layout apply ends abnormally or when a cancel request is received for a suspended layout apply |
+        | SUSPENDED   | Layout apply suspended<br>Transition to this status when a layout apply encounters a critical error due to response anomaly |
+        | CANCELED    | Layout apply canceled<br>Transition to this status when the canceling process of a canceling layout apply is completed |
+
+      parameters:
+        - name: applyID
+          in: path
+          description: Layout Apply ID. Specify the Layout Apply ID received at the time of the layout apply request.
+          required: true
+          example: 636ddde1ba
+          schema:
+            type: string
+        - name: fields
+          in: query
+          description: |
+            Parameters to specify the items of the layout apply status included in the response body.<br>
+            The following 6 items can be specified.
+            - procedures: Migration steps
+            - applyResult: Apply results
+            - rollbackProcedures: Rollback steps
+            - rollbackResult: Rollback results
+            - resumeProcedures: Resume steps
+            - resumeResult: Resume results
+
+             If fields are unspecified, return items for each status.<br>
+             When fields are specified, return items for each status and items specified in fields.<br>
+             Items not specified in fields will not be output in the response.<br>
+             Also, if items specified in fields do not exist in the layout apply status, the specified item will not be output.
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - procedures
+                - applyResult
+                - rollbackProcedures
+                - rollbackResult
+                - resumeProcedures
+                - resumeResult
+      responses:
+        200:
+          description: |-
+            Returns the layout apply status obtained by specifying a layout apply ID
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/ApplyIDGetResponse"
+              examples:
+                If the layout apply completes normally:
+                  value:
+                    applyID: "<Layout Apply ID>"
+                    status: "COMPLETED"
+                    procedures: <Migration steps>
+                    applyResult:
+                      [
+                        {
+                          "operationID": 1,
+                          "status": "COMPLETED",
+                          "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                          "requestBody":
+                            {
+                              "action": "disconnect",
+                              "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                            },
+                          "method": "PUT",
+                          "statusCode": 200,
+                          "responseBody":
+                            {
+                              "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                              "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                            },
+                          "startedAt": "2023-05-10T00:00:01Z",
+                          "endedAt": "2023-05-10T00:09:01Z",
+                        },
+                        {
+                          "operationID": 2,
+                          "status": "COMPLETED",
+                          "uri": "http://cdim/api/v1/devices/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/power",
+                          "requestBody": { "action": "on" },
+                          "method": "PUT",
+                          "statusCode": 200,
+                          "responseBody":
+                            {
+                              "deviceID ": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                            },
+                          "isOSBoot":
+                            {
+                              "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/is-os-ready?timeOut=2",
+                              "queryParameter": { "timeOut": 2 },
+                              "method": "GET",
+                              "statusCode": 200,
+                              "responseBody":
+                                {
+                                  "status": true,
+                                  "IpAddress": "xxx.xxx.xxx.xxx",
+                                },
+                            },
+                          "startedAt": "2023-05-10T00:00:02Z",
+                          "endedAt": "2023-05-10T00:09:02Z",
+                        },
+                        {
+                          "operationID": 3,
+                          "status": "COMPLETED",
+                          "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/power",
+                          "requestBody": { "action": "off" },
+                          "method": "PUT",
+                          "statusCode": 200,
+                          "responseBody":
+                            {
+                              "deviceID ": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                            },
+                          "getInformation":
+                            { "responseBody": { "powerState": "Off" } },
+                          "startedAt": "2023-05-10T00:00:03Z",
+                          "endedAt": "2023-05-10T00:09:03Z",
+                        },
+                      ]
+                    startedAt: "2023-05-10T00:00:00Z"
+                    endedAt: "2023-05-10T00:10:00Z"
+                If there were steps skipped due to abnormal termination of layout apply:
+                  value:
+                    applyID: "<Layout Apply ID>"
+                    status: "FAILED"
+                    procedures: <Migration steps>
+                    applyResult:
+                      [
+                        {
+                          "operationID": 1,
+                          "status": "FAILED",
+                          "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                          "requestBody":
+                            {
+                              "action": "disconnect",
+                              "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                            },
+                          "method": "PUT",
+                          "statusCode": 500,
+                          "responseBody":
+                            {
+                              "code": "XXXXXX",
+                              "message": "INTERNAL SERVER ERROR",
+                            },
+                          "startedAt": "2023-05-10T00:00:01Z",
+                          "endedAt": "2023-05-10T00:09:01Z",
+                        },
+                        { "operationID": 2, "status": "SKIPPED" },
+                      ]
+                    startedAt: "2023-05-10T00:00:00Z"
+                    endedAt: "2023-05-10T00:10:00Z"
+                ? In case of a cancel request with rollback setting during the layout apply
+                : value:
+                    applyID: "<Layout Apply ID>"
+                    status: "CANCELED"
+                    procedures: <Migration steps>
+                    applyResult:
+                      [
+                        {
+                          "operationID": 1,
+                          "status": "COMPLETED",
+                          "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                          "requestBody":
+                            {
+                              "action": "disconnect",
+                              "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                            },
+                          "method": "PUT",
+                          "statusCode": 200,
+                          "responseBody":
+                            {
+                              "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                              "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                            },
+                          "startedAt": "2023-05-10T00:00:01Z",
+                          "endedAt": "2023-05-10T00:09:01Z",
+                        },
+                        { "operationID": 2, "status": "CANCELED" },
+                      ]
+                    rollbackProcedures:
+                      [
+                        {
+                          "operationID": 1,
+                          "operation": "connect",
+                          "targetCPUID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                          "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                          "dependencies": [],
+                        },
+                      ]
+                    startedAt: "2023-05-10T00:00:00Z"
+                    endedAt: "2023-05-10T00:20:00Z"
+                    canceledAt: "2023-05-10T00:05:00Z"
+                    executeRollback: true
+                    rollbackStatus: "COMPLETED"
+                    rollbackResult:
+                      [
+                        {
+                          "operationID": 1,
+                          "status": "COMPLETED",
+                          "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                          "requestBody":
+                            {
+                              "action": "disconnect",
+                              "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                            },
+                          "method": "PUT",
+                          "statusCode": 200,
+                          "responseBody":
+                            {
+                              "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                              "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                            },
+                          "startedAt": "2023-05-10T00:00:02Z",
+                          "endedAt": "2023-05-10T00:09:02Z",
+                        },
+                      ]
+                    rollbackStartedAt: "2023-05-10T00:10:00Z"
+                    rollbackEndedAt: "2023-05-10T00:20:00Z"
+                ? In case of a cancel request without rollback setting during the layout apply
+                : value:
+                    applyID: "<Layout Apply ID>"
+                    status: "CANCELED"
+                    procedures: <Migration steps>
+                    applyResult:
+                      [
+                        {
+                          "operationID": 1,
+                          "status": "COMPLETED",
+                          "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                          "requestBody":
+                            {
+                              "action": "disconnect",
+                              "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                            },
+                          "method": "PUT",
+                          "statusCode": 200,
+                          "responseBody":
+                            {
+                              "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                              "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                            },
+                          "startedAt": "2023-05-10T00:00:01Z",
+                          "endedAt": "2023-05-10T00:09:01Z",
+                        },
+                        { "operationID": 2, "status": "CANCELED" },
+                      ]
+                    rollbackProcedures:
+                      [
+                        {
+                          "operationID": 1,
+                          "operation": "connect",
+                          "targetCPUID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                          "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                          "dependencies": [],
+                        },
+                      ]
+                    startedAt: "2023-05-10T00:00:00Z"
+                    endedAt: "2023-05-10T00:10:00Z"
+                    canceledAt: "2023-05-10T00:05:00Z"
+                    executeRollback: false
+                ? In case a critical error occurs leading to suspension after receiving a non-200 response from HW control up to the retry limit
+                : value:
+                    applyID: "<Layout Apply ID>"
+                    status: "SUSPENDED"
+                    procedures: <Migration steps>
+                    applyResult:
+                      [
+                        {
+                          "operationID": 1,
+                          "status": "FAILED",
+                          "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                          "requestBody":
+                            {
+                              "action": "disconnect",
+                              "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                            },
+                          "method": "PUT",
+                          "statusCode": 500,
+                          "responseBody":
+                            {
+                              "code": "XXXXXX",
+                              "message": "INTERNAL SERVER ERROR",
+                            },
+                          "startedAt": "2023-05-10T00:00:01Z",
+                          "endedAt": "2023-05-10T00:09:01Z",
+                        },
+                        { "operationID": 2, "status": "SKIPPED" },
+                      ]
+                    startedAt: "2023-05-10T00:00:00Z"
+                    suspendedAt: "2023-05-10T00:10:00Z"
+                    resumeProcedures: <Resume steps>
+                If a suspended layout apply is resumed and completes normally:
+                  value:
+                    applyID: "<Layout Apply ID>"
+                    status: "COMPLETED"
+                    procedures: <Migration steps>
+                    applyResult:
+                      [
+                        {
+                          "operationID": 1,
+                          "status": "FAILED",
+                          "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                          "requestBody":
+                            {
+                              "action": "disconnect",
+                              "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                            },
+                          "method": "PUT",
+                          "statusCode": 500,
+                          "responseBody":
+                            {
+                              "code": "XXXXXX",
+                              "message": "INTERNAL SERVER ERROR",
+                            },
+                          "startedAt": "2023-05-10T00:00:01Z",
+                          "endedAt": "2023-05-10T00:09:01Z",
+                        },
+                        { "operationID": 2, "status": "SKIPPED" },
+                      ]
+                    startedAt: "2023-05-10T00:00:00Z"
+                    suspendedAt: "2023-05-10T00:10:00Z"
+                    resumeProcedures: <Resume steps>
+                    resumedAt: "2023-05-10T01:00:00Z"
+                    resumeResult: <Resume results>
+                    endedAt: "2023-05-10T01:10:00Z"
+                If layout apply is in execution:
+                  value:
+                    applyID: "<Layout Apply ID>"
+                    status: "IN_PROGRESS"
+                    startedAt: "2023-05-10T00:00:00Z"
+                If layout apply cancel is in execution without rollback:
+                  value:
+                    applyID: "<Layout Apply ID>"
+                    status: "CANCELING"
+                    startedAt: "2023-05-10T00:00:00Z"
+                    canceledAt: "2023-05-10T00:05:00Z"
+                    executeRollback: false
+                If layout apply cancel is in execution with rollback:
+                  value:
+                    applyID: "<Layout Apply ID>"
+                    status: "CANCELING"
+                    startedAt: "2023-05-10T00:00:00Z"
+                    canceledAt: "2023-05-10T00:05:00Z"
+                    executeRollback: true
+                    rollbackStartedAt: "2023-05-10T00:06:00Z"
+                If only applyResult is specified in fields:
+                  value:
+                    applyID: "<Layout Apply ID>"
+                    status: "COMPLETED"
+                    applyResult:
+                      [
+                        {
+                          "operationID": 1,
+                          "status": "COMPLETED",
+                          "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                          "requestBody":
+                            {
+                              "action": "disconnect",
+                              "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                            },
+                          "method": "PUT",
+                          "statusCode": 200,
+                          "responseBody":
+                            {
+                              "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                              "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                            },
+                          "startedAt": "2023-05-10T00:00:01Z",
+                          "endedAt": "2023-05-10T00:09:01Z",
+                        },
+                        {
+                          "operationID": 2,
+                          "status": "COMPLETED",
+                          "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7/aggregations",
+                          "requestBody":
+                            {
+                              "action": "disconnect",
+                              "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                            },
+                          "method": "PUT",
+                          "statusCode": 200,
+                          "responseBody":
+                            {
+                              "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7",
+                              "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
+                            },
+                          "startedAt": "2023-05-10T00:00:02Z",
+                          "endedAt": "2023-05-10T00:09:02Z",
+                        },
+                      ]
+                    startedAt: "2023-05-10T00:00:00Z"
+                    endedAt: "2023-05-10T00:10:00Z"
+                If fields specify rollbackProcedures and rollbackResult:
+                  value:
+                    applyID: "<Layout Apply ID>"
+                    status: "CANCELED"
+                    rollbackProcedures:
+                      [
+                        {
+                          "operationID": 1,
+                          "operation": "connect",
+                          "targetCPUID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                          "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                          "dependencies": [],
+                        },
+                      ]
+                    startedAt: "2023-05-10T00:00:00Z"
+                    endedAt: "2023-05-10T00:20:00Z"
+                    canceledAt: "2023-05-10T00:05:00Z"
+                    executeRollback: true
+                    rollbackStatus: "COMPLETED"
+                    rollbackResult:
+                      [
+                        {
+                          "operationID": 1,
+                          "status": "COMPLETED",
+                          "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                          "requestBody":
+                            {
+                              "action": "disconnect",
+                              "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                            },
+                          "method": "PUT",
+                          "statusCode": 200,
+                          "responseBody":
+                            {
+                              "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                              "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                            },
+                          "startedAt": "2023-05-10T00:00:01Z",
+                          "endedAt": "2023-05-10T00:09:01Z",
+                        },
+                      ]
+                    rollbackStartedAt: "2023-05-10T00:10:00Z"
+                    rollbackEndedAt: "2023-05-10T00:20:00Z"
+
+        404:
+          description: |-
+            Specified Layout Apply ID does not exist
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotExistErrorResponse"
+        400:
+          description: |-
+            Invalid parameter specified
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+        500:
+          description: |-
+            Internal server error or an error occurred from another component.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                code: E40002
+                message: Failed to load layoutapply_config.yaml.
+    delete:
+      summary: Delete Layout Apply Status
+      description: |-
+        Delete the layout apply status of the specified Layout Apply ID (applyID).<br>
+        Deletion may not be possible depending on the status and rollbackStatus of the specified Layout Apply ID.<br>
+        Refer to the table below for details. Also, refer to Layout Apply Status (ID specified) for details on status and rollbackStatus.
+        | Status | RollbackStatus | Result |
+        | ---- | ---- | ---- |
+        | COMPLETED, FAILED, CANCELED | - | Deletion possible |
+        | IN_PROGRESS, CANCELING | - | Abnormal termination due to ongoing layout apply, making deletion not possible |
+        | SUSPENDED | - | Abnormal termination due to suspended layout apply, making deletion not possible |
+        | CANCELED | COMPLETED, FAILED | Deletion possible |
+        | CANCELED | IN_PROGRESS | Abnormal termination due to ongoing layout apply, making deletion not possible |
+        | CANCELED | SUSPENDED | Abnormal termination due to suspended layout apply, making deletion not possible |
+      tags:
+        - Layout Apply
+      deprecated: false
+      parameters:
+        - name: applyID
+          in: path
+          description: Layout Apply ID. Specify the Layout Apply ID of the layout apply status to be deleted.
+          required: true
+          example: 636ddde1ba
+          schema:
+            type: string
+      responses:
+        204:
+          description: |-
+            Normal
+        400:
+          description: Invalid parameter specified
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+        404:
+          description: |-
+            Specified Layout Apply ID does not exist
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotExistErrorResponse"
+        409:
+          description: |-
+            Error occurred when executing deletion processing on executing or suspended Layout Apply ID (status is "IN_PROGRESS", "CANCELING", "SUSPENDED", or rollbackStatus is "IN_PROGRESS", "SUSPENDED")
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteConflictErrorResponse"
+        500:
+          description: |-
+            Internal server error or an error occurred from another component.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                code: E40002
+                message: Failed to load layoutapply_config.yaml.
+
+  /migration-procedures:
+    post:
+      summary: Migration Procedure Creation Request
+      description: |-
+        Accepts migration procedure creation requests based on the device configuration of the modified node (hereinafter referred to as "new node configuration"), <br>
+        and returns the "migration procedure" for changing the node from the existing node configuration (hereinafter referred to as "current node configuration") to the new node configuration.<br>
+        By specifying the returned migration procedure and executing the configuration proposal application request API "POST /layout-apply", the configuration proposal can be applied.<br>
+         - The new node configuration should include all nodes/devices in the new node configuration, including nodes/devices that do not change from the current node configuration.<br>
+         - Nodes/devices that exist in the current node configuration but are not listed in the new node configuration will be deleted from the new node configuration.<br>
+         - Nodes/devices that do not exist in the current node configuration and are added to the new node configuration will be newly added.<br>
+        If you want to limit the nodes/devices to be changed from the current node configuration, specify targetNodeIDs (hereinafter referred to as "node ID list").<br>
+        The specification image when limiting the nodes/devices to be changed is as follows:<br>
+         - Just want to add new nodes<br>
+           - Specify an empty list for the node ID list and specify the configuration of the new nodes in the new node configuration<br>
+         - Just want to update specific nodes<br>
+           - Specify the nodes you want to update in the node ID list and specify the post-update node configuration in the new node configuration<br>
+         - Just want to delete specific nodes<br>
+           - Specify the nodes you want to delete in the node ID list and specify an empty list in the new node configuration
+      tags:
+        - Migration Procedure Genaration
+      deprecated: false
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/DesiredLayout"
+              example:
+                targetNodeIDs: [2c0af93a-ef04-4393-a805-86e30e054e74, 3as34r45-ert4-3454-s332-4det0s3ss3sd]
+                desiredLayout:
+                  nodes:
+                    - device:
+                        cpu:
+                          deviceIDs:
+                            - 3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6
+                        memory:
+                          deviceIDs:
+                            - A4D1A195-4A54-11EF-A1DC-000C29C8CA82
+                        storage:
+                          deviceIDs:
+                            - 895DFB43-68CD-41D6-8996-EAC8D1EA1E3F
+                        networkInterface:
+                          deviceIDs:
+                            - 5DFB4893-C16D-4968-89D6-8D1EAECEA31F
+                    - device:
+                        cpu:
+                          deviceIDs:
+                            - 2CA6D4DF-2739-45BA-ACA4-6ABE93E81E15
+                        memory:
+                          deviceIDs:
+                            - 035AA32D-6C3F-488E-9602-62286A509288
+                        storage:
+                          deviceIDs:
+                            - 42243124-9655-4B12-B638-A15BFE021065
+                        networkInterface:
+                          deviceIDs:
+                            - 0E9A2838-6AA9-40D2-B3E0-EA7B15E8F18D
+      responses:
+        200:
+          description: Normal
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/ProcedureList"
+                example:
+                  procedures:
+                    - operationID: 1
+                      operation: disconnect
+                      targetCPUID: 2CA6D4DF-2739-45BA-ACA4-6ABE93E81E15
+                      targetDeviceID: 895DFB43-68CD-41D6-8996-EAC8D1EA1E3F
+                      dependencies: []
+                    - operationID: 2
+                      operation: connect
+                      targetCPUID: 2CA6D4DF-2739-45BA-ACA4-6ABE93E81E15
+                      targetDeviceID: 895DFB43-68CD-41D6-8996-EAC8D1EA1E3F
+                      dependencies: [1]
+                    - operationID: 3
+                      operation: boot
+                      targetDeviceID: 2CA6D4DF-2739-45BA-ACA4-6ABE93E81E15
+                      dependencies: [2]
+        400:
+          description: Invalid request body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+              example:
+                code: E50001
+                message: Unexpected strings 'nodes' is a required property
+        404:
+          description: |-
+            A non-existent NodeID was specified
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotExistTargetNodeIDsErrorResponse"
+        500:
+          description: |-
+            Internal server error or error occurred from other components.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                code: E50002
+                message: Failed to load layoutapply_config.yaml.
+
+components:
+  schemas:
+    ApplyRequest:
+      $ref: "./openapi_schema.yaml#/components/schemas/ApplyRequest"
+    ProcedureList:
+      $ref: "./openapi_schema.yaml#/components/schemas/ProcedureList"
+    Procedure:
+      $ref: "./openapi_schema.yaml#/components/schemas/Procedure"
+    ApplyResult:
+      $ref: "./openapi_schema.yaml#/components/schemas/ApplyResult"
+    ApplyResponse:
+      $ref: "./openapi_schema.yaml#/components/schemas/ApplyResponse"
+    ApplyErrorResponse:
+      $ref: "./openapi_schema.yaml#/components/schemas/ApplyErrorResponse"
+    ApplyResponseCanceled:
+      $ref: "./openapi_schema.yaml#/components/schemas/ApplyResponseCanceled"
+    ValidationErrorResponse:
+      $ref: "./openapi_schema.yaml#/components/schemas/ValidationErrorResponse"
+    ValidationErrorResponseGetAll:
+      $ref: "./openapi_schema.yaml#/components/schemas/ValidationErrorResponseGetAll"
+    NotExistErrorResponse:
+      $ref: "./openapi_schema.yaml#/components/schemas/NotExistErrorResponse"
+    NotExistTargetNodeIDsErrorResponse:
+      $ref: "./openapi_schema.yaml#/components/schemas/NotExistTargetNodeIDsErrorResponse"
+    ConflictErrorResponse:
+      $ref: "./openapi_schema.yaml#/components/schemas/ConflictErrorResponse"
+    ErrorResponse:
+      $ref: "./openapi_schema.yaml#/components/schemas/ErrorResponse"
+    CancelResponse:
+      $ref: "./openapi_schema.yaml#/components/schemas/CancelResponse"
+    ApplyIDGetResponse:
+      $ref: "./openapi_schema.yaml#/components/schemas/ApplyIDGetResponse"
+    GetAllResponse:
+      $ref: "./openapi_schema.yaml#/components/schemas/GetAllResponse"
+    DeleteConflictErrorResponse:
+      $ref: "./openapi_schema.yaml#/components/schemas/DeleteConflictErrorResponse"
+    ApplyIDPutResponse:
+      $ref: "./openapi_schema.yaml#/components/schemas/ApplyIDPutResponse"
+    DesiredLayout:
+      $ref: "./openapi_schema.yaml#/components/schemas/DesiredLayout"
+    Layout:
+      $ref: "./openapi_schema.yaml#/components/schemas/Layout"
+    NodeList:
+      $ref: "./openapi_schema.yaml#/components/schemas/NodeList"
+    DeviceInfo:
+      $ref: "./openapi_schema.yaml#/components/schemas/DeviceInfo"
+    DeviceIDList:
+      $ref: "./openapi_schema.yaml#/components/schemas/DeviceIDList"
+    DeviceID:
+      $ref: "./openapi_schema.yaml#/components/schemas/DeviceID"

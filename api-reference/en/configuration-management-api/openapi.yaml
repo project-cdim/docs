@@ -1,0 +1,1274 @@
+openapi: "3.0.3"
+servers:
+  - url: http://(host address)/cdim/api/v1
+info:
+  title: Configuration Information Management API
+  description: |-
+    A set of functions to manage the configuration of Composable Disaggregated Infrastructure to be managed
+  version: 0.1.0 # Align with version of revision history
+tags:
+  - name: Resource Group Management
+    description: |-
+        A set of functions related to resource groups
+  - name: Resource Management
+    description: |-
+        A set of functions related to resources
+  - name: Device Management Partial
+    description: |-
+        A set of functions related to various devices, such as CXL switches
+paths:
+  /resource-groups:
+    get:
+      tags:
+        - Resource Group Management
+      summary: List of All Resource Groups
+      description: |-
+        * Returns a list of all resource groups under the resource pool.
+        * If query parameter withResources=true is added, resource information under each resource group is also included in the return value.
+          * Resources to be returned include resources that could not be detected (detected=false).
+          * All items of resources to be returned are included.
+        * The fixed sort order of the returned list is as follows:
+          1. Order of resource groups: Ascending order of resource group ID.
+              * The default group ID is `00000000-0000-7000-8000-000000000000`, so it will appear at the top of the resource group list.
+          1. Order of resources under resource groups: Ascending order of resource ID.
+      parameters:
+      - name: withResources
+        in: "query"
+        required: false
+        description: |-
+          * true: Include resource information under each resource group in the return value.
+          * false, not specified: Only return each resource group.
+          * true, false are allowed regardless of case.
+          * Strings other than true, false and empty strings result in an error.
+        schema:
+          type: boolean
+          default : false
+      responses:
+        200:
+          description: |-
+            Successful completion: Return list of resource groups.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResourceGroups"
+        400:
+          description: |-
+            Invalid argument.
+              * Specified strings other than true, false, or empty strings.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: |-
+            Internal server error: Failed to access DB, etc.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      tags:
+        - Resource Group Management
+      summary: Register Resource Group
+      description: |-
+        * Register the resource group.
+        * The properties of the resource group are registered as follows:
+          * The resource group ID is registered as a uniquely assigned ID.
+          * The registration date and update date are registered as current date and time.
+          * The resource group name and description are registered with the values stated in the RequestBody.
+      requestBody:
+        description: Resource group item values
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                name:
+                  type: string
+                  description: Resource group name
+                description:
+                  type: string
+                  description: Resource group description
+      responses:
+        201:
+          description: |-
+            Successful completion: Returns the resource group targeted for registration.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResourceGroupOnly"
+        400:
+          description: |-
+            Invalid argument.
+              * No requestBody.
+              * Incorrect requestBody format.
+              * Errors in requestBody caused by:
+                * Missing elements for resource group name (name) or description (description).
+                * Element values for resource group name (name) or description (description) violate validation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: |-
+            Internal server error: Failed to access DB, etc.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /resource-groups/{id}:
+    get:
+      tags:
+        - Resource Group Management
+      summary: Refer to Any Resource Group
+      description: |-
+        * Returns any resource group under the resource pool.
+        * Includes resource information under the resource group in the return value.
+          * Resources to be returned include resources that could not be detected (detected=false).
+          * All items of resources to be returned are included.
+        * The fixed sort order of the returned list is as follows:
+          * Order of resources under resource groups: Ascending order of resource ID.
+      parameters:
+      - name: ID
+        in: "path"
+        required: true
+        description: Resource group ID
+        schema:
+          type: string
+      responses:
+        200:
+          description: |-
+            Successful completion: Return the resource group.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResourceGroup"
+        404:
+          description: |-
+            The resource group specified in the arguments does not exist.
+          content:
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: |-
+            Internal server error: Failed to access DB, etc.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      tags:
+        - Resource Group Management
+      summary: Update Resource Group
+      description: |-
+        * Update the specified resource group.
+        * The properties of the resource group are updated as follows:
+          * No change to the resource group ID.
+          * The update date is updated to the current date and time.
+          * The resource group name and description are updated with the values stated in the RequestBody.
+        * The default group cannot be updated.
+      parameters:
+      - name: ID
+        in: "path"
+        required: true
+        description: Resource group ID
+        schema:
+          type: string
+      requestBody:
+        description: Resource group item values
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                name:
+                  type: string
+                  description: Resource group name
+                description:
+                  type: string
+                  description: Resource group description
+      responses:
+        200:
+          description: |-
+            Successful completion: Return updated resource group information.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResourceGroupOnly"
+        400:
+          description: |-
+            Invalid argument.
+              * Specified default group.
+              * No requestBody.
+              * Incorrect requestBody format.
+              * Errors in requestBody caused by:
+                * Missing elements for resource group name (name) or description (description).
+                * Element values for resource group name (name) or description (description) violate validation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        404:
+          description: |-
+            The resource group specified in the arguments does not exist.
+          content:
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: |-
+            Internal server error: Failed to access DB, etc.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      tags:
+        - Resource Group Management
+      summary: Delete Resource Group
+      description: |-
+        * Delete the specified resource group.
+        * Cannot delete resource groups to which resources belong.
+        * The default group cannot be deleted.
+      parameters:
+      - name: ID
+        in: "path"
+        required: true
+        description: Resource group ID
+        schema:
+          type: string
+      responses:
+        204:
+          description: Successful completion
+        400:
+          description: |-
+            Invalid argument.
+              * Specified a resource group to which resources belong.
+              * Specified default group.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        404:
+          description: |-
+            The resource group specified in the arguments does not exist.
+          content:
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: |-
+            Internal server error: Failed to access DB, etc.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /resources:
+    get:
+      tags:
+        - Resource Management
+      summary: List of All Resources
+      description: |-
+        * Returns a list of all resources under the resource pool.
+         * The list to be returned includes resources that could not be detected (detected=false).
+        * Return data regardless of whether each resource is linked to a node (in use) or not.
+        * Return all detailed items or representative items of each resource.
+        * Representative items are as follows:
+          * deviceID
+          * type
+          * status
+        * The fixed sort order of the returned list is "Ascending order of resource ID".
+      parameters:
+      - name: detail
+        in: "query"
+        description: |-
+          * true: Return all detailed items.
+          * false, not specified: Return only representative items.
+          * true, false are allowed regardless of case.
+          * Strings other than true, false and empty strings result in an error.
+        schema:
+          type: boolean
+          default : false
+      responses:
+        200:
+          description: |-
+            Successful completion: Return list of resources.<br>
+            (Item names for resources are based on the items collected by the configuration information collection function, so there may be differences from other naming conventions.)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    $ref: "#/components/schemas/Count"
+                    description: Count of resources
+                  resources:
+                    description: List of resources
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Resource"
+        400:
+          description: |-
+            Invalid argument.
+              * Specified strings other than true, false, or empty strings.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: |-
+            Internal server error: Failed to access DB, etc.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /resources/{id}:
+    get:
+      tags:
+        - Resource Management
+      summary: Refer to Any Resource
+      description: |-
+        * Returns any resource under the resource pool.
+        * Return data regardless of whether each resource is linked to a node (in use) or can be detected by the hardware control function.
+        * Return all detailed items of each resource.
+      parameters:
+      - name: ID
+        in: "path"
+        required: true
+        description: Resource ID
+        schema:
+          type: string
+      responses:
+        200:
+          description: |-
+            Successful completion: Return the resource.<br>
+            (Item names for resources are based on the items collected by the hardware control function, so there may be differences from other naming conventions.)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Resource"
+        404:
+          description: |-
+            The resource specified in the arguments does not exist.
+          content:
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: |-
+            Internal server error: Failed to access DB, etc.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /resources/available:
+    get:
+      tags:
+        - Resource Management
+      summary: Refer to Available Resources
+      description: |-
+        * Returns a list of resources available for configuration.
+        * Conditions for "Resources available for configuration": Satisfy all of the following:
+          1. "Status" in the item acquired from hardware control function has the following value:
+            * "state": "Enabled" and "health": "OK"
+          2. The state of resource availability is available resource (available=true).
+          3. The resource detection state is a detected resource (detected=true).
+        * Return all detailed items of each resource.
+        <br>
+        * The fixed sort order of the returned list is primary sort key "Ascending order of device type", secondary sort key "Ascending order of device ID".
+        <br>
+        * Filter by the resource group ID specified in the arguments.
+          * If no resource group ID is specified, search for available resources from all resources under the resource pool. 
+          * If a non-existent resource group ID is specified, return a count of 0 and an empty array and conclude successfully.
+      parameters:
+      - name: resourceGroupID
+        in: "query"
+        required: false
+        description: |-
+          Specify the resource group ID to be searched<br>
+          If resourceGroupID is specified multiple times, search with OR condition<br>
+          Example:
+          - ?resourceGroupID=aaa&resourceGroupID=bbb
+            - Search for resource group ID aaa or bbb and extract available resources for configuration design from the resources under them.
+        schema:
+          type: string
+      responses:
+        200:
+          description: |-
+            Successful completion: Return the resource.<br>
+            (Item names for resources are based on the items collected by the hardware control function, so there may be differences from other naming conventions.)<br>
+            If the specified resource group does not exist or there are no available resources under the resource group, return an empty list and conclude successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    $ref: "#/components/schemas/Count"
+                    description: Number of resources
+                  resources:
+                    description: List of resources
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Resource"
+        500:
+          description: |-
+            Internal server error: Failed to access DB, etc.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /resources/unused:
+    get:
+      tags:
+        - Resource Management
+      summary: Refer to Unused Resources
+      description: |-
+        * Returns a list of available resources that are not currently used by any node.
+        * Conditions:
+          1. "Status" in the item acquired from HW control function has the following value:
+            * "state": "Enabled" and "health": "OK"
+          2. The state of resource availability is available resource (available=true).
+          3. The resource detection state is a detected resource (detected=true).
+          4. The resource is not used by any node (no links element, no value in links element).
+        * Return all detailed items of each resource.
+        <br>
+        * The fixed sort order of the returned list is primary sort key "Ascending order of device type", secondary sort key "Ascending order of device ID".
+        <br>
+        * Filter by the resource group ID specified in the arguments.
+          * If no resource group ID is specified, search for available resources from all resources under the resource pool. 
+          * If a non-existent resource group ID is specified, return a count of 0 and an empty array and conclude successfully.
+      parameters:
+      - name: resourceGroupID
+        in: "query"
+        required: false
+        description: |-
+          Specify the resource group ID to be searched<br>
+          If resourceGroupID is specified multiple times, search with OR condition<br>
+          Example:
+          - ?resourceGroupID=aaa&resourceGroupID=bbb<br>
+            - Search for resource group ID aaa or bbb and extract available resources for configuration design from the resources under them.
+        schema:
+          type: string
+      responses:
+        200:
+          description: |-
+            Successful completion: Return the resource.<br>
+            (Item names for resources are based on the items collected by the hardware control function, so there may be differences from other naming conventions.)<br>
+            If the specified resource group does not exist or there are no available resources under the resource group, return an empty list and conclude successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    $ref: "#/components/schemas/Count"
+                    description: Number of resources
+                  resources:
+                    description: List of resources
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ResourceForUnused"
+        500:
+          description: |-
+            Internal server error: Failed to access DB, etc.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /resources/{id}/annotation:
+    put:
+      tags:
+        - Resource Management
+      summary: Update Resource Annotation for 1 Resource
+      description: |-
+        * Update the annotation for the specified resource.
+          * Can make the resource unavailable or available.
+              * DC operators use this API to change the state when they want to stop the use of a resource (halt allocation) for maintenance or failure recovery.
+        * Updates can be made even if the resource is a detected resource (detected=false).
+        * Updates can also be made for resources allocated to nodes.
+      parameters:
+      - name: ID
+        in: "path"
+        required: true
+        description: Resource ID
+        schema:
+          type: string
+      requestBody:
+        description: Updated annotation values for the resource
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                available:
+                  $ref: "#/components/schemas/Available"
+      responses:
+        200:
+          description: |-
+            Successful completion: Return updated values.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  available:
+                    $ref: "#/components/schemas/Available"
+        400:
+          description: |-
+            Invalid argument.
+              * Specified strings other than true, false, or empty strings.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        404:
+          description: |-
+            The resource specified in the arguments does not exist.
+          content:
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: |-
+            Internal server error: Failed to access DB, etc.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /resources/{id}/resource-groups:
+    put:
+      tags:
+        - Resource Management
+      summary: Update Resource Group for 1 Resource
+      description: |-
+        * Update the resource group to which the specified resource belongs.
+        * Updates can be made even if the resource is a detected resource (detected=false).
+      parameters:
+      - name: ID
+        in: "path"
+        required: true
+        description: Resource ID
+        schema:
+          type: string
+      requestBody:
+        description: |-
+          * ID of the resource group to which the resource belongs.
+          * Assuming resources will be able to belong to multiple resource groups in future, the request accepts an array.
+              * Currently, specifying multiple resource groups in an array results in BadRequest.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResourceGroupIDs"
+      responses:
+        200:
+          description: |-
+            Successful completion: Return updated values.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    $ref: "#/components/schemas/Count"
+                    description: Number of resource groups to which the resource belongs.
+                  resourceGroupIDs:
+                    $ref: "#/components/schemas/ResourceGroupIDs"
+        400:
+          description: |-
+            Invalid argument.
+              * No requestBody.
+              * Incorrect requestBody format.
+              * Errors in requestBody caused by:
+                * Specified a non-existent resource group.
+                * Specified multiple resource groups.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        404:
+          description: |-
+            The resource specified in the arguments does not exist.
+          content:
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: |-
+            Internal server error: Failed to access DB, etc.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /nodes:
+    get:
+      tags:
+        - Device Management Partial
+      summary: List of All Nodes
+      description: |-
+        * Returns a list of all nodes under the resource pool and the list of resources linked to each node.
+         * The list to be returned includes resources that could not be detected (detected=false).
+        * Return representative items of resource list.
+        * Representative items are as follows:
+          * deviceID
+          * type
+          * status
+        * The fixed sort order of the returned list is "Ascending order of node ID".
+        * The sort order of resource list linked to nodes is "Ascending order of resource ID".
+        * Since a resource is assumed to be linked to only one node, the returned resource information does not include "List of node IDs".
+      parameters: []
+      responses:
+        200:
+          description: |-
+            Successful completion: Return list of nodes.<br>
+            If no target data exists, return an empty list.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Nodes"
+        500:
+          description: |-
+            Internal server error: Failed to access DB, etc.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /nodes/{id}:
+    get:
+      tags:
+        - Device Management Partial
+      summary: Refer to Any Node
+      description: |-
+        * Returns any node under the resource pool and the list of resources linked to it.
+         * The list to be returned includes resources that could not be detected (detected=false).
+        * Return all detailed items of resource list.
+        * Since a resource is assumed to be linked to only one node, the returned resource information does not include "List of node IDs".
+      parameters:
+      - name: id
+        in: "path"
+        required: true
+        description: Node ID
+        schema:
+          type: string
+      responses:
+        200:
+          description: |-
+            Successful completion: Return list of nodes.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Node"
+        404:
+          description: The node specified in the arguments does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: |-
+            Internal server error: Failed to access DB, etc.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /cxlswitches:
+    get:
+      tags:
+        - Device Management Partial
+      summary: List of All CXL Switches
+      description: |-
+        * Returns a list of CXL switches connected to devices within the resource pool and the list of resources linked to each CXL switch.
+          * Return data regardless of whether each resource is linked to a node (in use) or can be detected by the HW control function.
+        * Return all detailed items of the resource list.
+        * The fixed sort order of the returned list is "Ascending order of CXL switch ID".
+        * The sort order of the resource list linked to CXL switches is "Ascending order of resource ID".
+      parameters: []
+      responses:
+        200:
+          description: |-
+            Successful completion: Return list of CXL switches.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CXLSwitches"
+        500:
+          description: |-
+            Internal server error: Failed to access DB, etc.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /cxlswitches/{id}:
+    get:
+      tags:
+        - Device Management Partial
+      summary: Refer to Any CXL Switch
+      description: |-
+        * Returns information of any CXL switch connected to devices within the resource pool and the list of resources linked to that CXL switch.
+        * Return data regardless of whether each resource is linked to a node (in use) or can be detected by the hardware control function.
+        * Return representative items of the resource list.
+        * Representative items are as follows:
+          * deviceID
+          * type
+          * status
+      parameters:
+      - name: id
+        in: "path"
+        required: true
+        description: CXL switch ID
+        schema:
+          type: string
+      responses:
+        200:
+          description: |-
+            Successful completion: Return list of CXL switches.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CXLSwitchSummary"
+        404:
+          description: The CXL switch specified in the arguments does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: |-
+            Internal server error: Failed to access DB, etc.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /racks/{id}:
+    get:
+      tags:
+        - Device Management Partial
+      summary: Refer to Any Rack
+      description: |-
+        * Returns any rack, the list of linked chassis, and the list of devices linked to the chassis.
+         * The list to be returned includes resources that could not be detected (detected=false).
+        * Return all detailed or representative items of each device.
+        * Representative items for resources are as follows:
+          * deviceID
+          * type
+          * status
+        * CXL switches return the same items for both all detailed and representative items.
+        * Sort order is as follows:
+          * Chassis: Fixed ascending order by "unit position".
+          * If multiple devices exist within a chassis, the fixed sort order is primary sort key "Ascending order of device type", secondary sort key "Ascending order of device ID".
+            * Currently, CXL switch information acquired from HW control function lacks device type, so CXL switches are sorted to the top.
+            * If device type is set for CXL switch information acquired from HW control function in the future, it will be sorted in ascending order of that device type.          
+      parameters:
+      - name: id
+        in: "path"
+        required: true
+        description: Rack ID
+        schema:
+          type: string
+      - name: detail
+        in: "query"
+        description: |-
+          * true: Return all detailed items.
+          * false, not specified: Return only representative items.
+          * true, false are allowed regardless of case.
+          * Strings other than true, false and empty strings result in an error.
+        schema:
+          type: boolean
+          default : false
+      responses:
+        200:
+          description: |-
+            Successful completion: Return rack info.<br>
+            If no linked chassis or devices exist, return with empty arrays.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Rack"
+        400:
+          description: |-
+            Invalid argument.
+              * Specified strings other than true, false, or empty strings.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        404:
+          description: The rack specified in the arguments does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: |-
+            Internal server error: Failed to access DB, etc.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /devices:
+    post:
+      tags:
+        - Device Management Partial
+      summary: Synchronize Hardware Information
+      description: |-
+        * Register resource and related information to the configuration information management DB with data collected by the configuration information collection function.
+        * If a format error within JSON during multiple registrations occurs, rollback registered information so far and halt processing.
+        * Undetected state
+          * If previously registered information cannot be obtained during the next configuration information collection timing, retain as undetected state (detected=false) without deletion from the configuration information management DB.
+        * Resource annotation
+          * When a new resource is collected, create and link resource annotation for the resource.
+            * When creating a new resource annotation, set the value for "resource availability" as available (true).
+            * If previously registered information is re-collected at the next configuration information collection timing, no updates will be made to resource annotations.
+        * Resource group
+          * Link all resources to the default group.
+          * The resource group ID is a unique value with an arbitrary string (checked for uniqueness in the future provided resource group registration function).
+              * Allowed characters are case-insensitive alphanumeric, underscore, hyphen, and period.
+              * Limit string length to 64 characters.
+          * If previously registered information is collected at the next configuration information collection timing, prioritize existing resource group-related information and do not create a new link.
+          * Changes to the resource group link are not made for undetected resources (detected=false).
+        * CXL switch
+          * Register and link CXL switch information with resources based on deviceSwitchInfo, a property of resource information created by hardware control function.
+          * However, resources not linked to CXL switches also exist.
+          * Even if all resources linked to a CXL switch become undetected, retain the CXL switch and resource link information.
+          * If no resources remain linked to a CXL switch, do not delete it from the DB, but retain the information.
+        * Node
+          * Register and link node information with resources based on links, a property of resource information created by hardware control function.
+          * Use CPU device ID as node ID for node identification.
+          * Since links do not include its own deviceID, nodes with only CPU are not generated.
+          * Even if all resources linked to a node become undetected, retain node and resource link information.
+          * If no resources remain linked to a node, delete it from the DB.
+      requestBody:
+        description: Device registration information
+        $ref: "#/components/requestBodies/DevicesRequest"
+      responses:
+        201:
+          description: |-
+            Successful completion: Return the count of devices targeted for registration and the list of device IDs.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpResponse"
+        400:
+          description: |-
+            Invalid argument.
+              * No arguments.
+              * Argument error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: |-
+            Internal server error: Failed to access DB, etc.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+components:
+  requestBodies:
+    DevicesRequest:
+      content:
+        application/json:
+          schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/Device"
+  schemas:
+    Conditions:
+      type: object
+      required:
+        - key
+        - values
+      properties:
+        key:
+          type: string
+          description: |-
+            Target item name of condition<br>
+            * Specifiable items are as follows:
+              * deviceID: Resource ID
+              * type: Device type
+              * status_state: Resource state
+              * status_health: Health state
+              * deviceSwitchInfo: CXL switch
+              * nodeID: Node ID
+              * resourceGroupID: Resource group ID
+        values:
+          type: array
+          items:
+            type: string
+            description: |-
+              List of search values<br>
+              * Specify a value for the target item of condition.
+              * If an unexpected item name or string is specified, return an empty list and conclude successfully.
+        expression:
+          type: string
+          description: |-
+            * Logical connectors for search values within one conditions
+              * Logical operators "AND", "OR"
+              * Logical negation "NOT" for all specified values (return values other than all specified values)
+              * If only one search value, not required.
+              * If multiple search values and unspecified, assume "OR".
+              * "AND", "OR", "NOT" are allowed regardless of case.
+              * Strings other than "AND", "OR", "NOT" or empty strings result in an error.
+    Resource:
+      properties:
+        device:
+          $ref: "#/components/schemas/Device"
+        resourceGroupIDs:
+          $ref: "#/components/schemas/ResourceGroupIDs"
+        annotation:
+          $ref: "#/components/schemas/Annotation"
+        detected:
+          type: boolean
+          description: Detection state flag<br>
+           * true - 'Detected'<br>
+           * false - 'Undetected'<br>
+          enum: [true, false] 
+        nodeIDs:
+          $ref: "#/components/schemas/NodeIDs"
+    ResourceSummary:
+      properties:
+        device:
+          $ref: "#/components/schemas/DeviceSummary"
+        resourceGroupIDs:
+          $ref: "#/components/schemas/ResourceGroupIDs"
+        annotation:
+          $ref: "#/components/schemas/Annotation"
+        detected:
+          type: boolean
+          description: Detection state flag<br>
+           * true - 'Detected'<br>
+           * false - 'Undetected'<br>
+          enum: [true, false] 
+        nodeIDs:
+          $ref: "#/components/schemas/NodeIDs"
+    ResourceForUnused:
+      properties:
+        device:
+          $ref: "#/components/schemas/DeviceUnused"
+        resourceGroupIDs:
+          $ref: "#/components/schemas/ResourceGroupIDs"
+        annotation:
+          $ref: "#/components/schemas/Annotation"
+    ResourceSummaryForNodeList:
+      properties:
+        device:
+          $ref: "#/components/schemas/DeviceSummary"
+        resourceGroupIDs:
+          $ref: "#/components/schemas/ResourceGroupIDs"
+        annotation:
+          $ref: "#/components/schemas/Annotation"
+        detected:
+          type: boolean
+          description: Detection state flag<br>
+           * true - 'Detected'<br>
+           * false - 'Undetected'<br>
+          enum: [true, false] 
+    ResourceForNodeList:
+      properties:
+        device:
+          $ref: "#/components/schemas/Device"
+        resourceGroupIDs:
+          $ref: "#/components/schemas/ResourceGroupIDs"
+        annotation:
+          $ref: "#/components/schemas/Annotation"
+        detected:
+          type: boolean
+          description: Detection state flag<br>
+           * true - 'Detected'<br>
+           * false - 'Undetected'<br>
+          enum: [true, false] 
+    Device:
+      description: |-
+        * Items collected by the hardware control function. Actual properties include other items.
+      properties:
+        deviceID:
+          type: string
+          description: Device ID
+        type:
+          type: string
+          description: Device type
+        attribute:
+          type: object
+          description: Attributes
+        status:
+          type: object
+          description: Status
+          properties:
+            state:
+              type: string
+              description: Device state
+            health:
+              type: string
+              description: Health state
+        deviceSwitchInfo:
+          type: string
+          description: CXL switch information
+        links:
+          type: array
+          items:
+            type: object
+            description: Device information of linked resources
+            properties:
+              type:
+                type: string
+                description: Device type
+              deviceID:
+                type: string
+                description: Unique device ID
+    DeviceUnused:
+      description: |-
+        * Items collected by the hardware control function. Actual properties include other items.
+      properties:
+        deviceID:
+          type: string
+          description: Device ID
+        type:
+          type: string
+          description: Device type
+        attribute:
+          type: object
+          description: Attributes
+        status:
+          type: object
+          description: Status
+          properties:
+            state:
+              type: string
+              description: Device state
+            health:
+              type: string
+              description: Health state
+        deviceSwitchInfo:
+          type: string
+          description: CXL switch information
+        links:
+          type: array
+          example: []
+    DeviceSummary:
+      description: |-
+        * Representative items in the items collected by the hardware control function.
+      properties:
+        deviceID:
+          type: string
+          description: Device ID
+        type:
+          type: string
+          description: Device type
+        status:
+          type: object
+          description: Status
+          properties:
+            state:
+              type: string
+              description: Device state
+            health:
+              type: string
+              description: Health state
+    ResourceGroupIDs:
+      description: List of resource group IDs to which a resource belongs.
+      type: array
+      items:
+        type: string
+    NodeIDs:
+      description: List of node IDs to which a resource belongs.
+      type: array
+      items:
+        type: string
+    Available:
+      description: |-
+        * Resource availability
+          * true: Available for configuration design
+          * false: Disabled (e.g., under maintenance), unavailable
+      type: boolean
+    Annotation:
+      description: Resource annotation
+      properties:
+        available:
+          $ref: "#/components/schemas/Available"
+    Count:
+      type: integer
+      format: int32
+      example: 1
+    ResourceGroups:
+      properties:
+        count:
+          $ref: "#/components/schemas/Count"
+          description: Count of resource groups
+        resourceGroups:
+          type: array
+          items:
+            $ref: "#/components/schemas/ResourceGroup"
+    ResourceGroup:
+      properties:
+        id:
+          type: string
+          description: Resource group ID
+        name:
+          type: string
+          description: Resource group name
+        description:
+          type: string
+          description: Resource group description
+        createdAt:
+          type: string
+          description: Registration date
+        updatedAt:
+          type: string
+          description: Update date
+        resources:
+          type: array
+          items:
+            $ref: "#/components/schemas/Resource"
+    ResourceGroupOnly:
+      properties:
+        id:
+          type: string
+          description: Resource group ID
+        name:
+          type: string
+          description: Resource group name
+        description:
+          type: string
+          description: Resource group description
+        createdAt:
+          type: string
+          description: Registration date
+        updatedAt:
+          type: string
+          description: Update date
+    Nodes:
+      properties:
+        count:
+          $ref: "#/components/schemas/Count"
+          description: Count of nodes
+        nodes:
+          type: array
+          items:
+            $ref: "#/components/schemas/NodeSummary"
+    Node:
+      properties:
+        id:
+          type: string
+          description: Node ID
+        resources:
+          type: array
+          items:
+            $ref: "#/components/schemas/ResourceForNodeList"
+    NodeSummary:
+      properties:
+        id:
+          type: string
+          description: Node ID
+        resources:
+          type: array
+          items:
+            $ref: "#/components/schemas/ResourceSummaryForNodeList"
+    CXLSwitches:
+      properties:
+        count:
+          $ref: "#/components/schemas/Count"
+          description: Count of CXL switches
+        CXLSwitches:
+          type: array
+          items:
+            $ref: "#/components/schemas/CXLSwitch"
+    CXLSwitch:
+      properties:
+        id:
+          type: string
+          description: CXL switch ID
+        resources:
+          type: array
+          items:
+            $ref: "#/components/schemas/Resource"
+    CXLSwitchSummary:
+      properties:
+        id:
+          type: string
+          description: CXL switch ID
+        resources:
+          type: array
+          items:
+            $ref: "#/components/schemas/ResourceSummary"
+    Rack:
+      properties:
+        id:
+          type: string
+          description: Rack ID
+        name:
+          type: string
+          description: Rack name
+        height:
+          type: integer
+          format: int32
+          description: Height (U) Rack unit count
+        chassis:
+          type: array
+          items:
+            $ref: "#/components/schemas/Chassis"
+    Chassis:
+      properties:
+        id:
+          type: string
+          description: Chassis ID
+        name:
+          type: string
+          description: Chassis name
+        modelName:
+          type: string
+          description: Model name
+        description:
+          type: string
+          description: Description
+        unitPosition:
+          type: integer
+          format: int32
+          description: Unit position
+        facePosition:
+          type: string
+          description: Installation aspect
+          enum: ["Front", "Rear"]
+          default : "Front"
+        height:
+          type: integer
+          format: int32
+          description: Height
+        depth:
+          type: string
+          description: Depth
+          enum: ["Full", "Half"]
+          default : "Full"
+        createdAt:
+          type: string
+          description: Registration date
+        updatedAt:
+          type: string
+          description: Update date
+        resources:
+          type: array
+          items:
+            $ref: "#/components/schemas/Resource"
+    UpResponse:
+      properties:
+        count:
+          $ref: "#/components/schemas/Count"
+          description: Count of devices
+        deviceIDs:
+          type: array
+          items:
+            type: string
+          description: Device ID list
+    ErrorResponse:
+      properties:
+        code:
+          type: string
+          description: Error code
+        message:
+          type: string
+          description: Error summary message
+        details:
+          type: string
+          description: Error detailed message

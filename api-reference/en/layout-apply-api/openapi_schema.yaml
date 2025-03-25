@@ -1,0 +1,656 @@
+components:
+  schemas:
+    ApplyRequest:
+      description: Request body for layout apply
+      type: object
+      required:
+        - procedures
+      properties:
+        procedures:
+          $ref: "#/components/schemas/ProcedureList"
+    ProcedureList:
+      description: Migration procedure list
+      type: array
+      items:
+        $ref: "#/components/schemas/Procedure"
+    RollbackProcedureList:
+      description: |-
+        Migration procedure data created to return executed migration procedures to their pre-execution state when status is CANCELED.<br>
+        Data format is similar to migration procedures<br>
+        Note: This data does not exist when status is COMPLETED, FAILED, or SUSPENDED
+      type: array
+      items:
+        $ref: "#/components/schemas/Procedure"
+    ResumeProcedureList:
+      description: |-
+        Migration procedure data created to resume the layout apply from the point of suspension when status is SUSPENDED.<br>
+        Data format is similar to migration procedures<br>
+        Note: This data does not exist when status is COMPLETED, FAILED, or CANCELED
+      type: array
+      items:
+        $ref: "#/components/schemas/Procedure"
+    Procedure:
+      description: Migration procedure
+      type: object
+      required:
+        - operationID
+        - operation
+        - targetDeviceID
+        - dependencies
+      properties:
+        operationID:
+          type: integer
+          description: ID of operation for migration procedure.
+          example: 1
+        operation:
+          type: string
+          description: |-
+            Type of migration operation. The following operations are assumed.
+            - "boot": Booting the device
+            - "shutdown": Shutting down the device
+            - "connect": Connecting CPU device to other devices
+            - "disconnect": Disconnecting CPU device from other devices
+          enum:
+            - boot
+            - shutdown
+            - connect
+            - disconnect
+          example: boot
+        targetCPUID:
+          type: string
+          description: |-
+            ID of the CPU device targeted for operation.<br>
+            Note:<br>
+             - Shows the ID of the CPU device to be connected/detached when "connect" or "disconnect".<br>
+             - Not specified when the operation type is booting/shutting down the device.<br>
+          example: 12345678-1234-1234-1234-123456789012
+        targetDeviceID:
+          type: string
+          description: |-
+            ID of the device targeted for operation.<br>
+            Note:<br>
+            - Required parameter when "connect" or "disconnect". Specifies the ID of the device to be connected/detached to/from the CPU.<br>
+            - Refers to the ID of the CPU device when booting/shutting down the power.
+          example: 12345678-1234-1234-1234-123456789012
+        dependencies:
+          type: array
+          description: |-
+            List storing operationIDs of migration operations that have dependencies.<br>
+            Note:<br>
+             - Indicates that this migration operation can be executed when all migration operations with stored operationIDs are completed.<br>
+             - Operations without IDs stored become the first operation in migration procedures.
+          items:
+            type: integer
+          example:
+            - 1
+      example:
+        {
+          operationID: 1,
+          operation: disconnect,
+          targetCPUID: 3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6,
+          targetDeviceID: 895DFB43-68CD-41D6-8996-EAC8D1EA1E3F,
+          dependencies: [],
+        }
+    ApplyResult:
+      description: |-
+        Detailed list of execution results for migration procedures
+      type: object
+      required:
+        - operationID
+        - status
+      properties:
+        operationID:
+          type: integer
+          description: |-
+            operationID of migration procedure
+          example: 1
+        status:
+          description: |-
+            Status of execution result. Set the following contents<br>
+            Normal completion: "COMPLETED"<br>
+            Abnormal completion: "FAILED"<br>
+            Skipped: "SKIPPED"<br>
+            Canceled: "CANCELED"
+          example: COMPLETED
+        uri:
+          type: string
+          description: |-
+            URI of the sent request<br>※ Not present if status is SKIPPED or CANCELED
+          example: http://<host>/cdim/api/v1/connect
+        method:
+          type: string
+          description: |-
+            Method of the sent request<br>
+            Note: Not present if status is SKIPPED or CANCELED
+          example: PUT
+        queryParameter:
+          type: string
+          description: |-
+            Query parameters of the sent request<br>
+            Note: Not present if status is SKIPPED or CANCELED
+          example:
+            {
+              "hostCpuId": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+              "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+            }
+        requestBody:
+          type: object
+          description: |-
+            Request body of the sent request<br>
+            Note: Not present if status is SKIPPED or CANCELED
+          properties:
+            action:
+              type: string
+              example: connect
+              enum:
+                - on
+                - off
+                - reset
+                - connect
+                - disconnect
+              description: |-
+                Operation on the device<br>
+                Note: Reset can only be specified for CPU
+            deviceID:
+              type: string
+              example: 895DFB43-68CD-41D6-8996-EAC8D1EA1E3F
+              description: |-
+                ID of the target to perform the operation<br>
+                Note: Not present if action is On/Off
+        startedAt:
+          type: datetime
+          description: |-
+            Start time of procedure. Time when procedure with the applicable operationID started<br>
+            Note: Not present if status is SKIPPED or CANCELED
+        endedAt:
+          type: datetime
+          description: |-
+            Completion time of procedure. Time when procedure with the applicable operationID was completed<br>
+            Note: Not present if status is SKIPPED or CANCELED
+        statusCode:
+          type: integer
+          description: |-
+            HTTP status code of the returned response<br>
+            Note: Not present if status is SKIPPED or CANCELED
+          example: 200
+        responseBody:
+          type: object
+          description: |-
+            Response body of the returned response<br>
+            Note: Not present if status is SKIPPED or CANCELED
+          properties:
+            code:
+              type: string
+              example: XXXXXXXXXXX
+            message:
+              type: string
+              example: Invalid parameters.
+        isOSBoot:
+          type: object
+          description: |-
+            OS boot confirmation API request details of hardware control function<br>
+            Note: Only present when operation type is power ON. Not present if status is SKIPPED or CANCELED
+          properties:
+            uri:
+              type: string
+              description: URI of the sent OS boot confirmation API request
+            queryParameter:
+              type: object
+              description: Query parameters of the sent OS boot confirmation API request
+            method:
+              type: string
+              description: Method of the sent OS boot confirmation API request
+            statusCode:
+              type: int
+              description: HTTP status code of the OS boot confirmation API response
+            responseBody:
+              type: object
+              description: Response body of the OS boot confirmation API. In case of error, stores the response body returned from the request destination
+        getInformation:
+          type: object
+          description: |-
+            Device information retrieval API request details of hardware control function<br>
+            Note: Only present when operation type is power OFF and the target device is a CPU. Not present if status is SKIPPED or CANCELED
+          properties:
+            responseBody:
+              type: object
+              description: |-
+                Response body of the sent device information retrieval API<br>
+                Note: Extracts and stores only the "powerState" key indicating the power state of the device from the obtained response. In case of error, stores the response body returned from the request destination
+    ApplyErrorResult:
+      type: object
+      properties:
+        operationID:
+          type: integer
+          description: |-
+            operationID of migration procedure
+          example: 1
+        status:
+          description: |-
+            Status of execution result. Set the following contents<br>
+            Normal completion: "COMPLETED"<br>
+            Abnormal completion: "FAILED"<br>
+            Skipped: "SKIPPED"<br>
+            Canceled: "CANCELED"
+          example: FAILED
+        uri:
+          type: string
+          description: |-
+            URI of the sent request<br>
+            Note: Not present if status is SKIPPED or CANCELED
+          example: http://cdim/api/v1/connect/{hostCpuId,targetDeviceID}
+        method:
+          type: string
+          description: |-
+            Method of the sent request<br>
+            Note: Not present if status is SKIPPED or CANCELED
+          example: PUT
+        queryParameter:
+          type: string
+          description: |-
+            Query parameters of the sent request<br>
+            Note: Not present if status is SKIPPED or CANCELED
+          example:
+            {
+              "hostCpuId": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+              "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+            }
+        requestBody:
+          type: string
+          description: |-
+            Request body of the sent request<br>
+            Note: Not present if status is SKIPPED or CANCELED
+          example:
+            {
+              "hostCpuId": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+              "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+            }
+        statusCode:
+          type: integer
+          description: |-
+            HTTP status code of the returned response<br>
+            Note: Not present if status is SKIPPED or CANCELED
+          example: 500
+        responseBody:
+          type: object
+          description: |-
+            Response body of the returned response<br>
+            Note: Not present if status is SKIPPED or CANCELED
+          properties:
+            code:
+              type: string
+              example: XXXXXXXXXXX
+            message:
+              type: string
+              example: Invalid parameters.
+        startedAt:
+          type: datetime
+          description: |-
+            Start time of procedure. Time when applicable operationID procedure started<br>
+            Note: Not present if status is SKIPPED or CANCELED
+        endedAt:
+          type: datetime
+          description: |-
+            Completion time of procedure. Time when applicable operationID procedure completed<br>
+            Note: Not present if status is SKIPPED or CANCELED
+    ApplyResponse:
+      description: Response body for layout apply request
+      type: object
+      properties:
+        result:
+          type: string
+          description: |-
+            Execution result of layout apply request. Set the following contents<br>
+            Normal completion: "COMPLETED"<br>
+            Abnormal completion: "FAILED"<br>
+            Canceled: "CANCELED"
+          example: COMPLETED
+        details:
+          type: array
+          description: |-
+            Detailed list of execution results for migration procedures
+          items:
+            $ref: "#/components/schemas/ApplyResult"
+    ApplyErrorResponse:
+      description: |-
+        Response body when a hardware control API error occurs during layout apply request execution
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          description: Error code representing the error content.
+          example: E40005
+        message:
+          type: string
+          example: Failed to execute LayoutApply.
+          description: Error message representing the error content.
+        result:
+          type: string
+          description: |-
+            Execution result of layout apply request. Set the following contents<br>
+            Normal completion: "COMPLETED"<br>
+            Abnormal completion: "FAILED"<br>
+            Canceled: "CANCELED"
+          example: FAILED
+        details:
+          type: array
+          description: |-
+            Detailed list of execution results for migration procedures
+          items:
+            $ref: "#/components/schemas/ApplyErrorResult"
+    ApplyResponseCanceled:
+      description: Response body when layout apply request completes with cancellation
+      type: object
+      properties:
+        result:
+          type: string
+          description: |-
+            Execution result of layout apply request. Set the following contents<br>
+            Normal completion: "COMPLETED"<br>
+            Abnormal completion: "FAILED"<br>
+            Canceled: "CANCELED"
+          example: CANCELED
+        details:
+          type: array
+          description: |-
+            Detailed list of execution results for migration procedures
+          items:
+            $ref: "#/components/schemas/ApplyResult"
+        rollbackProcedures:
+          type: array
+          description: |-
+            Migration procedure data to return executed migration procedures to their pre-execution state<br>
+            Note: Does not exist if result is COMPLETED or FAILED
+          items:
+            $ref: "#/components/schemas/Procedure"
+    NotExistErrorResponse:
+      description: |-
+        Specified Layout Apply ID does not exist
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          example: E40020
+          description: Error code representing the error content.
+        message:
+          type: string
+          example: Specified Layout Apply ID is not found
+          description: Error message representing the error content.
+    NotExistTargetNodeIDsErrorResponse:
+      description: |-
+        Specified NodeIDs do not exist
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          example: E50010
+          description: Error code representing the error content.
+        message:
+          type: string
+          example: Specified Target Node IDs is not found
+          description: Error message representing the error content.
+    ValidationErrorResponse:
+      description: |-
+        Response body when an error occurs during validation check
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          description: Error code representing the error content.
+          example: E40001
+        message:
+          type: string
+          example: "'123456789g' does not match '^[0-9a-f]+$'"
+          description: Error message representing the error content.
+    ValidationErrorResponseGetAll:
+      description: |-
+        Response body when an error occurs during validation check of layout apply status list retrieval
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          description: Error code representing the error content.
+          example: E40001
+        message:
+          type: string
+          example: Value is not one of ['procedures', 'applyResult', 'rollbackProcedures', 'rollbackResult', 'resumekProcedures']
+          description: Error message representing the error content.
+    ConflictErrorResponse:
+      description: |-
+        Response body when an error occurs due to exclusive control, etc.
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          description: Error code representing the error content.
+          example: E40010
+        message:
+          type: string
+          example: Already running. Cannot start multiple instances.
+          description: Error message representing the error content.
+    ErrorResponse:
+      description: Response body when a server error, etc. occurs
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          example: Error Code
+          description: Error code representing the error content.
+        message:
+          type: string
+          example: Error Message
+          description: Error message representing the error content.
+    CancelResponse:
+      description: |-
+        Response body upon execution of layout apply cancellation request
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          example: Cancel request has been sent successfully.
+          description: Message indicating successful sending of cancellation request.
+    ApplyIDGetResponse:
+      description: Response body for layout apply status (ID specified)
+      type: object
+      properties:
+        applyID:
+          type: string
+          example: d8eceb14da
+          description: Layout Apply ID. A random 10-digit string consisting of 0123456789abcdef is used as the Layout Apply ID
+        status:
+          type: string
+          example: COMPLETED
+          description: |-
+            Layout apply status information<br>
+            "COMPLETED": Layout apply complete, "IN_PROGRESS": Layout apply in progress, "SUSPENDED": Layout apply suspended, "FAILED": Layout apply failed, "CANCELING": Layout apply canceling, "CANCELED": Layout apply canceled
+        procedures:
+          $ref: "#/components/schemas/ProcedureList"
+        applyResult:
+          $ref: "#/components/schemas/ApplyResult"
+        rollbackProcedures:
+          $ref: "#/components/schemas/RollbackProcedureList"
+        startedAt:
+          type: datetime
+          description: Layout apply start time. Time when layout apply for the applicable ID started
+        endedAt:
+          type: datetime
+          description: Layout apply completion time. Time when layout apply for the applicable ID was completed
+        canceledAt:
+          type: datetime
+          description: |-
+            Cancel layout apply time. Time when layout apply for the applicable ID received cancel request<br>
+            Note: Not present if status is COMPLETED or FAILED
+        executeRollback:
+          type: boolean
+          description: |-
+            Flag for judging whether to perform automatic rollback.<br>
+            If the option "rollback-on-cancel" is specified when receiving cancel request, it will be true (rollback executed), if not specified, it will be false (no rollback executed)<br>※ Not present if status is COMPLETED or FAILED
+        rollbackStatus:
+          type: string
+          example: COMPLETED
+          description: |-
+            Rollback status information<br>"COMPLETED": Rollback complete, "IN_PROGRESS": Rollback in progress, SUSPENDED": Rollback suspended, "FAILED": Rollback failed<br>
+            Note: Not present if status is COMPLETED or FAILED, and if the layout apply for the applicable ID was canceled without rollback execution options
+        rollbackResult:
+          type: object
+          description: |-
+            Result of rollback execution after layout apply for the applicable ID was canceled.<br>
+            Data format is similar to layout apply result (applyResult)<br>
+            Note: Not present if status is COMPLETED or FAILED, and if the layout apply for the applicable ID was canceled without rollback execution options
+        rollbackStartedAt:
+          type: datetime
+          description: Rollback start time. Time when rollback for layout apply of applicable ID started
+        rollbackEndedAt:
+          type: datetime
+          description: Rollback completion time. Time when rollback for layout apply of applicable ID was completed
+        resumeProcedures:
+          $ref: "#/components/schemas/ResumeProcedureList"
+        resumeResult:
+          type: object
+          description: |-
+            Result after layout apply for the applicable ID is resumed or result after resuming interrupted data during rollback.<br>
+            Data format is similar to layout apply result (applyResult)<br>
+            Note: If interruption and resumption occur repeatedly, the latest result is stored
+        suspendedAt:
+          type: datetime
+          description: |-
+            Suspension time. Time when layout apply for the applicable ID was suspended or time when interrupted during rollback.<br>
+            Note: If interruption and resumption occur repeatedly, the latest result is stored
+        resumedAt:
+          type: datetime
+          description: |-
+            Resumption time. Time when suspended layout apply for the applicable ID was resumed or time when interrupted data during rollback was resumed.<br>
+            Note: If interruption and resumption occur repeatedly, the latest result is stored
+    GetAllResponse:
+      description: Response body for layout apply status list retrieval
+      type: object
+      properties:
+        count:
+          type: integer
+          description: |-
+            Number of cases retrieved from layout apply status management DB
+          example: 2
+        totalCount:
+          type: integer
+          description: |-
+            Total number of cases matching the search criteria
+          example: 20
+        applyResults:
+          type: array
+          description: |-
+            List of layout apply status retrieved. Returns an empty list if no target exists.
+          items:
+            $ref: "#/components/schemas/ApplyIDGetResponse"
+    DeleteConflictErrorResponse:
+      description: |-
+        Response body when an error occurs during execution of delete process on a running layout apply
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          description: Error code representing the error content.
+          example: E40024
+        message:
+          type: string
+          example: Apply ID cannot be deleted because it is currently being running. Try later again.
+          description: Error message representing the error content.
+    ApplyIDPutResponse:
+      description: |-
+        Response body upon execution of layout apply cancellation request or layout apply resumption request
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          example: |-
+            "IN_PROGRESS", "COMPLETED", "CANCELING", "CANCELED",
+          description: Message representing layout apply status information.
+        rollbackStatus:
+          type: string
+          example: |-
+            "IN_PROGRESS", "COMPLETED", SUSPENDED", "FAILED"
+          description: Message representing rollback status information.
+
+    DesiredLayout:
+      description: |-
+        New node configuration<br>Data of new node configuration is stored in desiredLayout
+      type: object
+      required:
+        - desiredLayout
+      properties:
+        targetNodeIDs:
+          type: array
+          description: |-
+            List of node IDs to be designed<br>
+            Nodes with specified IDs will be the target of design change<br>
+            If targetNodeIDs is not specified, the entire current node configuration will be subject to change
+          example: ["2c0af93a-ef04-4393-a805-86e30e054e74", "3as34r45-ert4-3454-s332-4det0s3ss3sd"]
+          items: 
+            description: Node ID to be designed
+            type: string
+            example: "2c0af93a-ef04-4393-a805-86e30e054e74"
+        desiredLayout:
+          $ref: "#/components/schemas/Layout"
+    Layout:
+      description: |-
+        Node configuration
+      type: object
+      required:
+        - nodes
+      properties:
+        nodes:
+          $ref: "#/components/schemas/NodeList"
+    NodeList:
+      description: |-
+        List of nodes. An empty list can be specified<br>
+        If empty list, create migration procedures to dismantle current node configuration to be designed
+      type: array
+      items:
+        $ref: "#/components/schemas/DeviceInfo"
+    DeviceInfo:
+      description: Device information
+      type: object
+      properties:
+        device:
+          type: object
+          description: |-
+            Device information object stored in nodes<br>
+            Note: When creating device data, cpu is required
+          properties:
+            <DeviceType>:
+              type: object
+              description: |-
+                Example of device type: cpu/memory/storage/networkInterface/gpu etc...<br>
+                Note: Case sensitivity is not distinguished (For CPU, allows representations like cpu/CPU/Cpu/cPu/CpU...)
+              required:
+                - deviceIDs
+              properties:
+                deviceIDs:
+                  $ref: "#/components/schemas/DeviceIDList"
+    DeviceIDList:
+      description: List of device IDs for the corresponding device
+      type: array
+      items:
+        $ref: "#/components/schemas/DeviceID"
+    DeviceID:
+      description: Device ID
+      type: string
+      example: "2CA6D4DF-2739-45BA-ACA4-6ABE93E81E15"
