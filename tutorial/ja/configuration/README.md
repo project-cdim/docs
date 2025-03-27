@@ -62,7 +62,7 @@ $ ls /var/log/cdim
 |stdout|true を指定すると標準出力にもログを出力します|
 
 出力方法を変更した後は、そのコンポーネントを再起動する必要があります。
-[この手順](../appendix/troubleshooting/README.md#44-特定のコンポーネントを再起動したい場合)に従って再起動してください。
+[この手順](../appendix/troubleshooting/README.md#4-特定のコンポーネントを再起動したい場合)に従って再起動してください。
 
 > [!NOTE]
 > logの出力ディレクトリを変更後、そのコンポーネントが動かない場合はディレクトリを作成する必要があります。その場合はそれぞれのDockerfileの中にて、ログの出力ディレクトリを作成していますので、それも併せて変更してください。
@@ -79,7 +79,7 @@ hw_collect_configs:
     timeout: 90    # 構成情報のタイムアウト値(s)
 ```
 収集方法を変更した後は、コンポーネントを再起動する必要があります。  
-[この手順](../appendix/troubleshooting/README.md#44-特定のコンポーネントを再起動したい場合)に従って再起動してください。
+[この手順](../appendix/troubleshooting/README.md#4-特定のコンポーネントを再起動したい場合)に従って再起動してください。
 
 性能情報収集 : performance-collector-compose/share/prometheus.yml
 
@@ -112,7 +112,7 @@ $ curl -i -s -X PUT http://localhost:8080/cdim/api/v1/configs
 
    - Keycloak管理URLから操作する場合
   
-    [getting started](/getting-started/README.md)の通りに操作し、直接Keycloakの管理画面にログインします。  
+    [getting started](../../../getting-started/ja/setup/setup.md#2-フロントエンド)の通りに操作し、直接Keycloakの管理画面にログインします。  
     ログインした後に、左上のドロップダウンリストをKeycloakからCDIMに変更することで、CDIMの管理画面に切り替わります。
 
 > [!NOTE]

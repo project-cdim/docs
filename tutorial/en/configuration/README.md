@@ -58,7 +58,7 @@ The settings for log output files are as follows. For settings files in Go forma
 | backup_files | Number of backup files to retain through rotation |
 | stdout | If true, logs are also output to standard output |
 
-After changing the output method, you need to restart the component. Please follow [this procedure](../appendix/troubleshooting/README.md#44-restarting-a-specific-component) to restart.
+After changing the output method, you need to restart the component. Please follow [this procedure](../appendix/troubleshooting/README.md#4-restart-a-specific-component) to restart.
 
 > [!NOTE]
 > If the component does not run after changing the log output directory, you may need to create the directory. In that case, modify the Dockerfile to create the log output directory as well.
@@ -75,7 +75,7 @@ hw_collect_configs:
     timeout: 90    # Configuration information timeout value (s)
 ```
 After changing the collection method, you need to restart the component.  
-Please follow [this procedure](../appendix/troubleshooting/README.md#44-restarting-a-specific-component) to restart.
+Please follow [this procedure](../appendix/troubleshooting/README.md#4-restart-a-specific-component) to restart.
 
 Performance Information Collection: performance-collector-compose/share/prometheus.yml
 
@@ -108,7 +108,7 @@ $ curl -i -s -X PUT http://localhost:8080/cdim/api/v1/configs
 
    - When operating from the Keycloak management URL  
   
-    Follow the instructions in [getting started](../../../getting-started/en/README.md) to log in directly to the Keycloak management screen.  
+    Follow the instructions in [getting started](../../../getting-started/en/setup/setup.md#2-frontend) to log in directly to the Keycloak management screen.  
     After logging in, change the dropdown list in the upper left from Keycloak to CDIM to switch to the CDIM management screen.
 
 > [!NOTE]

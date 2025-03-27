@@ -1,15 +1,15 @@
 ### Troubleshooting <!-- omit in toc -->
 This section explains troubleshooting for the Composable Disaggregated Infrastructure Manager (CDIM).
-- [1. Forgot CDIM Password/Cannot Access CDIM](#41-forgot-cdim-passwordcannot-access-cdim)
-- [2. Network Error Displayed on Dashboard Screen](#42-network-error-displayed-on-dashboard-screen)
+- [1. Forgot CDIM Password/Cannot Access CDIM](#1-forgot-cdim-passwordcannot-access-cdim)
+- [2. Network Error Displayed on Dashboard Screen](#2-network-error-displayed-on-dashboard-screen)
   - [If 401 Error is Displayed](#if-401-error-is-displayed)
   - [If Network Error is Displayed](#if-network-error-is-displayed)
   - [If 500 Error is Displayed](#if-500-error-is-displayed)
   - [If 502 Error is Displayed](#if-502-error-is-displayed)
   - [Initialize Kong Settings](#initialize-kong-settings)
-- [3. Cannot Connect to CDIM Dashboard/Dashboard Screen is Blank](#43-cannot-connect-to-cdim-dashboarddashboard-screen-is-blank)
-- [4. Restart a Specific Component](#44-restart-a-specific-component)
-- [5. Initialize CDIM](#45-initialize-cdim)
+- [3. Cannot Connect to CDIM Dashboard/Dashboard Screen is Blank](#3-cannot-connect-to-cdim-dashboarddashboard-screen-is-blank)
+- [4. Restart a Specific Component](#4-restart-a-specific-component)
+- [5. Initialize CDIM](#5-initialize-cdim)
 
 #### 1. Forgot CDIM Password/Cannot Access CDIM
 Please refer to the [Getting started](../../../../getting-started/en/setup/setup.md#2-frontend) procedure.  
@@ -72,7 +72,7 @@ $ ip address [| grep ens]
 
 #### 4. Restart a Specific Component
 This section shows how to restart individual components.  
-If you need to restart all components, refer to [Initialize CDIM](#45-initialize-cdim).  
+If you need to restart all components, refer to [Initialize CDIM](#5-initialize-cdim).  
 ```sh
 Move to the directory of the component you want to restart and stop the container
 $ cd ~/cdim/base-compose

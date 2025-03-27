@@ -316,7 +316,7 @@ $ vi test/templete_2.json
    > It takes a few minutes for the node list and resource list to reflect the changes after execution.
 
    ![](imgs/result_templete_2.png)
-    If it shows Failed or Suspend, execute again from [2.](#212-describe-and-register-the-desired-configuration) or refer to [Troubleshooting](../appendix/troubleshooting/README.md).
+    If it shows Failed or Suspend, execute again from [2.](#222-describe-and-register-the-desired-configuration) or refer to [Troubleshooting](../appendix/troubleshooting/README.md).
 
 ### 2.3. Delete Nodes
 
@@ -381,7 +381,7 @@ $ vi test/templete_3.json
 5. Verify the configuration change in the UI
    > It takes a few minutes for the node list and resource list to reflect the changes after execution.
    ![](imgs/result_templete_3.png)
-    If it shows Failed or Suspend, execute again from [2.](#212-describe-and-register-the-desired-configuration) or refer to [Troubleshooting](../appendix/troubleshooting/README.md).
+    If it shows Failed or Suspend, execute again from [2.](#232-describe-and-register-the-desired-configuration) or refer to [Troubleshooting](../appendix/troubleshooting/README.md).
 
 ### 2.4. Configuration Change via API
 
