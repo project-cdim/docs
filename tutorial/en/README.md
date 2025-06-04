@@ -1,21 +1,14 @@
 # Tutorial
 
----
+This tutorial provides an explanation of a series of steps for basic usage of Composable Disaggregated Infrastructure Manager (CDIM).
 
-The tutorial explains a series of steps for the basic usage of the Composable Disaggregated Infrastructure Manager (CDIM).
+If CDIM is not yet installed, please start with the installation by following the link below:
 
-[1. Check Hardware Configuration and Information](view/README.md)
+- [Getting Started](../../getting-started/en/README.md)
 
-If CDIM is not yet installed, please proceed with the installation from the link below.
+After installation or if already installed, start with the steps outlined below:
 
-[Getting Started](../../getting-started/en/README.md)
-
----
-
-[1. Check Hardware Configuration and Information](view/README.md)
-
-[2. Configuration Changes](layout/README.md)
-
-[3. Various Settings](configuration/README.md)
-
-[4. Appendix](appendix/README.md)
+1. [Check Hardware Configuration and Information](view/README.md)
+2. [Configuration Changes](layout/README.md)
+3. [Various Settings](configuration/README.md)
+4. [Appendix](appendix/README.md)

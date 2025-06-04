@@ -59,7 +59,7 @@ $ docker-compose up -d --build
 $ cd ~/cdim/base-compose
 $ docker-compose down
 $ docker volume ls
-$ docker volume rm base_gateway-db
+$ docker volume rm base-compose_gateway-db
 $ docker-compose up -d --build
 ```
 #### 3. CDIMのダッシュボードに接続できない/ダッシュボード画面が真っ白になる
@@ -88,7 +88,7 @@ CDIMを初期化する方法を説明します。
 下のコマンドにはdockerの全コンテナを停止、削除するコマンドを用いるため、注意して実行してください。  
 ```sh
 全コンテナを停止・削除する
-$ docker down $( docker ps -q )
+$ docker stop $( docker ps -q )
 $ docker rm $( docker ps -aq )
 全コンテナのイメージとボリュームを削除する
 $ docker image rm $( docker image ls -q )

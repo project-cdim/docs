@@ -1,5 +1,5 @@
 ### Troubleshooting <!-- omit in toc -->
-This section explains troubleshooting for the Composable Disaggregated Infrastructure Manager (CDIM).
+This section provides troubleshooting guidance for Composable Disaggregated Infrastructure Manager (CDIM).
 - [1. Forgot CDIM Password/Cannot Access CDIM](#1-forgot-cdim-passwordcannot-access-cdim)
 - [2. Network Error Displayed on Dashboard Screen](#2-network-error-displayed-on-dashboard-screen)
   - [If 401 Error is Displayed](#if-401-error-is-displayed)
@@ -12,9 +12,8 @@ This section explains troubleshooting for the Composable Disaggregated Infrastru
 - [5. Initialize CDIM](#5-initialize-cdim)
 
 #### 1. Forgot CDIM Password/Cannot Access CDIM
-Please refer to the [Getting started](../../../../getting-started/en/setup/setup.md#2-frontend) procedure.  
-You can check and change CDIM authentication information by logging in from the Keycloak management URL.  
-The default login information is as follows:
+Refer to the [Getting started](../../../../getting-started/en/setup/setup.md#2-frontend) procedure for recovering or resetting CDIM authentication details.  
+Default login credentials are:
 ```
 URL: http://<ip-address>:8287
 User: admin
@@ -24,25 +23,21 @@ Password: admin
 #### 2. Network Error Displayed on Dashboard Screen
 
 ##### If 401 Error is Displayed
-There may be an issue with the authentication settings. The client name needs to be consistent across the following three:
+This error might be due to inconsistencies in authentication settings. Ensure uniformity in client names across:
 - Keycloak client
-- mf-core .env NEXT_PUBLIC_AUTH_CLIENT_ID
-- Kong settings 
-Regarding Kong settings, ensure that the format of the public_key in the set-up-tools directory is correct and that the key content matches the public key of CDIM.  
-If there are any errors, correct them and then perform [Initialize Kong Settings](#initialize-kong-settings) followed by [set-up-tools configuration](../../../../getting-started/en/setup/setup.md#12-initial-setup-for-gateway).
+- mf-core `.env` value `NEXT_PUBLIC_AUTH_CLIENT_ID`
+- Kong configuration
+
+Check the `public_key` format in the set-up-tools directory, ensuring it matches the public key for CDIM. Rectify any discrepancies, then perform [Initialize Kong Settings](#initialize-kong-settings) followed by [set-up-tools configuration](../../../../getting-started/en/setup/setup.md#12-initial-setup-for-gateway).
 
 ##### If Network Error is Displayed
-It is possible that Kong cannot be connected and a 404 error is displayed.  
-Check if there are any proxy settings or routing settings in the network of the created Docker container.  
-If there are proxy settings within the container, it may not function properly.
+Kong might be unreachable, indicated by a 404 error. Verify any proxy or routing settings of the Docker container's network. Inappropriate proxy settings could impair functionality.
 
-##### If 500 Error is Displayed  
-It is possible that Kong cannot connect with other components.  
-Check if there are any proxy settings or routing settings in the created Docker container.  
-If there are proxy settings within the container, it may not function properly.
+##### If 500 Error is Displayed
+Kong might be unable to connect with other components. Again, check for improper proxy or routing settings in the network configuration of the Docker container.
 
 ##### If 502 Error is Displayed
-Please restart Kong using the following command:
+Restart Kong with the following commands:
 ```sh
 $ cd ~/cdim/base-compose
 $ docker-compose down
@@ -50,48 +45,45 @@ $ docker-compose up -d --build
 ```
 
 ##### Initialize Kong Settings
-Delete and recreate the volume containing Kong settings using the following command:
-
+Reset Kong configuration by deleting and recreating the related volume:
 ```sh
 $ cd ~/cdim/base-compose
 $ docker-compose down
 $ docker volume ls
-$ docker volume rm base_gateway-db
+$ docker volume rm base-compose_gateway-db
 $ docker-compose up -d --build
 ```
 
 #### 3. Cannot Connect to CDIM Dashboard/Dashboard Screen is Blank
-Please check the mf-core/.env file.  
-Ensure that the IP address and port number match the container information.  
+Verify the `mf-core/.env` file for correct IP address and port number corresponding to the container details:
 ```sh
-How to check container information
+# Checking container information
 $ docker ps
-How to check IP address
+# Checking IP address
 $ ip address [| grep ens]
 ```
 
 #### 4. Restart a Specific Component
-This section shows how to restart individual components.  
-If you need to restart all components, refer to [Initialize CDIM](#5-initialize-cdim).  
+To restart individual components:
 ```sh
-Move to the directory of the component you want to restart and stop the container
+# Move to the component directory and stop the container
 $ cd ~/cdim/base-compose
 $ docker compose down
-Once the container stop is confirmed, restart the container
+# Restart the container once it stops
 $ docker compose up -d --build
 ```
+For a full restart, refer to [Initialize CDIM](#5-initialize-cdim).
 
 #### 5. Initialize CDIM
-This section explains how to initialize CDIM.  
-Please be careful when executing the following commands as they will stop and delete all Docker containers.  
+Resetting CDIM involves stopping and deleting all Docker containers, images, and volumes. Execute the following with caution:
 ```sh
-Stop and delete all containers
-$ docker down $( docker ps -q )
-$ docker rm $( docker ps -aq )
-Delete all container images and volumes
-$ docker image rm $( docker image ls -q )
-$ docker volume rm $( docker volume ls -q )
-Start containers
+# Stop and delete all containers
+$ docker stop $(docker ps -q)
+$ docker rm $(docker ps -aq)
+# Delete all images and volumes
+$ docker image rm $(docker image ls -q)
+$ docker volume rm $(docker volume ls -q)
+# Start containers
 $ cd ~/cdim
 $ ./install --up
 ```

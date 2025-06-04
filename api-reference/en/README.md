@@ -1,15 +1,16 @@
 # API Reference
 
-This is the external API reference provided by the Composable Disaggregated Infrastructure Manager (CDIM).
+This is the external API reference provided by Composable Disaggregated Infrastructure Manager (CDIM).
 
-> [!NOTE] CDIM is currently under development and functionality may change, be deleted, or become incompatible without notice. Please check the reference regularly and stay updated for the latest information.
+> [!NOTE]
+> CDIM is currently under development, and its functionalities may change, be removed, or become incompatible without prior notice. Please regularly check this reference and stay updated with the latest information.
 
 ## API List
 
 * [Layout Apply API][]
 * [Configuration Management API][]
 * Performance Management API
-  * Performance manager uses VictoriaMetrics, and the accumulated performance information is retrieved using VictoriaMetrics's Query. For details, please refer to [VictoriaMetrics API example][].
+  * The Performance Manager utilizes VictoriaMetrics. Accumulated performance data can be retrieved using the VictoriaMetrics Query. For more details, please refer to the [VictoriaMetrics API example][].
 
 [Layout Apply API]: https://project-cdim.github.io/docs/api-reference/en/layout-apply-api/index.html
 [Configuration Management API]: https://project-cdim.github.io/docs/api-reference/en/configuration-management-api/index.html

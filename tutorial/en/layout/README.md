@@ -1,12 +1,12 @@
 ## 2. Configuration Changes <!-- omit in toc -->
-This section explains configuration changes using the Composable Disaggregated Infrastructure Manager (CDIM).
+This section explains how to execute configuration changes using Composable Disaggregated Infrastructure Manager (CDIM).
 
-With CDIM, you can easily change the current node configuration to the desired node configuration by inputting the information of the node configuration you want to build.  
-There are two functions available for configuration changes:  
-- Configuration Change Function
-  - A function that allows batch configuration changes for dozens of nodes.
-- Configuration Change via API
-  - A function for making detailed configuration changes, such as turning devices on or off individually. This is used when an error occurs in the configuration change function.
+With CDIM, you can seamlessly transition from the current node configuration to the desired one by specifying the configuration parameters for the intended setup.
+There are two main functionalities in configuration changes:
+- **Configuration Change Function**
+  - This feature enables batch configuration changes across multiple nodes simultaneously.
+- **Configuration Change via API**
+  - This feature facilitates granular configuration adjustments such as toggling individual device states, especially useful when an error occurs in the batch configuration function.
 
 <br>
 
@@ -26,33 +26,44 @@ There are two functions available for configuration changes:
   - [2.4.1. Change Device Power State](#241-change-device-power-state)
   - [2.4.2. Change Device Connection State](#242-change-device-connection-state)
 - [2.5. Details of Configuration Change Descriptions (Sample File)](#25-details-of-configuration-change-descriptions-sample-file)
-  
+
+<br>
+
 ### 2.1. Create a New Node
 
 #### 2.1.1. Check Device Information
 
-Check the detailed screen of each device and select the specifications you want to use.
+Validate the specifications of each device by accessing the detailed device screen and select your preferred configuration.
 
 ![](imgs/check_device_state_temp1.png)
 
-Once the node configuration is determined, check the device IDs to be used after the configuration change.
+Confirm the device IDs to be utilized post configuration change.
+
+> [!WARNING]
+> Some devices are pre-connected to a CPU as built-in devices, and these built-in devices cannot be connected to any CPU other than the one they are pre-connected to.
+> The method to check whether a device is a built-in device is as follows:
+> - If "nonRemovableDevices" is listed in the detailed information: It is a built-in device and is connected to the CPU with the listed device ID.
+> - If "nonRemovableDevices" is not listed in the detailed information: It is not a built-in device.
+> Note: CPUs is not built-in devices. The "nonRemovableDevices" listed for detailed information of the CPU indicate the CPU have those built-in devices.
+> ![](imgs/nonRemovableDevice.png)
 
 #### 2.1.2. Describe the Desired Configuration
 
-Describe the new node configuration you want to create.  
-> For device IDs, change them to the values generated when CDIM was launched.
+Outline the configuration for the new node you wish to establish.  
+> [!NOTE]
+> Update the device IDs to those generated at CDIM initialization.
 ```sh
 $ mkdir test
-$ vi test/templete_1.json
+$ vi test/template_1.json
 ```
 <details>
-<summary>test/templete_1.json (example)</summary>
+<summary>test/template_1.json (example)</summary>
 
 ```json
 {
     "targetNodeIDs": [
-            "171c0595-16ca-4250-8dfb-1c6ad598e27d",
-            "5edb4f4f-1745-4376-a0e1-c7568e6088b1"
+            "408f0ee4-4570-4461-b6c4-4c1f4bf4756e",
+            "5a5cc33d-11e5-4b80-89ef-4af5cf342c6e"
     ],
     "desiredLayout": {
         "nodes": [
@@ -60,28 +71,28 @@ $ vi test/templete_1.json
                 "device": {
                     "cpu": {
                         "deviceIDs": [
-                            "171c0595-16ca-4250-8dfb-1c6ad598e27d"
+                            "408f0ee4-4570-4461-b6c4-4c1f4bf4756e"
                         ]
                     },
                     "memory": {
                         "deviceIDs": [
-                            "3401f8c6-debf-4a5b-9b43-88ec512a9b7e",
-                            "0e41ef00-1828-4b93-84e5-bde05be551cf"
+                            "1bb7cd4a-e635-49a5-9ca1-e97b7699c32c",
+                            "108ad96d-af9a-4af5-ab4f-9aee1d52698e"
                         ]
                     },
                     "storage": {
                         "deviceIDs": [
-                            "29eae3ac-f8e7-4130-8a67-c97c6c33d29a"
+                            "12836b47-e2ec-4209-8c91-875fade897e7"
                         ]
                     },
                     "networkInterface": {
                         "deviceIDs": [
-                            "f8e0379e-b213-438e-8a7b-b22bac509590"
+                            "cd3d1f47-fde5-4cb0-bc6e-bb79921280f8"
                         ]
                     },
                     "gpu": {
                         "deviceIDs": [
-                            "14021ef1-fb9c-4acf-8a65-a7a580682fed"
+                            "060da9eb-4fba-4c06-9d0f-bf1c56992037"
                         ]
                     }
                 }
@@ -90,28 +101,28 @@ $ vi test/templete_1.json
                 "device": {
                     "cpu": {
                         "deviceIDs": [
-                            "5edb4f4f-1745-4376-a0e1-c7568e6088b1"
+                            "5a5cc33d-11e5-4b80-89ef-4af5cf342c6e"
                         ]
                     },
                     "memory": {
                         "deviceIDs": [
-                            "d4617cce-ca87-4577-9f28-24de39703caf",
-                            "1c0a0dc8-bff6-4459-bcb7-60d7528f59d8"
+                            "8c1e4a13-2d27-4431-9b82-d2f65f49313e",
+                            "3a2cd9bc-d4fb-4eaf-881b-a8ac98a91b1b"
                         ]
                     },
                     "storage": {
                         "deviceIDs": [
-                            "3f28d608-747d-40ee-88b6-5c25808c4c27"
+                            "1ea189b4-ad07-4519-ac2b-e1301151bf1c"
                         ]
                     },
                     "networkInterface": {
                         "deviceIDs": [
-                            "d2dcdde8-b74c-45f3-8c41-5b4e2a1acd35"
+                            "be347398-9179-4173-8bda-15d55083606c"
                         ]
                     },
                     "gpu": {
                         "deviceIDs": [
-                            "18a3990d-fc86-443d-bee2-1d2cbd6be803"
+                            "189a08b2-a609-489b-8958-9876925c426b"
                         ]
                     }
                 }
@@ -125,16 +136,15 @@ $ vi test/templete_1.json
 
 #### 2.1.3. Execute
 
-1. Create and verify the migration procedure for the registered configuration
+1. Create and validate the migration procedure for the specified configuration:
    ```sh
-   $ curl -XPOST -H 'Content-Type: application/json' http://<ip-address>:8013/cdim/api/v1/migration-procedures -d @test/templete_1.json | jq > test/procedure_templete_1.json
-   $ cat test/procedure_templete_1.json 
+   $ curl -XPOST -H 'Content-Type: application/json' http://<ip-address>:8013/cdim/api/v1/migration-procedures -d @test/template_1.json | jq > test/procedure_template_1.json
+   $ cat test/procedure_template_1.json 
    ```
 
-2. Edit the output migration procedure  
-   If the output migration procedure is not in the following format, correct it to the following format.
+2. Modify the output migration procedure if necessary:
    ```sh
-   $ vi test/procedure_templete_1.json
+   $ vi test/procedure_template_1.json
    {
     "procedures": [
         <output content>
@@ -142,49 +152,59 @@ $ vi test/templete_1.json
    }
    ```
 
-3. Apply the created migration procedure
+3. Apply the prepared migration procedure:
     ```sh
-    $ curl -XPOST -H 'Content-Type: application/json' http://<ip-address>:8013/cdim/api/v1/layout-apply -d @test/procedure_templete_1.json
+    $ curl -XPOST -H 'Content-Type: application/json' http://<ip-address>:8013/cdim/api/v1/layout-apply -d @test/procedure_template_1.json
     ```
 
-4. Update metrics information  
-   Updating the metrics information takes a few minutes.
+4. Update metrics information:
+   Note that updating metrics may take several minutes.
    ```sh
     $ docker exec -it performance-collector /bin/sh
     $ curl -i -s -X PUT http://localhost:8080/cdim/api/v1/configs
     ```
 
-5. Verify the configuration change in the UI
-   > It takes a few minutes for the node list and resource list to reflect the changes after execution.
+5. Verify the configuration changes in the user interface:
+   > Please allow a few minutes for the node and resource lists to reflect the changes post execution.
 
-    ![](imgs/result_templete_1.png)
-    If it shows Failed or Suspend, execute again from [2.](#212-describe-the-desired-configuration) or refer to [Troubleshooting](../appendix/troubleshooting/README.md).
+   ![](imgs/result_template_1.png)
+
+   If the status indicates Failure or Suspension, retry from [step 2](#212-describe-the-desired-configuration) or refer to [Troubleshooting](../appendix/troubleshooting/README.md).
 
 ### 2.2. Modify and Add Nodes
 
 #### 2.2.1. Check Device Information
 
-Check the detailed screen of each device and select the specifications you want to modify or add.
+Investigate the detailed screens of each device and select the specifications you wish to either modify or include.  
 ![](imgs/check_device_state_temp2.png)  
-Once the node configuration is determined, check the device IDs used in the node before the configuration change and the device IDs to be used after the configuration change.
+After settling on the node configuration, confirm both the device IDs currently in use and those that will be deployed post-configuration.
+
+> [!WARNING]
+> Some devices are pre-connected to a CPU as built-in devices, and these built-in devices cannot be connected to any CPU other than the one they are pre-connected to.
+> The method to check whether a device is a built-in device is as follows:
+> - If "nonRemovableDevices" is listed in the detailed information: It is a built-in device and is connected to the CPU with the listed device ID.
+> - If "nonRemovableDevices" is not listed in the detailed information: It is not a built-in device.
+> Note: CPUs is not built-in devices. The "nonRemovableDevices" listed for detailed information of the CPU indicate the CPU have those built-in devices.
+> ![](imgs/nonRemovableDevice.png)
 
 #### 2.2.2. Describe and Register the Desired Configuration
 
-Describe the new node configuration you want to create.  
-> For device IDs, change them to the values generated when you registered earlier.
+Detail the configuration for the evolving node setup you aim to establish.
+> [!NOTE]
+> Update the device IDs to reflect those registered earlier.
 ```sh
 $ mkdir test
-$ vi test/templete_2.json
+$ vi test/template_2.json
 ```
 <details>
-<summary>test/templete_2.json (example)</summary>
+<summary>test/template_2.json (example)</summary>
 
 ```json
 {
     "targetNodeIDs": [
-            "5edb4f4f-1745-4376-a0e1-c7568e6088b1",
-            "67172327-fbb1-4651-bc6d-63a696a1c6a1",
-            "7d5454e5-6860-4750-9722-b1011d07449d"
+            "5a5cc33d-11e5-4b80-89ef-4af5cf342c6e",
+            "6e40fc9e-b99a-455e-bce3-21e360ed9f71",
+            "77683d0a-d257-4b4d-a7ec-57eba1466681"
     ],
     "desiredLayout": {
         "nodes": [
@@ -192,32 +212,33 @@ $ vi test/templete_2.json
                 "device": {
                     "cpu": {
                         "deviceIDs": [
-                            "5edb4f4f-1745-4376-a0e1-c7568e6088b1"
+                            "5a5cc33d-11e5-4b80-89ef-4af5cf342c6e"
                         ]
                     },
                     "memory": {
                         "deviceIDs": [
-                            "d4617cce-ca87-4577-9f28-24de39703caf",
-                            "1c0a0dc8-bff6-4459-bcb7-60d7528f59d8",
-                            "1faaa6ed-3074-46ec-8d5a-e2266bb3d0e8"
+                            "8c1e4a13-2d27-4431-9b82-d2f65f49313e",
+                            "3a2cd9bc-d4fb-4eaf-881b-a8ac98a91b1b",
+                            "5dd8f904-d466-4062-87b7-6f7f5a72afad"
                         ]
                     },
                     "storage": {
                         "deviceIDs": [
-                            "3f28d608-747d-40ee-88b6-5c25808c4c27",
-                            "587bd765-69b5-4633-8695-fe91b513a490"
+                            "1ea189b4-ad07-4519-ac2b-e1301151bf1c",
+                            "24968a3b-0f23-4093-9a8f-bd1bb40b1189"
                         ]
                     },
                     "networkInterface": {
                         "deviceIDs": [
-                            "d2dcdde8-b74c-45f3-8c41-5b4e2a1acd35"
+                            "be347398-9179-4173-8bda-15d55083606c",
+                            "0d1601dd-f1d0-490b-b591-8c4e80c4806f"
                         ]
                     },
                     "gpu": {
                         "deviceIDs": [
-                            "18a3990d-fc86-443d-bee2-1d2cbd6be803",
-                            "2397eb69-8966-4600-80ba-5aca074a6f74",
-                            "7269d815-fc01-4170-9087-555325587344"
+                            "189a08b2-a609-489b-8958-9876925c426b",
+                            "26a01737-5ae2-4d6e-aa1e-82f26cf16595",
+                            "3e679d00-c313-4f26-aa89-8415b7b6a085"
                         ]
                     }
                 }
@@ -226,29 +247,29 @@ $ vi test/templete_2.json
                 "device": {
                     "cpu": {
                         "deviceIDs": [
-                            "67172327-fbb1-4651-bc6d-63a696a1c6a1"
+                            "6e40fc9e-b99a-455e-bce3-21e360ed9f71"
                         ]
                     },
                     "memory": {
                         "deviceIDs": [
-                            "94c0ec8b-e869-4c82-bd00-582821eca246",
-                            "6c5abb5e-4daf-4bca-a494-f208efe80b87"
+                            "01c0be1e-b73b-42f0-9167-35f8f3c4d343",
+                            "810cbd3a-0808-4623-8f2d-e60a618d4b23"
                         ]
                     },
                     "storage": {
                         "deviceIDs": [
-                            "599b6a7f-113c-440f-b3ad-e7a361c75a9f",
-                            "69cea176-520b-4225-84a2-6eccd6817dbb"
+                            "5b3d6c29-2733-4542-814c-6381277f2ba7",
+                            "3e8eecc7-6c68-4d8d-8d21-12bcde4d2c50"
                         ]
                     },
                     "networkInterface": {
                         "deviceIDs": [
-                            "9ce25d3e-f16c-4427-a53f-f4f69dcf8f7d"
+                            "cb14c649-de57-482f-9198-23dbb58f51dc"
                         ]
                     },
                     "gpu": {
                         "deviceIDs": [
-                            "8a3739af-47ba-4272-a552-e3eb7ffe7052"
+                            "4ba8f685-8a11-4086-bc6f-50c0d21e17fa"
                         ]
                     }
                 }
@@ -257,23 +278,23 @@ $ vi test/templete_2.json
                 "device": {
                     "cpu": {
                         "deviceIDs": [
-                            "7d5454e5-6860-4750-9722-b1011d07449d"
+                            "77683d0a-d257-4b4d-a7ec-57eba1466681"
                         ]
                     },
                     "memory": {
                         "deviceIDs": [
-                            "c528e62a-8a2c-49bb-9e7a-632894b23627",
-                            "91b4ece7-6a0d-459b-bb1c-961129fbae18"
+                            "cf8b4abc-12e2-4af4-98c7-3077ebfaf1b7",
+                            "a87e2f63-7ff3-4656-b1f0-638c2487589b"
                         ]
                     },
                     "storage": {
                         "deviceIDs": [
-                            "722a8a2a-afee-4d99-98f6-1358f0cc4dc3"
+                            "7cd6b0c2-194b-4451-a5b4-6ac6e0478525"
                         ]
                     },
                     "networkInterface": {
                         "deviceIDs": [
-                            "92a0c318-f0cb-4b84-9038-068af00b6029"
+                            "fd5f1c21-7116-445e-bb8e-4af8d80bd25b"
                         ]
                     }
                 }
@@ -287,64 +308,73 @@ $ vi test/templete_2.json
 
 #### 2.2.3. Execute
 
-1. Create and verify the migration procedure for the registered configuration
+1. Create and validate the migration procedure for the specified configuration:
    ```sh
-   $ curl -XPOST -H 'Content-Type: application/json' http://<ip-address>:8013/cdim/api/v1/migration-procedures -d @test/templete_2.json | jq > test/procedure_templete_2.json
-   $ cat test/procedure_templete_2.json 
+   $ curl -XPOST -H 'Content-Type: application/json' http://<ip-address>:8013/cdim/api/v1/migration-procedures -d @test/template_2.json | jq > test/procedure_template_2.json
+   $ cat test/procedure_template_2.json 
    ```
-2. Edit the output migration procedure  
-   If the output migration procedure is not in the following format, correct it to the following format.
+2. Modify the output migration procedure if necessary:
    ```sh
-   $ vi test/procedure_templete_2.json
+   $ vi test/procedure_template_2.json
    {
     "procedures": [
         <output content>
     ]
    }
    ```
-3. Apply the created migration procedure
+3. Apply the prepared migration procedure:
    ```sh
-   $ curl -XPOST -H 'Content-Type: application/json' http://<ip-address>:8013/cdim/api/v1/layout-apply -d @test/procedure_templete_2.json
+   $ curl -XPOST -H 'Content-Type: application/json' http://<ip-address>:8013/cdim/api/v1/layout-apply -d @test/procedure_template_2.json
    ```
-4. Update metrics information  
-   Updating the metrics information takes a few minutes.
+4. Update the metrics data:
+   Updating metrics can take a few minutes.
    ```sh
     $ docker exec -it performance-collector /bin/sh
     $ curl -i -s -X PUT http://localhost:8080/cdim/api/v1/configs
     ```
-5. Verify the configuration change in the UI
-   > It takes a few minutes for the node list and resource list to reflect the changes after execution.
+5. Verify the configuration changes in the user interface:
+   > Note: Post-execution changes might take a few minutes to reflect in the node and resource lists.
 
-   ![](imgs/result_templete_2.png)
-    If it shows Failed or Suspend, execute again from [2.](#222-describe-and-register-the-desired-configuration) or refer to [Troubleshooting](../appendix/troubleshooting/README.md).
+   ![](imgs/result_template_2.png)
+
+   If the status indicates Failure or Suspension, retry from [step 2](#222-describe-and-register-the-desired-configuration) or refer to [Troubleshooting guide](../appendix/troubleshooting/README.md).
 
 ### 2.3. Delete Nodes
 
 #### 2.3.1. Check Device Information 
 
-Check the detailed screen of each device and select the node you want to delete.
+Review the detailed screen of each device and choose the node you want to delete.  
 ![](imgs/check_device_state_temp3.png)
-Once the node configuration is determined, check the device IDs used in the node before the configuration change and the device IDs to be used after the configuration change.
+
+After you've identified the node to delete, confirm the device IDs currently used in that node and the device IDs that will be affected post-deletion.
+
+> [!WARNING]
+> Some devices are pre-connected to a CPU as built-in devices, and these built-in devices cannot be connected to any CPU other than the one they are pre-connected to.
+> The method to check whether a device is a built-in device is as follows:
+> - If "nonRemovableDevices" is listed in the detailed information: It is a built-in device and is connected to the CPU with the listed device ID.
+> - If "nonRemovableDevices" is not listed in the detailed information: It is not a built-in device.
+> Note: CPUs is not built-in devices. The "nonRemovableDevices" listed for detailed information of the CPU indicate the CPU have those built-in devices.
+> ![](imgs/nonRemovableDevice.png)
 
 #### 2.3.2. Describe and Register the Desired Configuration
 
-Describe the new node configuration you want to create.
-> For device IDs, change them to the values generated when you registered earlier.
+Draft the configuration necessary for deleting the node.
+> [!NOTE]
+> Remember to update the device IDs to those generated at your earlier registration.
 ```sh
 $ mkdir test
-$ vi test/templete_3.json
+$ vi test/template_3.json
 ```
 <details>
-<summary>test/templete_3.json (example)</summary>
+<summary>test/template_3.json (example)</summary>
 
 ```json
 {
     "targetNodeIDs": [
-            "5edb4f4f-1745-4376-a0e1-c7568e6088b1"
+            "5a5cc33d-11e5-4b80-89ef-4af5cf342c6e"
     ],
     "desiredLayout": {
-        "nodes": [
-        ]
+        "nodes": [ ]
     }
 }
 ```
@@ -353,59 +383,59 @@ $ vi test/templete_3.json
 
 #### 2.3.3. Execute
 
-1. Create and verify the migration procedure for the registered configuration
+1. Create and validate the migration procedure for the specified configuration:
    ```sh
-   $ curl -XPOST -H 'Content-Type: application/json' http://<ip-address>:8013/cdim/api/v1/migration-procedures -d @test/templete_3.json | jq > test/procedure_templete_3.json
-   $ cat test/procedure_templete_3.json 
+   $ curl -XPOST -H 'Content-Type: application/json' http://<ip-address>:8013/cdim/api/v1/migration-procedures -d @test/template_3.json | jq > test/procedure_template_3.json
+   $ cat test/procedure_template_3.json 
    ```
-2. Edit the output migration procedure  
-   If the output migration procedure is not in the following format, correct it to the following format.
+2. Modify the migration procedure as needed:
    ```sh
-   $ vi test/procedure_templete_3.json
+   $ vi test/procedure_template_3.json
    {
     "procedures": [
         <output content>
     ]
    }
    ```
-3. Apply the created migration procedure
+3. Modify the output migration procedure if necessary:
    ```sh
-   $ curl -XPOST -H 'Content-Type: application/json' http://<ip-address>:8013/cdim/api/v1/layout-apply -d @test/procedure_templete_3.json
+   $ curl -XPOST -H 'Content-Type: application/json' http://<ip-address>:8013/cdim/api/v1/layout-apply -d @test/procedure_template_3.json
    ```
-4. Update metrics information  
-   Updating the metrics information takes a few minutes.
+4. Update metrics information:
+   Note that metrics update can take several minutes.
    ```sh
     $ docker exec -it performance-collector /bin/sh
     $ curl -i -s -X PUT http://localhost:8080/cdim/api/v1/configs
     ```
-5. Verify the configuration change in the UI
-   > It takes a few minutes for the node list and resource list to reflect the changes after execution.
-   ![](imgs/result_templete_3.png)
-    If it shows Failed or Suspend, execute again from [2.](#232-describe-and-register-the-desired-configuration) or refer to [Troubleshooting](../appendix/troubleshooting/README.md).
+5. Verify the configuration changes in the user interface:
+   > Please allow a few minutes for the node list and resource list to update reflecting the changes post-execution.
+   
+   ![](imgs/result_template_3.png)
+   Should it display as Failed or Suspended, retry from [step 2](#232-describe-and-register-the-desired-configuration) or consult [Troubleshooting](../appendix/troubleshooting/README.md).
 
 ### 2.4. Configuration Change via API
 
-This section explains detailed configuration change methods that are difficult to change with the configuration information function.
+This section explains how to perform configuration changes that are too complex for the standard configuration management interface.
 
 #### 2.4.1. Change Device Power State
 
-1. Check the information of the device whose power state you want to change
-　![](imgs/check_device_state.png)
-  ```sh
-  $ docker container exec -it hw-control /bin/sh
-  $ curl http://<ip-address>:3500/v1.0/invoke/hw-control/method/cdim/api/v1/devices/<device ID to change power state> | jq
-  {
-    "deviceID": "18a3990d-fc86-443d-bee2-1d2cbd6be803",
-    "type": "gpu",
-          :
-    "powerState": "Off"
-          :
-  }
-  ```
-1. Change the power state  
-  Select the desired power state from the list below and enter the following command.
+1. **Check the information of the device whose power state you wish to change**:
+   ![](imgs/check_device_state.png)
+   ```sh
+    $ docker container exec -t hw-control curl http://localhost:3500/v1.0/invoke/hw-control/method/cdim/api/v1/devices/<device ID to change power state> | jq
+   {
+     "deviceID": "1ea189b4-ad07-4519-ac2b-e1301151bf1c",
+     "type": "storage",
+           :
+     "powerState": "Off"
+           :
+   }
+   ```
 
-  <details>
+2. **Change the power state**:  
+   Choose the desired power state from the following list and issue the corresponding command.
+
+   <details>
    <summary> List of possible power states </summary>
    
    - on
@@ -415,91 +445,89 @@ This section explains detailed configuration change methods that are difficult t
   
    </details>
 
-  ```sh
-  $ curl -X PUT http://<ip-address>:3500/v1.0/invoke/hw-control/method/cdim/api/v1/devices/<device ID to change power state>/power -d '{"action": "on"}' -H 'accept: application/json' -H 'Content-Type: application/json'
-  {"deviceID":"18a3990d-fc86-443d-bee2-1d2cbd6be803"}
-  Check the information of the changed device
-  $ curl http://<ip-address>:3500/v1.0/invoke/hw-control/method/cdim/api/v1/devices/<device ID to change power state> | jq
-  {
-    "deviceID": "18a3990d-fc86-443d-bee2-1d2cbd6be803",
-    "type": "gpu",
-          :
-    "powerState": "On"
-          :
-  }
-  ```
+   ```sh
+   $ docker container exec -t hw-control curl -X PUT http://localhost:3500/v1.0/invoke/hw-control/method/cdim/api/v1/devices/<device ID to change power state>/power -d '{"action": "on"}' -H 'accept: application/json' -H 'Content-Type: application/json'
+   {"deviceID":"1ea189b4-ad07-4519-ac2b-e1301151bf1c"}
+   
+   # Verify the change:
+   $ docker container exec -t hw-control curl http://localhost:3500/v1.0/invoke/hw-control/method/cdim/api/v1/devices/<device ID to change power state> | jq
+   {
+     "deviceID": "1ea189b4-ad07-4519-ac2b-e1301151bf1c",
+     "type": "storage",
+           :
+     "powerState": "On"
+           :
+   }
+   ```
 
 #### 2.4.2. Change Device Connection State
 
-1. Check the information of the device whose connection state you want to change
+1. **Check the information of the device whose connection state you wish to change**:  
    ![](imgs/check_cpu_of_node.png)
-  ```sh
-  Check CPU information
-  $ docker container exec -it hw-control /bin/sh
-  $ curl http://<ip-address>:3500/v1.0/invoke/hw-control/method/cdim/api/v1/devices/<CPU device ID> | jq
-  {
-    "deviceID": "855d94b5-6855-4aa7-817c-ca2acd743a59",
-    "type": "CPU",
-          :
-    "powerState": "On"
-          :
-  }
-  Check the information of the device whose connection state you want to change
-  $ curl http://<ip-address>:3500/v1.0/invoke/hw-control/method/cdim/api/v1/devices/<device ID to change connection state> | jq
-  {
-    "deviceID": "18a3990d-fc86-443d-bee2-1d2cbd6be803",
-    "type": "gpu",
-          :
-    "powerState": "On"
-          :
-  }
-  ```
+   ```sh
+   # Check CPU information
+    $ docker container exec -t hw-control curl http://localhost:3500/v1.0/invoke/hw-control/method/cdim/api/v1/devices/<CPU device ID> | jq
+   {
+     "deviceID": "9ea47b1b-bf73-4267-95e2-31c702a274c9",
+     "type": "CPU",
+           :
+     "powerState": "On"
+           :
+   }
+   
+   # Check the device information
+   $ docker container exec -t hw-control curl http://localhost:3500/v1.0/invoke/hw-control/method/cdim/api/v1/devices/<device ID to change connection state> | jq
+   {
+     "deviceID": "1ea189b4-ad07-4519-ac2b-e1301151bf1c",
+     "type": "storage",
+           :
+     "powerState": "On"
+           :
+   }
+   ```
 
-1. Change the connection state     
-   Select the desired connection state from the list below and execute the following command.
+2. **Change the connection state**:   
+   Choose the desired connection state from the list below and execute the command.
 
-    List of possible connection states
     - connect
     - disconnect
     ```sh
-    $ curl -X PUT http://<ip-address>:3500/v1.0/invoke/hw-control/method/cdim/api/v1/cpu/<CPU device ID>/aggregations -d '{"deviceID": "<device ID to change connection state>", "action": "connect"}' -H 'accept: application/json' -H 'Content-Type: application/json'
-    {"CPUDeviceID":"855d94b5-6855-4aa7-817c-ca2acd743a59","deviceID":"18a3990d-fc86-443d-bee2-1d2cbd6be803"}
+    $ docker container exec -t hw-control curl -X PUT http://localhost:3500/v1.0/invoke/hw-control/method/cdim/api/v1/cpu/<CPU device ID>/aggregations -d '{"deviceID": "<device ID to change connection state>", "action": "connect"}' -H 'accept: application/json' -H 'Content-Type: application/json'
+    {"CPUDeviceID":"9ea47b1b-bf73-4267-95e2-31c702a274c9","deviceID":"1ea189b4-ad07-4519-ac2b-e1301151bf1c"}
     ```
-    Check the connection state of the device.
+    Verify the connection state
     ![](imgs/check_cpu_after_connect.png)
-    > It takes a few minutes for the node list and resource list to reflect the changes after execution.
+    > Note: It may take a few minutes for the node list and resource list to update post execution.
+    
 
-1. Update metrics information  
-   
-   Exit from the hw-control container and perform the metrics update.
-   Updating the metrics information takes a few minutes.
+3. **Update metrics information**:  
+   Note that updating metrics information can take a few minutes.
    ```sh
-    $ exit
-    $ docker exec -it performance-collector /bin/sh
-    $ curl -i -s -X PUT http://localhost:8080/cdim/api/v1/configs
-    ```
+   $ docker exec -it performance-collector /bin/sh
+   $ curl -i -s -X PUT http://localhost:8080/cdim/api/v1/configs
+   ```
 
 ### 2.5. Details of Configuration Change Descriptions (Sample File)
 
-This section shows how to describe and the items of configuration content in CDIM using a sample file.
+This section provides an example of how to precisely formulate and describe the details of configuration changes in CDIM using a sample file.
 
 <details>
-<summary>Details of Configuration Content (templete_0.json)</summary>
+<summary>Details of Configuration Content (template_0.json)</summary>
 
 ```json
 {
-    <!-- Specify the node IDs (CPU device IDs) you want to change -->
+    // This section specifies the node IDs (CPU device IDs) you wish to change
     "targetNodeIDs": [
-        <!-- Specify multiple if there are multiple -->
+        // Include multiple IDs here if necessary
         "f72874dd-509b-445f-ad7a-47e21114736d",
         "c71ca465-189a-4315-ab91-ff8cf58bbfd2"
     ],
-    <!-- Specify the node configuration after the change -->
+    // Define the desired node configuration post-changes
     "desiredLayout": {
         "nodes": [
-            <!-- First node -->
+            // Describing the first node
             {
-                <!-- Specify the device information of the node -->
+                // Details about the device configuration for the node
                 "device": {
                     "cpu": {
                         "deviceIDs": [
@@ -523,7 +551,7 @@ This section shows how to describe and the items of configuration content in CDI
                     }
                 }
             },
-            <!-- Second node -->
+            // Describing the second node
             {
                 "device": {
                     "cpu": {
@@ -533,7 +561,7 @@ This section shows how to describe and the items of configuration content in CDI
                     },
                     "memory": {
                         "deviceIDs": [
-                            <!-- Specify multiple if using multiple devices -->
+                            // Include multiple IDs if multiple devices are being used
                             "10991104-a11c-4c44-b20d-78b7ebcab0f8",
                             "99adb16d-e75b-43f9-8215-76fbc26bff33"
                         ]
@@ -564,11 +592,11 @@ This section shows how to describe and the items of configuration content in CDI
 <summary>Details of Description Items</summary>
 
 | Name | Explanation |
-|:--|:--|
-| targetNodeIDs | An object to list the nodes you want to change. Be careful not to omit this item, as it will apply to all nodes if not specified. |
-| desireLayout | An object to describe the information after the configuration change. |
-| nodes | An object to describe node information in list format. |
-| devices | An object to describe the list of devices used or planned to be used in the node. |
+|:----|:-----------|
+| targetNodeIDs | A field listing the nodes targeted for changes. It's critical to specify this; otherwise, changes may apply to all nodes inadvertently. |
+| desiredLayout | Describes the planned node configuration after changes are applied. |
+| nodes | An object that details node information in a list format. |
+| devices | Lists all the devices either currently used or intended for future use in specified nodes. |
 
 </details>
 
@@ -580,10 +608,10 @@ This section shows how to describe and the items of configuration content in CDI
 - CPU
 - memory
 - storage
-- networkInterface (NIC)
+- networkInterface(NIC)
 - GPU
-> More resources will be added sequentially
+> Note: Additional resources will be progressively supported.
 
 </details>
 
-[Next 3. Various Settings](../configuration/README.md)
+[Next: 3. Various Settings](../configuration/README.md)

@@ -3,7 +3,7 @@
 > [!NOTE]
 > Use the same value for `cdim-server` as used in the configuration file for [Installing CDIM](../install/install.md).
 
-## 1. Gateway (Kong)
+## 1. Gateway (Kong) Setup
 
 ### 1.1. Confirm Public Key
 
@@ -11,17 +11,18 @@ Log in to Keycloak.
 
 ```sh
 http://cdim-server:8287/
-admin/admin
+Username: admin
+Password: admin
 ```
 
-Switch the realm to "CDIM".
+Switch to the "CDIM" realm.
 
-Click "Realm settings" and then click the "Keys" tab. Check and copy the "Public key" for "RS256".
-![fig 1-1 realm settings keys](img/key.png)
+Click "Realm settings" and then click the "Keys" tab. Check and copy the "Public key" for "RS256".  
+![fig 1-1 Realm Settings Keys](img/key.png)
 
-### 1.2. Initial Setup for Gateway
+### 1.2. Setup Gateway with Public Key
 
-Using the Public key confirmed and copied in "1.1.", create a `public_key.pem` file under the `set-up-tools/gateway/tools/` directory. The format is as follows:
+Using the copied Public Key from "1.1", create a `public_key.pem` file in the `set-up-tools/gateway/tools/` directory using the format shown below:
 
 ```txt:public_key.pem
 -----BEGIN PUBLIC KEY-----
@@ -29,13 +30,13 @@ Using the Public key confirmed and copied in "1.1.", create a `public_key.pem` f
 -----END PUBLIC KEY-----
 ```
 
-Execute the `setup` script to perform the initial setup.
+Run the `setup` script to initialize the gateway.
 
 ```sh
 ./setup
 ```
 
-Restart the base containers.
+Afterward, reset the base containers.
 
 ```sh
 cd base-compose
@@ -43,21 +44,20 @@ docker compose down
 docker compose up -d --build
 ```
 
-## 2. Frontend
+## 2. Frontend Configuration
 
-### 2.1. Create Client
+### 2.1. Create Client in Keycloak
 
 Log in to Keycloak.
 
 ```sh
 http://cdim-server:8287/
-admin/admin
+Username: admin
+Password: admin
 ```
 
-Switch the realm to "CDIM".
-
-Click "Clients" and then click "Create client".
-![fig 2-1 Clients Create client](img/add_client1.png)
+Click "Clients" and then click "Create client", then click on "Create client".  
+![fig 2-1 Clients Create Client](img/add_client1.png)
 
 In "General settings", configure as follows and click "Next".
 
@@ -69,70 +69,69 @@ In "General settings", configure as follows and click "Next".
 | Description | (leave blank) |
 | Always display in UI | Off |
 
-![fig 2-2 Clients Create client](img/add_client2.png)
+![fig 2-2 Clients Create Client](img/add_client2.png)
 
-In "Capability config", select only "Standard flow" under "Authentication flow" and click "Next".
+In "Capability config", only enable "Standard flow" under "Authentication flow" and click "Next".
 
-![fig 2-3 Clients Create client](img/add_client3.png)
+![fig 2-3 Clients Create Client](img/add_client3.png)
 
-Specify the following in "Login settings".
+Specify the following in "Login settings":
 
 | Item | Value |
 |------|------|
-|Root URL| <http://cdim-server:3000/>  |
-|Home URL| <http://cdim-server:3000/>  |
-|Valid redirect URIs| <http://cdim-server:3000/*> |
-|Valid post logout redirect URIs| <http://cdim-server:3000/*> |
-|Web origins| * |
+| Root URL | <http://cdim-server:3000/> |
+| Home URL | <http://cdim-server:3000/> |
+| Valid redirect URIs | <http://cdim-server:3000/*> |
+| Valid post logout redirect URIs | <http://cdim-server:3000/*> |
+| Web origins | * |
 
-![fig 2-4 Clients Create client](img/add_client4.png)
+![fig 2-4 Clients Create Client](img/add_client4.png)
 
-Click "Save" to save the settings.
+Click "Save" to finalize the settings.
 
-### 2.2. Create User
+### 2.2. User Setup
 
-Create a user for CDIM. Here, we will explain how to create an administrator user.
+Create a user account for CDIM, ideally with administrative privileges.
 
 #### 2.2.1. Add User
 
 Click "Users" and then click "Add User".
-![fig 2-1 Users Add user](img/add_user1.png)
+![fig 2-1 Users Add User](img/add_user1.png)
 
-Enter the "Username" and click the "Create" button.
-![fig 2-2 Users Add user](img/add_user2.png)
+Enter the "Username" and click "Create".
+![fig 2-2 Users Add User](img/add_user2.png)
 
-#### 2.2.2. Set Password for User
+#### 2.2.2. Set User Password
 
-Click the "Credentials" tab, and in the displayed screen, click the "Set password" button.
-![fig 2-3 Users Add user](img/add_user3.png)
+Click the "Credentials" tab, and in the displayed screen, click the "Set password".
+![fig 2-3 Users Add User](img/add_user3.png)
 
-Enter the password. Set "Temporary" to "Off". Click the "Save" button.
-![fig 2-4 Users Add user](img/add_user4.png)
+Enter the password. Set "Temporary" to "Off". Click the "Save".  
+![fig 2-4 Users Add User](img/add_user4.png)
 
-Click the "Save password" button.
-![fig 2-5 Users Add user](img/add_user5.png)
+Click the "Save password".  
+![fig 2-5 Users Add User](img/add_user5.png)
 
-#### 2.2.3. Assign Role to User
+#### 2.2.3. Assign Roles
 
-Click the "Role mapping" tab and then click the "Assign role" button.
-![fig 2-6 Users Add user](img/add_user6.png)
+Click the "Role mapping" tab and then click the "Assign role".
+![fig 2-6 Users Add User](img/add_user6.png)
 
 Switch the filter condition to "Filter by realm roles".
-![fig 2-7 Users Add user](img/add_user7.png)
+![fig 2-7 Users Add User](img/add_user7.png)
 
-Check the role to be assigned in the list. Here, check "cdim-administrator", which represents administrator privileges. Click the "Assign" button.
+Check the role to be assigned in the list. Here, check "cdim-administrator", which represents administrator privileges. Click the "Assign".  
 ![fig 2-8 Users Add user](img/add_user8.png)
 
 ## 3. Verification
 
-Log in to CDIM using the created user.
+Log in to CDIM using the credentials of the user you just created.
 
 ```sh
 http://cdim-server:3000/
 ```
 
-If the dashboard screen displays resource information retrieved from the emulator as shown below, it is functioning properly.
-
+If the dashboard correctly displays information like resource data retrieved from the emulator, then the setup is successful.  
 ![fig 3-1 CDIM Dashboard](img/cdim_dashboard.png)
 
 [Next step: Using CDIM](../use/use.md)

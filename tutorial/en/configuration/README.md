@@ -1,5 +1,5 @@
 ### 3. Various Configuration Methods <!-- omit in toc -->
-This section explains various configuration methods for the Composable Disaggregated Infrastructure Manager (CDIM).
+This section explains various configuration methods for Composable Disaggregated Infrastructure Manager (CDIM).
 
 - [3.1. Check and Change Log Output Methods](#31-check-and-change-log-output-methods)
   - [3.1.1. Check Logs](#311-check-logs)
@@ -13,12 +13,12 @@ This section explains various configuration methods for the Composable Disaggreg
 
 #### 3.1. Check and Change Log Output Methods 
 ##### 3.1.1. Check Logs
-By default, logs are output to the following location. They are output within the container, so be careful with saving them.
+By default, logs are output to the following location. However, they are retained within the container, so ensure to manage their storage appropriately.
 ```sh
 $ docker exec -it <container-name> /bin/sh
 $ ls /var/log/cdim
 ```
-Logs are separated by component into the following files:
+Logs are organized by component into the following files:
 
 | Log Type | Log File Name |
 |:--|:--|
@@ -29,7 +29,7 @@ Logs are separated by component into the following files:
 | Application Log (Configuration Information Management) | app_config_info.log |
 
 ##### 3.1.2. Change Log Output Methods
-Change the settings file for each component to modify the log output method. The settings files are as follows:
+To modify the log output settings, update the settings file corresponding to each component. The settings files are located as follows:
 
 | Component Name | Settings File Name | File Path |
 |:--|:--|:--|
@@ -38,7 +38,7 @@ Change the settings file for each component to modify the log output method. The
 | Audit Log (Configuration Information Collection) | run_collect.go | configuration-collector-compose/configuration-collector/configuration-collector/cmd |
 | Audit Log (Configuration Information Exporter) | main.go | configuration-exporter-compose/configuration-exporter/configuration-exporter |
 | Audit Log (Configuration Information Management) | main.go | configuration-manager-compose/configuration-manager/configuration-manager |
-| Hardware Control | setting.py | hw-control-compose/hw-control/src/app/common |
+| Hardware Control | settings.py | hw-control-compose/hw-control/src/app/common |
 | Layout Application | layoutapply_config.yaml | layout-apply-compose/layout-apply/src/layoutapply/config |
 | Migration Procedure Generation | migrationprocedures_config.yaml | migration-procedure-generator-compose/migration-procedure-generator/src/migrationproceduregenerator/config |
 | Performance Information Collection | logger.go | performance-collector-compose/performance-collector/performance-collector/internal/service |
@@ -58,13 +58,13 @@ The settings for log output files are as follows. For settings files in Go forma
 | backup_files | Number of backup files to retain through rotation |
 | stdout | If true, logs are also output to standard output |
 
-After changing the output method, you need to restart the component. Please follow [this procedure](../appendix/troubleshooting/README.md#4-restart-a-specific-component) to restart.
+After modifying the settings, restart the component using [this procedure](../appendix/troubleshooting/README.md#4-restart-a-specific-component).
 
 > [!NOTE]
-> If the component does not run after changing the log output directory, you may need to create the directory. In that case, modify the Dockerfile to create the log output directory as well.
+> If the component fails to run after changing the log output directory, you may need to create the directory beforehand. Adjust the Dockerfile accordingly to create the log output directory.
 
 #### 3.2. Change Information Collection Settings 
-You can change the collection interval and other settings by modifying the settings file for each collection component.
+Modify the settings file of each collection component to adjust the collection interval and other parameters.
 
 Configuration Information Collection: configuration-collector-compose/configuration-collector/configuration-collector/config/collect.yaml
 
@@ -74,8 +74,8 @@ hw_collect_configs:
     interval: 90   # Configuration information retrieval interval (s)
     timeout: 90    # Configuration information timeout value (s)
 ```
-After changing the collection method, you need to restart the component.  
-Please follow [this procedure](../appendix/troubleshooting/README.md#4-restart-a-specific-component) to restart.
+After modifying the setting, restart the component.  
+Refer to [this procedure](../appendix/troubleshooting/README.md#4-restart-a-specific-component) for the restart.
 
 Performance Information Collection: performance-collector-compose/share/prometheus.yml
 
@@ -85,7 +85,7 @@ global:
     scrape_interval: 60s      # Performance information timeout value (s)
 ```
 
-For performance information collection, you need to re-execute the information collection.
+For performance information collection, you need to restart the information collection.
 ```sh
 $ docker exec -it performance-collector /bin/sh
 $ curl -i -s -X PUT http://localhost:8080/cdim/api/v1/configs
@@ -99,96 +99,89 @@ $ curl -i -s -X PUT http://localhost:8080/cdim/api/v1/configs
 ##### 3.3.1. Add Users
 
 1. Access the Keycloak master URL for CDIM user management and log in
-   - When operating from the user management screen  
-  
-    Log in with an account that has cdim-manage-user permissions (such as Administrator) and press User Management/User List.
+   - **When using the user management screen:**  
+     Log in with an account that has `cdim-manage-user` permissions (such as Administrator) and navigate to User Management/User List.  
+     Click "Admin Console" in the upper right and log in.
+     ![](imgs/user-dashboard.png)
 
-    Press "Admin Console" in the upper right and log in.
-    ![](imgs/user-dashboard.png)
-
-   - When operating from the Keycloak management URL  
-  
-    Follow the instructions in [getting started](../../../getting-started/en/setup/setup.md#2-frontend) to log in directly to the Keycloak management screen.  
-    After logging in, change the dropdown list in the upper left from Keycloak to CDIM to switch to the CDIM management screen.
+   - **When using the Keycloak management URL:**  
+     Follow the instructions in [getting started](../../../getting-started/en/setup/setup.md#2-frontend) to log in directly to the Keycloak management screen.  
+     After logging in, switch to the CDIM management screen by changing the dropdown list in the upper left from Keycloak to CDIM.
 
 > [!NOTE]
-> If you log in from the user management screen, you may see a "We are sorry" screen, but this is not a problem.  
-> Press "Back to Application" to connect to the CDIM management URL.
+> If you access via the user management screen and encounter a "We are sorry" error, it is not an issue.  
+> Click "Back to Application" to proceed to the CDIM management URL.
 
-> [!NOTE] 
-> Also, users without the cdim-administrator role can transition to the user management screen, but cannot make changes such as adding users.  
-<r>
+> [!NOTE]
+> Also, users without the cdim-administrator role can transition to the user management screen, but cannot make changes such as adding users.
 
-1. Add users from Users  
-    Press Users in the menu on the left side of the screen and press the "Add User" button.
-    ![](imgs/user-console-keycloak.png)
-    Select "English/Japanese" for locale and enter the user name.
-    ![](imgs/add-user-keycloak.png)
-    After entering other necessary items, press the "Create" button to create the user.
-    <br>
+1. To add users:
+   - Click "Users" in the menu on the left and then click the "Add User" button.
+   ![](imgs/user-console-keycloak.png)
+   - Choose "English/Japanese" for the locale and enter the user name.
+   ![](imgs/add-user-keycloak.png)
+   - After filling in other necessary fields, click the "Create" button.
 
-2. Delete a user  
-   Select the user you want to delete and press "Delete User".
+2. To delete a user:
+   - Select the desired user and click "Delete User".
    ![](imgs/delete-user.png)
    ![](imgs/delete-user2.png)
 
 ##### 3.3.2. Change User Permissions in CDIM
-- Add permissions to a user
-  1. Open the details screen of the created user  
-     Access the URL for user management and switch to the CDIM management screen.  
-     Press Users on the left side of the screen and open the details screen of the user whose permissions you want to change.  
+- **To add permissions:**
+  1. Navigate to the detailed user screen:
+     - Access the URL for user management and switch to the CDIM management screen.
+     - Click "Users" on the left and open the details screen of the user whose permissions you want to modify.  
      ![](imgs/user-details-keycloak.png)
-     <br>
-  2. Change permissions from "Role mapping"  
-     * To add permissions  
-     Select "Role mapping" from the tabs at the top of the screen and press the "Assign role" button.
+
+  2. Modify permissions via "Role mapping":
+     - Click "Role mapping" from the tabs at the top and click "Assign role".
      ![](imgs/user-rolemapping-keycloak.png)  
-     Change the filter in the upper left to "Filter by realm roles".
+     - Change the filter in the upper left to "Filter by realm roles".  
      ![](imgs/change-filter-keycloak.png)  
-     Check the permissions you want to add and press Assign.
+     - Check the permissions to add and click "Assign".
      ![](imgs/add-roles-keycloak.png)
-     After adding the role, log in again to apply the settings.
+     - Require the user to log in again to apply the settings.
 
    <details>
    <summary> Details of CDIM Permissions </summary>
-   Can be selected when the filter in the upper left is "filter by realm roles".
+   Available when filtering by "filter by realm roles".
 
-   - User Roles
-  
    | Role | Name | Description |
    |:--|:--|:--|
-   | Guest | cdim-viewer | Can view all menus in CDIM. A composite role that includes cdim-view-layout, cdim-view-resource, and cdim-view-user |
-   | DC Operator | cdim-operator | Can operate all menus in CDIM. A composite role that includes cdim-viewer permissions as well as cdim-manage-layout and cdim-manage-resource |
-   | DC Administrator | cdim-administrator | Can operate all permissions in CDIM. A composite role that includes cdim-operator permissions as well as cdim-manage-user permissions |
+   | Guest | cdim-viewer | Can view all menus in CDIM. Includes cdim-view-layout, cdim-view-resource, and cdim-view-user roles |
+   | DC Operator | cdim-operator | Can operate all menus in CDIM. Includes cdim-viewer permissions with cdim-manage-layout and cdim-manage-resource roles |
+   | DC Administrator | cdim-administrator | Full operational permissions in CDIM. Includes cdim-operator permissions with cdim-manage-user roles |
    
    </details>
 
-- Remove permissions  
-   In the "Role mapping" screen, check the permissions you want to remove and press the Unassign button.
+- **To remove permissions:**
+   - In the "Role mapping" screen, check the permissions to remove and click "Unassign".
    ![](imgs/unassign-roles-keycloak.png)
 
 ##### 3.3.3. Register and Change User Authentication Methods
 ###### 3.3.3.1. Password Authentication Settings
 
-1. Assign a password to the user  
-   Log in with an account that has cdim-administrator permissions, press User Management/User List, and press "Admin Console" in the upper right.  
-   From Users in the left menu of the screen, open the details screen of the user you want to register for password authentication.  
-   Select the "Credentials" tab and press "Set Password". After entering the password, press the "Save" button.
+1. Assign a password to the user:
+   - Login with an account having `cdim-administrator` permissions.
+   - Navigate to User Management/User List, and click "Admin Console" in the upper right.
+   - From "Users" in the left menu, open the detail screen of the user intended for password authentication.
+   - Click the "Credentials" tab and then "Set Password". Enter the password and click the "Save" button.
    ![](imgs/check-credential-keycloak.png)
    ![](imgs/enter-password-keycloak.png)  
 
    > [!TIP]
-   > If you are issuing an account to a user, turn "Temporary" ON.  
-   > In this case, the user will be prompted to set a new password upon first login.
+   > Set "Temporary" to ON when issuing an account to a new user.  
+   > The user will be prompted to set a new password upon first login.
 
-   Access the CDIM URL and log in with password authentication.
+   The user can now access the CDIM URL and log in using password authentication.
 
-2. Password Policy Settings  
-   Log in to the user management URL with a REALM management account.
-   Press "Authentication" and select the "Policy" tab.
+2. Password Policy Setup:
+   - Login to the user management URL as a REALM management account.
+   - Click "Authentication" and select the "Policy" tab.
    ![](imgs/dashboard_authentication.png)
    ![](imgs/dashboard_password_policy.png)
-   Select "Add policy" in the password policy section and choose the password policy you want to add.
+   - Click "Add policy" in the password policy section and select the desired password policy.  
    ![](imgs/add_password_policy.png)
 
 <!--
@@ -206,4 +199,3 @@ Access CDIM and log in with OTP authentication.
 -->
 
 [Next 4. Appendix](../appendix/README.md)
-

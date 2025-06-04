@@ -2,51 +2,55 @@
 
 ## 1. Prerequisites
 
+Ensure you have the following installed:
+
 - Docker
 - Git
 
 ## 2. Retrieve the Installer
 
-Retrieve the installer:
+First, retrieve the CDIM installer from the repository:
 
 ```sh
 git clone https://github.com/project-cdim/installer.git
 ```
 
-Execute the `pre_install` script to obtain the necessary components.
+Navigate to the installer directory and run the `pre_install` script to download the necessary components:
 
 ```sh
 cd installer
 ./pre_install
 ```
 
-Verify that the repositories for each component have been cloned.
+Check to ensure that the repositories for each component are correctly cloned.
 
 ## 3. Modify the Configuration Files
 
-### 3.1. Frontend
+Adjust configuration files to suit your installation environment.
+
+### 3.1. Frontend Configuration
 
 #### 3.1.1. Create Configuration File
 
-Navigate to the mf-core component.
+Navigate to the `mf-core` directory:
 
 ```sh
 cd mf-core
 ```
 
-Create a configuration file `.env` based on the sample file `.env.sample`.
+Create a new `.env` configuration file by copying the sample provided:
 
 ```sh
 cp .env.sample .env
 ```
 
-#### 3.1.2. Modify Configuration File
+#### 3.1.2. Edit Configuration File
 
-Modify the `.env` file according to your environment. Typically, change `cdim-server` to the hostname or IP address of the server where Docker is installed.
+Open the `.env` file and update it according to your specific environment settings. Adjust the `cdim-server` address to point to your Docker server's hostname or IP address.
 
-Below is an excerpt of the sections to modify.
+Here’s an example of what might be modified:
 
-```sh: .env
+```ini: .env
 # Micro frontend URL settings
 NEXT_PUBLIC_URL_CORE      = 'http://cdim-server:3000'
 NEXT_PUBLIC_URL_RESOURCE  = 'http://cdim-server:3003'
@@ -59,7 +63,7 @@ NEXT_PUBLIC_URL_IDP        = 'http://cdim-server:8287'
 # API endpoint for configuration design backend
 NEXT_PUBLIC_URL_BE_LAYOUT_DESIGN = 'http://cdim-server:8014/cdim/api/v1/layout-design'
 # API endpoint for configuration apply backend
-NEXT_PUBLIC_URL_BE_LAYOUT_APPLY = 'http://cdim-server:8014/cdim/api/v1/layout-apply'
+NEXT_PUBLIC_URL_BE_LAYOUT_APPLY  = 'http://cdim-server:8014/cdim/api/v1/layout-apply'
 # API endpoint for constraint management backend
 NEXT_PUBLIC_URL_BE_POLICY_MANAGER = 'http://cdim-server:8014/cdim/api/v1/policy-manager'
 # API endpoint for configuration information management backend
@@ -68,19 +72,31 @@ NEXT_PUBLIC_URL_BE_CONFIGURATION_MANAGER = 'http://cdim-server:8014/cdim/api/v1/
 NEXT_PUBLIC_URL_BE_PERFORMANCE_MANAGER = 'http://cdim-server:8014/cdim/api/v1/performance-manager'
 ```
 
-### 3.2. Configuration Information
+If you want to replace it with the FQDN of the server where Docker is installed, you can change it with the following command.
 
-The following modifications are unnecessary if no changes are required.
+```sh
+sed -e "/^NEXT_PUBLIC/s/localhost/$(hostname -f)/g" .env.example > .env
+```
 
-By modifying the following file, you can adjust the HW information retrieval interval to suit your environment.
+Return to the repository root directory.
+
+```sh
+cd ..
+```
+
+### 3.2. Backend Configuration
+
+Adjust backend settings if necessary. You may need to modify hardware information retrieval intervals to match your operational environment.
+
+Navigate to the following configuration and make the desired changes:
 
 ```sh
 configuration-collector-compose/configuration-collector/configuration-collector/config/collect.yaml
 ```
 
-Modify the "interval" and "timeout" values under hw_collect_configs. Below is an example modified to 120 seconds.
+Modify the "interval" and "timeout" values under `hw_collect_configs`. Here is an example modification setting the interval to 120 seconds:
 
-```sh
+```yaml
 global:
   max_jobs: 200
   job_interval: 600
@@ -97,10 +113,12 @@ hw_collect_configs:
 
 ## 4. Start the Containers
 
-Execute the `install` script to build and start the containers.
+After configurations are set, use the `install` script to build and initialize the containers:
 
 ```sh
 ./install --up
 ```
+
+This will start the CDIM environment. Verify that all services are running correctly before proceeding.
 
 [Next step: Perform Initial Setup of CDIM](../setup/setup.md)

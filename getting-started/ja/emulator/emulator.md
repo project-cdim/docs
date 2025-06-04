@@ -59,4 +59,10 @@ curl http://localhost:5000/redfish/v1/Systems/System-1/Processors | python -m js
 }
 ```
 
+コンテナから出ます。
+
+```sh
+exit
+```
+
 [Next step: CDIM をインストールする](../install/install.md)

@@ -69,6 +69,18 @@ NEXT_PUBLIC_URL_BE_CONFIGURATION_MANAGER = 'http://cdim-server:8014/cdim/api/v1/
 NEXT_PUBLIC_URL_BE_PERFORMANCE_MANAGER = 'http://cdim-server:8014/cdim/api/v1/performance-manager'
 ```
 
+Docker がインストールされているサーバーの FQDN に置換する場合は下記のコマンドで変更できます。
+
+```sh
+sed -e "/^NEXT_PUBLIC/s/localhost/$(hostname -f)/g" .env.example > .env
+```
+
+リポジトリのルートディレクトリに戻ります。
+
+```sh
+cd ..
+```
+
 ### 3.2. 構成情報
 
 変更が不要な場合は以下の修正は不要です。

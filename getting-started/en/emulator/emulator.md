@@ -42,7 +42,7 @@ Execute the following within the container.
 curl http://localhost:5000/redfish/v1/Systems/System-1/Processors | python -m json.tool
 ```
 
-If you receive a response like the one below, it is operating correctly.
+If you receive a response similar to the one below, the emulator is operating correctly.
 
 ```json
 {
@@ -57,6 +57,12 @@ If you receive a response like the one below, it is operating correctly.
     "Members@odata.count": 1,
     "Name": "Processors Collection"
 }
+```
+
+Exit the container.
+
+```sh
+exit
 ```
 
 [Next step: Install CDIM](../install/install.md)
