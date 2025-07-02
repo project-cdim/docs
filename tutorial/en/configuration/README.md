@@ -71,8 +71,8 @@ Configuration Information Collection: configuration-collector-compose/configurat
 ```yaml
 hw_collect_configs:
   - job_name: 'Hardware-Sync'
-    interval: 90   # Configuration information retrieval interval (s)
-    timeout: 90    # Configuration information timeout value (s)
+    interval: 600   # Configuration information retrieval interval (s)
+    timeout: 600    # Configuration information timeout value (s)
 ```
 After modifying the setting, restart the component.  
 Refer to [this procedure](../appendix/troubleshooting/README.md#4-restart-a-specific-component) for the restart.
@@ -81,8 +81,8 @@ Performance Information Collection: performance-collector-compose/share/promethe
 
 ```yaml
 global:
-    evaluation_interval: 60s  # Performance information retrieval interval (s)
-    scrape_interval: 60s      # Performance information timeout value (s)
+    evaluation_interval: 180s  # Performance information retrieval interval (s)
+    scrape_interval: 180s      # Performance information timeout value (s)
 ```
 
 For performance information collection, you need to restart the information collection.

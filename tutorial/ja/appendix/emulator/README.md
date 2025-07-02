@@ -1,6 +1,6 @@
 # エミュレーターの操作方法 
 ここでは、Composable Disaggregated Infrastructure Manager(略称:CDIM)で用いるエミュレータについて説明します。
-より詳細な設定方法が知りたい方は、[hw-emulator-reference](https://github.com/project-cdim/hw-emulator-reference)を参照して下さい。
+より詳細な設定方法が知りたい方は、[hw-emulator-reference](https://github.com/project-cdim/hw-emulator-reference)を参照してください。
 
 - [1. エミュレータの設定方法](#1-エミュレータの設定方法)
 - [2. エミュレータの操作方法](#2-エミュレータの操作方法)
@@ -9,18 +9,16 @@
 
 ## 1. エミュレータの設定方法
 ここではエミュレータの設定ファイルとその基本的な設定項目を示します。  
-デフォルトで用意しているデバイス情報を変更したい場合は、「2. Redfishエミュレータ デバイス定義ファイル設定」、「3. Redfishエミュレータ 出力データ設定」も併せて確認してください。  
+デフォルトで用意しているデバイス情報を変更したい場合は、「2. Redfishエミュレータ デバイス定義ファイル設定」、「3. Redfishエミュレータ 出力データ設定」もあわせて確認してください。  
 
    <details>
    <summary> 1. Redfishエミュレータの基本設定 </summary>  
-   <r>
+   
    設定ファイル名  
-   <br>
-
    - デバイス定義ファイルを使用する場合 : emulator-config_device_populate.json  
 
    - デバイス定義ファイルを使用しない場合 : emulator-config_dynamic_populate.json  
-   <r>
+   
    設定項目一覧
 
    |項目|説明|設定値|
@@ -28,22 +26,21 @@
    | MODE | 使用するポートを指定します。値が「Local」の場合、ポートにはデフォルトでコマンドラインまたは 5000 のポートパラメータの値が割り当てられます | Local |
    | HTTPS | HTTPSを使用するかを指定する項目です。 | Disable |
    | TRAYS | 初期リソースプールを構成するリソースへのパス。複数のトレイを指定することができます。TRAYSを指定すると、デバイス作成時にTRAYSから取得していきます。 | 未使用 |
-   | POPULATE | エミュレータ起動時の要素。共通ファイルを指定します | ../simulatorDeviceList.json |
-   | DEVICE_SPEC | 共通ファイルを使用してデバイスを作成するかどうか。共通ファイルを使用する場合は必ず指定します | true |
-   | SPEC | コンピュータシステムがRedfish ComputerSystemとして表現されているか、あるいは他のスキーマとして表現されているか。システムパスを設定する際に使用します | Redfish |
-   | MOCKUPFOLDERS | モックアップフォルダの格納先。フォルダには変更や操作を行わない静的なデータ(モックアップ)を返却する際のJSONファイルを格納します | Redfish |
+   | POPULATE | エミュレータ起動時の要素。設定ファイルを指定します | ../simulatorDeviceList.json |
+   | DEVICE_SPEC | 設定ファイルを使用してデバイスを作成するかどうか。設定ファイルを使用する場合は必ず指定します | true |
+   | SPEC | コンピューターシステムがRedfish ComputerSystemとして表現されているか、あるいは他のスキーマとして表現されているか。システムパスを設定する際に使用します | Redfish |
+   | MOCKUPFOLDERS | モックアップフォルダーの格納先。フォルダーには変更や操作を行わない静的なデータ(モックアップ)を返却する際のJSONファイルを格納します | Redfish |
    | POWER_LINK | CPUの電源状態と、同じComputerSystemに存在するGPU、メモリ、ストレージ、NICの電源状態を連動します | true |
    </details>
 
    <details>
    <summary> 2. Redfishエミュレータ デバイス定義ファイル設定 </summary>  
-   <r>
+   
    設定ファイル名  
-   <br>
 
    デバイス定義ファイル : simulatorDeviceList.json 
 
-   <r>
+   
    設定項目一覧
 
    以下に基本的な入力事項のみを記載します。各デバイスに特有の項目は基本記載していません。
@@ -53,18 +50,17 @@
    | deviceID | デバイスを個別に認識するためのID。deviceID は一意の文字列を指定する必要があります。 |
    | model | デバイスのモデル名を記入する項目です。 |
    | manufacturer | デバイスの製造元を記載する項目です。 |
-   | link | CPUに予め接続されている内蔵デバイスを記載する項目。CPUのみに存在する項目で、一つ以上の内蔵メモリの記載が必要です。 |
+   | link | CPUにあらかじめ接続されている内蔵デバイスを記載する項目。CPUのみに存在する項目で、1つ以上の内蔵メモリの記載が必要です。 |
    </details>
 
    <details>
    <summary> 3. Redfishエミュレータ 出力データ設定 </summary>  
-   <r>
+   
    設定ファイル名  
-   <br>
 
    出力データ設定ファイル : infragen/test_device_parameter.json
  
-   <r>
+   
    設定項目一覧
 
    以下に基本的な入力事項のみを記載します。各デバイスに特有の項目は記載していません。

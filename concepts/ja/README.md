@@ -2,11 +2,11 @@
 
 ## ゴール
 
-近年、PCI Express/CXLスイッチを介して、サーバ（CPUノード）とMemory（CXL Memory）や、GPU、FPGA、NVMe SSDなどのデバイス接続を動的に組み替えられるハードウェア (Composable Disaggregated Infrastructure, CDI) が各ハードウェアベンダからリリースされ始めています。このCDIを使用し、ワークロードの稼働状況に応じて適切にノードを構成・再構成・解体することでハードウェアを効率的に利用できることが期待されます。
+近年、PCI Express/CXLスイッチを介して、サーバー (CPUノード) とMemory (CXL Memory) や、GPU、FPGA、NVMe SSDなどのデバイス接続を動的に組み替えられるハードウェア (Composable Disaggregated Infrastructure, CDI) が各ハードウェアベンダからリリースされ始めています。このCDIを使用し、ワークロードの稼働状況に応じて適切にノードを構成・再構成・解体することでハードウェアを効率的に利用できることが期待されます。
 
-しかし、CDIの構成リソース（CPU、Memory、GPU、FPGA、NVMe SSDなど）が数百、数千あるような大規模環境を想定した場合、複雑化する計算資源の瞬時な構成制御と、その自動運用が課題になります。
+しかし、CDIの構成リソース (CPU、Memory、GPU、FPGA、NVMe SSDなど) が数百、数千あるような大規模環境を想定した場合、複雑化する計算資源の瞬時な構成制御と、その自動運用が課題になります。
 
-この課題を解決するため、Composable Disaggregated Infrastructure Manager（以降、CDIM）によって、上位層のクライアントや下位層のハードウェア、ファブリックの実装に依存のない、ワークロードに最適なシステム構成の自動設計と構成変更を可能とする共通プラットフォームの提供を最終目標としています。
+この課題を解決するため、Composable Disaggregated Infrastructure Manager (以降、CDIM) によって、上位層のクライアントや下位層のハードウェア、ファブリックの実装に依存のない、ワークロードに最適なシステム構成の自動設計と構成変更を可能とする共通プラットフォームの提供を最終目標としています。
 
 ![Overview our goal](imgs/overview_our_goal.png)
 
@@ -48,7 +48,7 @@ CDIMの最終目標達成には大きくは以下の機能が必要と想定し�
 | メインUI | [mf-core][] | メインとなるWeb UI画面を提供します。 | 
 | リソース管理UI | [mf-resource][] | リソースの一覧と詳細情報を確認するためのWeb UI画面を提供します。 |
 | 構成管理UI | [mf-layout][] | 計算ノードの構成を確認および変更するためのWeb UI画面を提供します。 |
-| ユーザー管理UI | [mf-user][] | ユーザーを管理（ユーザーの追加や削除など）するためのWeb UI画面を提供します。 |
+| ユーザー管理UI | [mf-user][] | ユーザーを管理 (ユーザーの追加や削除など) するためのWeb UI画面を提供します。 |
 | UI共通モジュール | [mf-shared-modules][] | Web UIの共通モジュールです。 |
 
 ### バックエンドサービス
@@ -61,11 +61,11 @@ CDIMの最終目標達成には大きくは以下の機能が必要と想定し�
 | 構成情報収集 | [configuration-collector][] | リソースと計算ノードの構成情報およびステータスを収集します。 |
 | 構成情報エクスポーター | [configuration-exporter][] | リソースと計算ノードの構成情報およびステータスのエクスポーターです。 |
 
-#### 構成反映サービス
+#### 構成案反映サービス
 
 | 機能名 | リポジトリ | 説明 |
 |--|--|--|
-| 構成反映 | [layout-apply][] | 新しい計算ノードの構成を適用するためのリクエストを受け取り、hw-controlを通じてリソースを制御します。 |
+| 構成案反映 | [layout-apply][] | 新しい計算ノードの構成を適用するためのリクエストを受け取り、hw-controlを通じてリソースを制御します。 |
 | 移行手順生成 | [migration-procedure-generator][] | 現在の計算ノード構成から新しい構成へ移行するためのリソース制御手順を生成します。 |
 
 #### 性能情報管理サービス
@@ -87,13 +87,13 @@ CDIMの最終目標達成には大きくは以下の機能が必要と想定し�
 | 機能名 | リポジトリ | 説明 |
 |--|--|--|
 | リファレンスFabric Managerプラグイン | [fm-plugin-reference][] | Fabric Managerプラグインのリファレンス実装です。 |
-| リファレンスOut-of-bandプラグイン | [oob-plugin-reference][] | Out-of-Bandプラグインのリファレンス実装です。 |
+| リファレンスOut-of-Bandプラグイン | [oob-plugin-reference][] | Out-of-Bandプラグインのリファレンス実装です。 |
 
 ### リファレンスハードウェアエミュレータ
 
 | 機能名 | リポジトリ | 説明 |
 |--|--|--|
-| リファレンスハードウェアエミュレータ | [hw-emulator-reference][] | Redfishインターフェースをエミュレートするハードウェアエミュレーターです。 |
+| リファレンスハードウェアエミュレータ | [hw-emulator-reference][] | Redfishインタフェースをエミュレートするハードウェアエミュレーターです。 |
 
 <!-- Link informations  -->
 

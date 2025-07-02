@@ -19,19 +19,19 @@
 $ docker exec -it <コンテナ名> /bin/sh
 $ ls /var/log/cdim
 ```
-またコンポーネント毎に、ログ出力ファイルが以下のように分かれています。
+またコンポーネントごとに、ログ出力ファイルが以下のように分かれています。
 
 |ログの種類|ログファイル名|
 |:--|:--|
 |証跡ログ|trail.log|
-|アプリケーションログ（ハードウェア制御）|app_hw_control.log|
-|アプリケーションログ（構成案反映）|app_layout_apply.log|
-|アプリケーションログ（移行手順生成）|app_migration_procedures.log|
-|アプリケーションログ（構成情報管理）|app_config_info.log|
+|アプリケーションログ (ハードウェア制御) |app_hw_control.log|
+|アプリケーションログ (構成案反映) |app_layout_apply.log|
+|アプリケーションログ (移行手順生成) |app_migration_procedures.log|
+|アプリケーションログ (構成情報管理) |app_config_info.log|
 
 ##### 3.1.2. ログの出力方法を変更する
 それぞれのコンポーネントの設定ファイルを変更してログ出力方法を変更します。
-それぞれの設定ファイルは以下の通りです。
+それぞれの設定ファイルは以下のとおりです。
 
 |コンポーネント名|設定ファイル名|ファイルパス|
 |:--|:--|:--|
@@ -65,18 +65,18 @@ $ ls /var/log/cdim
 [この手順](../appendix/troubleshooting/README.md#4-特定のコンポーネントを再起動したい場合)に従って再起動してください。
 
 > [!NOTE]
-> logの出力ディレクトリを変更後、そのコンポーネントが動かない場合はディレクトリを作成する必要があります。その場合はそれぞれのDockerfileの中にて、ログの出力ディレクトリを作成していますので、それも併せて変更してください。
+> logの出力ディレクトリを変更後、そのコンポーネントが動かない場合はディレクトリを作成する必要があります。その場合はそれぞれのDockerfileの中にて、ログの出力ディレクトリを作成していますので、それもあわせて変更してください。
 
 #### 3.2. 情報収集の設定を変更する 
-各収集コンポーネントの設定ファイルを変更することで、収集のインターバルなどの変更が可能です。
+各コンポーネントの設定ファイルを変更することで、収集のインターバルなどの変更が可能です。
 
 構成情報収集 : configuration-collector-compose/configuration-collector/configuration-collector/config/collect.yaml
 
 ```yaml
 hw_collect_configs:
   - job_name: 'Hardware-Sync'
-    interval: 90   # 構成情報の取得インターバル(s)
-    timeout: 90    # 構成情報のタイムアウト値(s)
+    interval: 600   # 構成情報の取得インターバル(s)
+    timeout: 600    # 構成情報のタイムアウト値(s)
 ```
 収集方法を変更した後は、コンポーネントを再起動する必要があります。  
 [この手順](../appendix/troubleshooting/README.md#4-特定のコンポーネントを再起動したい場合)に従って再起動してください。
@@ -85,8 +85,8 @@ hw_collect_configs:
 
 ```yaml
 global:
-    evaluation_interval: 60s  # 性能情報の取得インターバル(s)
-    scrape_interval: 60s      # 性能情報のタイムアウト値(s)
+    evaluation_interval: 180s  # 性能情報の取得インターバル(s)
+    scrape_interval: 180s      # 性能情報のタイムアウト値(s)
 ```
 
 性能情報収集については、情報収集を再実行する必要があります。
@@ -112,7 +112,7 @@ $ curl -i -s -X PUT http://localhost:8080/cdim/api/v1/configs
 
    - Keycloak管理URLから操作する場合
   
-    [getting started](../../../getting-started/ja/setup/setup.md#2-フロントエンド)の通りに操作し、直接Keycloakの管理画面にログインします。  
+    [getting started](../../../getting-started/ja/setup/setup.md#2-フロントエンド)のとおりに操作し、直接Keycloakの管理画面にログインします。  
     ログインした後に、左上のドロップダウンリストをKeycloakからCDIMに変更することで、CDIMの管理画面に切り替わります。
 
 > [!NOTE]
@@ -120,13 +120,12 @@ $ curl -i -s -X PUT http://localhost:8080/cdim/api/v1/configs
 > 「Back to Application」を押すことでCDIMの管理URLに接続可能になります。
 
 > [!NOTE] 
-> また、cdim-administratorのロールを持たないユーザはユーザ管理画面に遷移できますが、ユーザ追加などの変更はできません。  
-<r>
+> また、cdim-administratorのロールを持たないユーザーはユーザー管理画面に遷移できますが、ユーザー追加などの変更はできません。  
 
 1. Usersからユーザー追加する  
     画面左のメニューにあるUsersを押下し、「ユーザーの追加」ボタンを押します。
     ![](imgs/user-console-keycloak.png)
-    localeを「English/Japanese」のいずれかから選択し、ユーザ名を入力します。
+    localeを「English/Japanese」のいずれかから選択し、ユーザー名を入力します。
     ![](imgs/add-user-keycloak.png)
     その他必要な項目を入力した後、「作成」ボタンを押し、ユーザーを作成します。
     <br>
@@ -137,7 +136,7 @@ $ curl -i -s -X PUT http://localhost:8080/cdim/api/v1/configs
    ![](imgs/delete-user2.png)
 
 ##### 3.3.2. CDIMにおけるユーザーの権限を変更する
-- ユーザの権限を追加する
+- ユーザーの権限を追加する
   1. 作製したユーザーの詳細画面を開く  
      ユーザー管理用のURLにアクセスし、CDIM管理画面に切り替えます。  
      画面左のUsersを押し、権限を変更したいユーザーの詳細画面を開きます。  
@@ -157,7 +156,7 @@ $ curl -i -s -X PUT http://localhost:8080/cdim/api/v1/configs
    <summary> CDIMの権限の詳細情報 </summary>
    左上のフィルターが「filter by realm roles」の場合に選択可能です。
 
-   - ユーザ用ロール
+   - ユーザー用ロール
   
    |役割|名前|説明|
    |:--|:--|:--|
@@ -174,7 +173,7 @@ $ curl -i -s -X PUT http://localhost:8080/cdim/api/v1/configs
 ##### 3.3.3. ユーザーの認証方法を登録・変更する
 ###### 3.3.3.1. パスワード認証の設定方法
 
-1. ユーザへのパスワードの割り当て  
+1. ユーザーへのパスワードの割り当て  
    cdim-administratorの権限を持ったアカウントで、ユーザー管理/ユーザー一覧を押し、右上の「管理コンソール」を押します。  
    画面左メニューのユーザーを選択し、パスワード認証を登録したいユーザーの詳細画面を開きます。  
    「クレデンシャル」タブを選択し、「パスワードを設定」を押します。パスワードを入力し終わったら「Save」ボタンを押します。
@@ -188,7 +187,7 @@ $ curl -i -s -X PUT http://localhost:8080/cdim/api/v1/configs
    CDIMのURLにアクセスし、パスワード認証でログインします。
 
 2. パスワードポリシーの設定方法  
-   REALM管理用のアカウントでユーザ管理URLにログインします。
+   REALM管理用のアカウントでユーザー管理URLにログインします。
    「認証」を押し、「ポリシー」のタブをを選択します。
    ![](imgs/dashboard_authentication.png)
    ![](imgs/dashboard_password_policy.png)

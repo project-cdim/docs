@@ -541,7 +541,7 @@ components:
           description: |-
             設計対象とするノードのID一覧<br>
             指定されたIDのノードを設計変更の対象とする<br>
-            targetNodeIDsが未指定の場合は、現ノード構成の全てを変更対象とする
+            targetNodeIDsが未指定の場合は、現ノード構成のすべてを変更対象とする
           example: ["2c0af93a-ef04-4393-a805-86e30e054e74", "3as34r45-ert4-3454-s332-4det0s3ss3sd"]
           items: 
             description: 設計対象とするノードID

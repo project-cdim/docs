@@ -23,7 +23,7 @@ Realm を「CDIM」に切り替えます。
 ### 1.2. gateway の初期設定
 
 「1.1.」で確認してコピーした Public key を使用して、`set-up-tools/gateway/tools/` ディレクトリ配下に `public_key.pem` ファイルを作成します。
-形式は以下の通りです。
+形式は以下のとおりです。
 
 ```txt:public_key.pem
 -----BEGIN PUBLIC KEY-----
@@ -93,8 +93,8 @@ Realmを「CDIM」に切り替えます。
 
 ### 2.2. User 作成
 
-CDIM のユーザを作成します。
-ここでは管理者ユーザの作成を例に説明します。
+CDIM のユーザーを作成します。
+ここでは管理者ユーザーの作成を例に説明します。
 
 #### 2.2.1. User の追加
 
@@ -130,7 +130,7 @@ Password を入力します。Temporary は「Off」にします。「Save」ボ
 
 ## 3. 動作確認
 
-作成したユーザで CDIM にログインします。
+作成したユーザーで CDIM にログインします。
 
 ```sh
 http://cdim-server:3000/

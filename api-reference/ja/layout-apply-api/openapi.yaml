@@ -2,7 +2,7 @@ openapi: 3.0.3
 servers:
   - url: http://(host address)/cdim/api/v1
 info:
-  title: 構成反映API
+  title: 構成案反映API
   description: |-
     管理対象となるComposable Disaggregated Infrastructureの構成変更を行うための機能群
   version: 0.1.0 # 改版履歴のバージョンに合わせる
@@ -97,7 +97,7 @@ paths:
                     message: Suspended data exist. Please resume layoutapply. applyID:[123456789a]
         500:
           description: |-
-            内部サーバエラーまたは他コンポーネントからエラーが発生。
+            内部サーバーエラーまたは他コンポーネントからエラーが発生。
           content:
             application/json:
               schema:
@@ -134,21 +134,21 @@ paths:
         | executeRollback                       | ×  | 〇  | ×  | △<br>(キャンセル要求後にエラーとなった場合のみ) | ×  | 〇 |
         | rollbackStatus                        | ×  | ×  | ×  | ×  | ×  | △<br>(executeRollbackがtrue時のみ) |
         | rollbackResult<br>(fields指定可能)     | ×  | ×  | ×  | ×  | ×  | △<br>(executeRollbackがtrue時のみ) |
-        | rollbackStartedAt                     | ×  | △<br>（executeRollbackがtrueでロールバック実行中の場合のみ）  | ×  | ×  | ×  | △<br>(executeRollbackがtrue時のみ) |
+        | rollbackStartedAt                     | ×  | △<br> (executeRollbackがtrueでロールバック実行中の場合のみ)   | ×  | ×  | ×  | △<br>(executeRollbackがtrue時のみ) |
         | rollbackEndedAt                       | ×  | ×  | ×  | ×  | ×  | △<br>(executeRollbackがtrue時のみ、rollbackStatusがSUSPENDEDの場合は出力されない) |
-        | resumeProcedures<br>(fields指定可能)  | ×  | ×  | △<br>（再開要求で実行した場合のみ）  | △<br>（再開要求で実行した場合のみ）  | 〇 | △<br>（再開要求で実行した場合のみ） |
-        | resumeResult<br>(fields指定可能)      | ×  | ×  | △<br>（再開要求で実行した場合のみ）  | △<br>（再開要求で実行した場合のみ）  | △<br>（再開要求で実行した場合のみ） | △<br>（再開要求で実行した場合のみ） |
-        | suspendedAt                             | ×  | ×  | △<br>（再開要求で実行した場合のみ） | △<br>（再開要求で実行した場合のみ） | 〇 | △<br>（再開要求で実行した場合のみ） |
-        | resumedAt                               | △<br>（再開要求で実行した場合のみ） | △<br>（再開要求で実行した場合のみ） | △<br>（再開要求で実行した場合のみ） | △<br>（再開要求で実行した場合のみ） | △<br>（再開要求で実行した場合のみ） | △<br>（再開要求で実行した場合のみ） |
+        | resumeProcedures<br>(fields指定可能)  | ×  | ×  | △<br> (再開要求で実行した場合のみ)   | △<br> (再開要求で実行した場合のみ)   | 〇 | △<br> (再開要求で実行した場合のみ)  |
+        | resumeResult<br>(fields指定可能)      | ×  | ×  | △<br> (再開要求で実行した場合のみ)   | △<br> (再開要求で実行した場合のみ)   | △<br> (再開要求で実行した場合のみ)  | △<br> (再開要求で実行した場合のみ)  |
+        | suspendedAt                             | ×  | ×  | △<br> (再開要求で実行した場合のみ)  | △<br> (再開要求で実行した場合のみ)  | 〇 | △<br> (再開要求で実行した場合のみ)  |
+        | resumedAt                               | △<br> (再開要求で実行した場合のみ)  | △<br> (再開要求で実行した場合のみ)  | △<br> (再開要求で実行した場合のみ)  | △<br> (再開要求で実行した場合のみ)  | △<br> (再開要求で実行した場合のみ)  | △<br> (再開要求で実行した場合のみ)  |
 
-        statusがIN_PROGRESS(実行中）の構成案反映IDに対して、構成案反映キャンセルAPI「PUT /layout-apply/{applyID}?action=cancel」を実行することで、実行中の構成案反映をキャンセルすることができる。  
-        statusがSUSPENDED(重大なエラーが発生し中断中）の構成案反映IDに対して、エラー原因を解消した後、構成案反映再開API「PUT /layout-apply/{applyID}?action=resume」を実行することで、中断中の構成案反映を再開することができる。
+        statusがIN_PROGRESS(実行中) の構成案反映IDに対して、構成案反映キャンセルAPI「PUT /layout-apply/{applyID}?action=cancel」を実行することで、実行中の構成案反映をキャンセルすることができる。  
+        statusがSUSPENDED(重大なエラーが発生し中断中) の構成案反映IDに対して、エラー原因を解消した後、構成案反映再開API「PUT /layout-apply/{applyID}?action=resume」を実行することで、中断中の構成案反映を再開することができる。
       parameters:
         - name: status
           in: query
           description: |-
             指定したstatusの構成案反映状態を取得対象とする。<br>
-            指定しない場合は全てのstatusを対象に取得する。
+            指定しない場合はすべてのstatusを対象に取得する。
           schema:
             type: string
             enum:
@@ -162,10 +162,10 @@ paths:
         - name: startedAtSince
           in: query
           description: |-
-            startedAtSinceのみ指定された場合、指定した開始時間（始点）以降の項目を取得対象とする。<br>
-            startedAtSince、startedAtUntilの双方が指定された場合、指定した開始時間（始点）以降、開始時間（終点）以前の項目を取得対象とする。<br>
-            双方指定しない場合は全ての開始時間を検索対象とする。<br>
-            フォーマットは下記の通りとする。<br>
+            startedAtSinceのみ指定された場合、指定した開始時間 (始点) 以降の項目を取得対象とする。<br>
+            startedAtSince、startedAtUntilの双方が指定された場合、指定した開始時間 (始点) 以降、開始時間 (終点) 以前の項目を取得対象とする。<br>
+            双方指定しない場合はすべての開始時間を検索対象とする。<br>
+            フォーマットは下記のとおりとする。<br>
             　・UTC時間の場合<br>
             　・yyyy-MM-ddThh:mm:ssZ<br>
             　・ローカルタイムゾーン指定の日時形式の場合<br>
@@ -176,10 +176,10 @@ paths:
         - name: startedAtUntil
           in: query
           description: |-
-            startedAtUntilのみ指定された場合、指定した開始時間（終点）以前の項目を取得対象とする。<br>
-            startedAtSince、startedAtUntilの双方が指定された場合、指定した開始時間（始点）以降、開始時間（終点）以前の項目を取得対象とする。<br>
-            双方指定しない場合は全ての開始時間を検索対象とする。<br>
-            フォーマットは下記の通りとする。<br>
+            startedAtUntilのみ指定された場合、指定した開始時間 (終点) 以前の項目を取得対象とする。<br>
+            startedAtSince、startedAtUntilの双方が指定された場合、指定した開始時間 (始点) 以降、開始時間 (終点) 以前の項目を取得対象とする。<br>
+            双方指定しない場合はすべての開始時間を検索対象とする。<br>
+            フォーマットは下記のとおりとする。<br>
             　・UTC時間の場合<br>
             　・yyyy-MM-ddThh:mm:ssZ<br>
             　・ローカルタイムゾーン指定の日時形式の場合<br>
@@ -190,10 +190,10 @@ paths:
         - name: endedAtSince
           in: query
           description: |-
-            endedAtSinceのみ指定された場合、指定した終了時間（始点）以降の項目を取得対象とする。<br>
-            endedAtSince、endedAtUntilの双方が指定された場合、指定した終了時間（始点）以降、終了時間（終点）以前の項目を取得対象とする。<br>
-            双方指定しない場合は全ての終了時間を検索対象とする。<br>
-            フォーマットは下記の通りとする。<br>
+            endedAtSinceのみ指定された場合、指定した終了時間 (始点) 以降の項目を取得対象とする。<br>
+            endedAtSince、endedAtUntilの双方が指定された場合、指定した終了時間 (始点) 以降、終了時間 (終点) 以前の項目を取得対象とする。<br>
+            双方指定しない場合はすべての終了時間を検索対象とする。<br>
+            フォーマットは下記のとおりとする。<br>
             　・UTC時間の場合<br>
             　・yyyy-MM-ddThh:mm:ssZ<br>
             　・ローカルタイムゾーン指定の日時形式の場合<br>
@@ -204,10 +204,10 @@ paths:
         - name: endedAtUntil
           in: query
           description: |-
-            endedAtUntilのみ指定された場合、指定した終了時間（終点）以前の項目を取得対象とする。<br>
-            endedAtSince、endedAtUntilの双方が指定された場合、指定した終了時間（始点）以降、終了時間（終点）以前の項目を取得対象とする。<br>
-            双方指定しない場合は全ての終了時間を検索対象とする。<br>
-            フォーマットは下記の通りとする。<br>
+            endedAtUntilのみ指定された場合、指定した終了時間 (終点) 以前の項目を取得対象とする。<br>
+            endedAtSince、endedAtUntilの双方が指定された場合、指定した終了時間 (始点) 以降、終了時間 (終点) 以前の項目を取得対象とする。<br>
+            双方指定しない場合はすべての終了時間を検索対象とする。<br>
+            フォーマットは下記のとおりとする。<br>
             　・UTC時間の場合<br>
             　・yyyy-MM-ddThh:mm:ssZ<br>
             　・ローカルタイムゾーン指定の日時形式の場合<br>
@@ -939,7 +939,7 @@ paths:
 
         500:
           description: |-
-            内部サーバエラーまたは他コンポーネントからエラーが発生。
+            内部サーバーエラーまたは他コンポーネントからエラーが発生。
           content:
             application/json:
               schema:
@@ -1023,14 +1023,14 @@ paths:
         200:
           description: |-
             正常。指定された構成案反映IDの反映状態の遷移が既に完了している  
-            [キャンセル要求]反映状態がキャンセル中もしくはキャンセル済み(CANCELED、CANCELING）または反映状態が「CANCELED」でロールバック状態が「COMPLETED」もしくは「FAILED」  
+            [キャンセル要求]反映状態がキャンセル中もしくはキャンセル済み(CANCELED、CANCELING) または反映状態が「CANCELED」でロールバック状態が「COMPLETED」もしくは「FAILED」  
             [再開要求]反映状態が実行済み(COMPLETED」もしくは「FAILED」もしくは「CANCELED」)  またはロールバック状態が実行済み(COMPLETED」もしくは「FAILED」)
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplyIDPutResponse"
               examples:
-                ? キャンセル要求でキャンセル中もしくはキャンセル済み(反映状態が「CANCELING]もしくは「CANCELED」）の場合
+                ? キャンセル要求でキャンセル中もしくはキャンセル済み(反映状態が「CANCELING]もしくは「CANCELED」) の場合
                 : value:
                     "status": "CANCELED"
                 ? キャンセル要求でキャンセル済み(反映状態が「CANCELED」、ロールバック状態が「COMPLETED」)の場合
@@ -1153,7 +1153,7 @@ paths:
 
         500:
           description: |-
-            内部サーバエラーまたは他コンポーネントからエラーが発生。
+            内部サーバーエラーまたは他コンポーネントからエラーが発生。
           content:
             application/json:
               schema:
@@ -1183,17 +1183,17 @@ paths:
         | executeRollback                       | ×  | 〇  | ×  | △<br>(キャンセル要求後にエラーとなった場合のみ) | ×  | 〇 |
         | rollbackStatus                        | ×  | ×  | ×  | ×  | ×  | △<br>(executeRollbackがtrue時のみ) |
         | rollbackResult<br>(fields指定可能)     | ×  | ×  | ×  | ×  | ×  | △<br>(executeRollbackがtrue時のみ) |
-        | rollbackStartedAt                     | ×  | △<br>（executeRollbackがtrueでロールバック実行中の場合のみ）  | ×  | ×  | ×  | △<br>(executeRollbackがtrue時のみ) |
+        | rollbackStartedAt                     | ×  | △<br> (executeRollbackがtrueでロールバック実行中の場合のみ)   | ×  | ×  | ×  | △<br>(executeRollbackがtrue時のみ) |
         | rollbackEndedAt                       | ×  | ×  | ×  | ×  | ×  | △<br>(executeRollbackがtrue時のみ、rollbackStatusがSUSPENDEDの場合は出力されない) |
-        | resumeProcedures<br>(fields指定可能)  | ×  | ×  | △<br>（再開要求で実行した場合のみ）  | △<br>（再開要求で実行した場合のみ）  | 〇 | △<br>（再開要求で実行した場合のみ） |
-        | resumeResult<br>(fields指定可能)      | ×  | ×  | △<br>（再開要求で実行した場合のみ）  | △<br>（再開要求で実行した場合のみ）  | △<br>（再開要求で実行した場合のみ） | △<br>（再開要求で実行した場合のみ） |
-        | suspendedAt                             | ×  | ×  | △<br>（再開要求で実行した場合のみ） | △<br>（再開要求で実行した場合のみ） | 〇 | △<br>（再開要求で実行した場合のみ） |
-        | resumedAt                               | △<br>（再開要求で実行した場合のみ） | △<br>（再開要求で実行した場合のみ） | △<br>（再開要求で実行した場合のみ） | △<br>（再開要求で実行した場合のみ） | △<br>（再開要求で実行した場合のみ） | △<br>（再開要求で実行した場合のみ） |
+        | resumeProcedures<br>(fields指定可能)  | ×  | ×  | △<br> (再開要求で実行した場合のみ)   | △<br> (再開要求で実行した場合のみ)   | 〇 | △<br> (再開要求で実行した場合のみ)  |
+        | resumeResult<br>(fields指定可能)      | ×  | ×  | △<br> (再開要求で実行した場合のみ)   | △<br> (再開要求で実行した場合のみ)   | △<br> (再開要求で実行した場合のみ)  | △<br> (再開要求で実行した場合のみ)  |
+        | suspendedAt                             | ×  | ×  | △<br> (再開要求で実行した場合のみ)  | △<br> (再開要求で実行した場合のみ)  | 〇 | △<br> (再開要求で実行した場合のみ)  |
+        | resumedAt                               | △<br> (再開要求で実行した場合のみ)  | △<br> (再開要求で実行した場合のみ)  | △<br> (再開要求で実行した場合のみ)  | △<br> (再開要求で実行した場合のみ)  | △<br> (再開要求で実行した場合のみ)  | △<br> (再開要求で実行した場合のみ)  |
 
         当IFで取得したstatusの情報をもとに、各機能を使用する。<br>
         【例】<br>
-        statusがIN_PROGRESS(実行中）の構成案反映IDに対して、構成案反映キャンセルAPI「PUT /layout-apply/{applyID}?action=cancel」を実行することで、実行中の構成案反映をキャンセルすることができる。  
-        statusがSUSPENDED(重大なエラーが発生し中断中）の構成案反映IDに対して、エラー原因を解消した後、構成案反映再開API「PUT /layout-apply/{applyID}?action=resume」を実行することで、中断中の構成案反映を再開することができる。  
+        statusがIN_PROGRESS(実行中) の構成案反映IDに対して、構成案反映キャンセルAPI「PUT /layout-apply/{applyID}?action=cancel」を実行することで、実行中の構成案反映をキャンセルすることができる。  
+        statusがSUSPENDED(重大なエラーが発生し中断中) の構成案反映IDに対して、エラー原因を解消した後、構成案反映再開API「PUT /layout-apply/{applyID}?action=resume」を実行することで、中断中の構成案反映を再開することができる。  
 
         各statusについての詳細は以下表を参照
 
@@ -1653,7 +1653,7 @@ paths:
                 $ref: "#/components/schemas/ValidationErrorResponse"
         500:
           description: |-
-            内部サーバエラーまたは他コンポーネントからエラーが発生。
+            内部サーバーエラーまたは他コンポーネントからエラーが発生。
           content:
             application/json:
               schema:
@@ -1705,14 +1705,14 @@ paths:
                 $ref: "#/components/schemas/NotExistErrorResponse"
         409:
           description: |-
-            実行中、あるいは中断中の構成案反映ID（statusが「IN_PROGRESS」、「CANCELING」、「SUSPENDED」のいずれか、もしくはrollbackStatusが「IN_PROGRESS」、「SUSPENDED」のいずれか）に対して削除処理を実行してエラーが発生した
+            実行中、あるいは中断中の構成案反映ID (statusが「IN_PROGRESS」、「CANCELING」、「SUSPENDED」のいずれか、もしくはrollbackStatusが「IN_PROGRESS」、「SUSPENDED」のいずれか) に対して削除処理を実行してエラーが発生した
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/DeleteConflictErrorResponse"
         500:
           description: |-
-            内部サーバエラーまたは他コンポーネントからエラーが発生。
+            内部サーバーエラーまたは他コンポーネントからエラーが発生。
           content:
             application/json:
               schema:
@@ -1727,11 +1727,11 @@ paths:
         変更後のノードのデバイス構成(以下、新ノード構成)を引数に移行手順作成要求を受け付けて、<br>
         既存のノードのデバイス構成(以下、現ノード構成)から新ノード構成へとノードを変更する「移行手順」を返却する。<br>
         返却された移行手順を指定して構成案反映要求API「POST /layout-apply」を実行することで構成案を反映することができる。<br>
-        ・新ノード構成には現ノード構成から変更しないノード/デバイスも含めて、新ノード構成の全てのノード/デバイスを記載する<br>
+        ・新ノード構成には現ノード構成から変更しないノード/デバイスも含めて、新ノード構成のすべてのノード/デバイスを記載する<br>
         ・現ノード構成に存在し、新ノード構成に記載されないノード/デバイスは、新ノード構成から削除される<br>
         ・現ノード構成に存在せず、新ノード構成に追加されたノード/デバイスは新規追加となる<br>
         現ノード構成から変更するノード/デバイスを限定したい場合はtargetNodeIDs(以下、ノードID一覧)を指定する<br>
-        変更するノード/デバイスを限定した際の指定イメージは以下の通り<br>
+        変更するノード/デバイスを限定した際の指定イメージは以下のとおり<br>
         ・新規ノードの追加だけ実行したい<br>
         　⇒ノードID一覧に空リスト指定、新ノード構成に新規ノードの構成を指定<br>
         ・特定のノードだけを更新したい<br>
@@ -1820,7 +1820,7 @@ paths:
                 $ref: "#/components/schemas/NotExistTargetNodeIDsErrorResponse"
         500:
           description: |-
-            内部サーバエラーまたは他コンポーネントからエラーが発生。
+            内部サーバーエラーまたは他コンポーネントからエラーが発生。
           content:
             application/json:
               schema:
