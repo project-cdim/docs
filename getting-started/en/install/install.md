@@ -41,7 +41,7 @@ cd mf-core
 Create a new `.env` configuration file by copying the sample provided:
 
 ```sh
-cp .env.sample .env
+cp .env.example .env
 ```
 
 #### 3.1.2. Edit Configuration File

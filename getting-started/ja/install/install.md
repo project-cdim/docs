@@ -34,7 +34,7 @@ mf-core コンポーネントに移動します。
 cd mf-core
 ```
 
-サンプルファイル `.env.sample` を元に設定ファイル `.env` を作成します。
+サンプルファイル `.env.example` を元に設定ファイル `.env` を作成します。
 
 ```sh
 cp .env.example .env
