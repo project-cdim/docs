@@ -11,6 +11,9 @@ on:
       - 'api-reference/**'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -25,7 +28,7 @@ jobs:
 
     steps:
       - name: Clone Source Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Generate Artifact
         run: |
@@ -53,10 +56,11 @@ jobs:
         with:
           name: api-reference
           path: ${{ env.OUTPUT }}
+          retention-days: 1
 
       - name: Upload Artifact to GitHub Pages
         id: deployment
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
           path: ${{ env.OUTPUT }}
 

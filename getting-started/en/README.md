@@ -26,6 +26,29 @@ The recommended requirements for this guide are listed in the table below. Note 
 | Memory      | 8GB or more         |
 | Disk        | 64GB or more        |
 
+## Ports and Protocols
+
+The ports and protocols used by CDIM are listed below.
+
+| Protocol | Direction | Port Range | Purpose |
+| --- | --- | --- | --- |
+| TCP | Inbound | 3000,3003-3005 | Frontend |
+| TCP | Inbound | 3500,3503-3505,3507-3509,3512,3514,50006 | DAPR Communication |
+| TCP | Inbound | 5000 | Reference Hardware Emulator |
+| TCP | Inbound | 5442,5443,5445,5464 | Database |
+| TCP | Inbound | 8000 | Hardware Control |
+| TCP | Inbound | 8012 | Migration Procedure Generator |
+| TCP | Inbound | 8013 | Layout Apply |
+| TCP | Inbound | 8014 | Gateway(Kong) |
+| TCP | Inbound | 8280 | Configuration Manager |
+| TCP | Inbound | 8281 | Configuration Collector |
+| TCP | Inbound | 8283 | Configuration Exporter  |
+| TCP | Inbound | 8284 | Performance Collector |
+| TCP | Inbound | 8285 | Performance Exporter |
+| TCP | Inbound | 8287 | IAM(Keycloak) |
+| TCP | Inbound | 8428 | Performance Manager (VictoriaMetrics) |
+| TCP | Inbound | 9090 | Performance Collector (Prometheus) |
+
 ## Environment Overview
 
 Please refer to the diagram below for the overall configuration of the environment being built.
