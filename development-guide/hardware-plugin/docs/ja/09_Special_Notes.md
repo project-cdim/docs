@@ -42,20 +42,20 @@ CPU情報とPCIeデバイス情報は両方を返却されると正しく認識�
 上記のデバイスの紐づけ情報については、システム内で一意の値にする必要があります。
 複数のデバイスに対して同一の値が返却された場合は、デバイス情報が期待どおり紐づけられない場合があります。  
 `get_device_info`メソッドの詳細は、
-[5.1. `get_device_info()`](05_OOBプラグインの実装.md#51-get_device_info)を、
+[5.1. `get_device_info()`](05_Implementing_OOB_plugins.md#51-get_device_info)を、
 `get_port_info`メソッドの詳細は、
-[6.3. `get_port_info(target_id=None)`](06_FMプラグインの実装.md#63-get_port_infotarget_idnone)
+[6.3. `get_port_info(target_id=None)`](06_Implementing_FM_plugins.md#63-get_port_infotarget_idnone)
 を参照ください。  
 
 ### サポート対象外メソッドの実装
 
 デバイスが対応していない等の理由により、プラグインのメソッドを実装できない場合は
-[`RequestNotSupportedHwControlError`](07_例外処理.md#72-定義済み例外)を送出してください。  
+[`RequestNotSupportedHWControlError`](07_Handling_Exceptions.md#72-定義済み例外)を送出してください。  
 以下に例を示します。
 
 ``` python
 def post_os_shutdown(self, key_values: list[dict[str, str]]) -> dict[str, list[dict]]:
-    raise RequestNotSupportedHwControlError
+    raise RequestNotSupportedHWControlError
 ```
 
 ## 9.2. 制限事項

@@ -66,7 +66,7 @@ Edit or create the following files:
   ``` toml
   ...
   [tool.pdm.scripts]
-  start.cmd = "uvicorn app.hw_control_main:app --host 0.0.0.0 --port 8000 --reload"
+  start.cmd = "uvicorn app.hw_control_main:app --host 0.0.0.0 --port 8000 --reload --log-config config/logging_config.yaml"
   start.env = { PYTHONPATH = "${PDM_PROJECT_ROOT}/src" }
   start.env_file = ".env"     # Add this line
   ```
@@ -74,8 +74,6 @@ Edit or create the following files:
 - `hw-control/.env` (create)
 
   ``` shell
-  HW_CONTROL_LOG_DIR=./logs
-  HW_CONTROL_LOG_STDOUT=true
   HW_CONTROL_CONFIG_FILE_DIR=./config/
   HW_CONTROL_DATA_FILE_DIR=./data
   HW_CONTROL_AUTHORIZATION_SERVER_TOKEN_ENDPOINT=http://localhost:8001/hw-control/token
@@ -86,11 +84,31 @@ Edit or create the following files:
 
   The following settings are made in this file.
 
-  - Set the log output directory to `hw-control/logs`
-  - Enable logging to the console
   - Set the configuration file directory to `hw-control/config`
   - Set the data output directory to `hw-control/data`
   - Set the authorization server and secret management server to stubs
+
+- `hw-control/config/logging_config.yaml` (edit)
+
+  ``` yaml
+  handlers:
+    app_log_handler:
+      ...
+      filename: ./logs/app_hw_control.log
+      ...
+      level: INFO
+  ...
+  loggers:
+    ...
+    plugins:
+      ...
+      level: INFO
+  ```
+
+  The following settings are made in this file.
+
+  - Set the log output file to `hw-control/logs/app_hw_control.log`
+  - Set the log level to `INFO` (set to `DEBUG` to enable debug logging)
 
 - `hw-control/config/device_attribute_setting.yaml` (edit)
 
@@ -153,15 +171,6 @@ If the plugin is placed or changed, the HW control function should be restarted.
 ### Stop
 
 To stop the stub or HW control function, press `Ctrl-C` on the console.
-
-### Log Level
-
-By default, logs of INFO level or higher are output.  
-If you want to change the log level to debug, set the environment variable `HW_CONTROL_LOGGING_LEVEL` to `DEBUG`.
-
-``` shell
-HW_CONTROL_LOGGING_LEVEL=DEBUG pdm start
-```
 
 ## 3.4. Deploying and Running the Sample Plugin
 

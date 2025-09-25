@@ -56,7 +56,7 @@ async def post(request: Request, uri: str) -> Response:
 
     json_path = _locate_json(uri_with_query)
     if json_path:
-        logger.info("POST: %s body=[%s] => [%s]", uri_with_query, body, json_path)
+        logger.info("POST: %s body=[%s] => [ %s ]", uri_with_query, body, json_path)
         return FileResponse(json_path)
 
     logger.info("POST: %s body=[%s] => OK", uri_with_query, body)

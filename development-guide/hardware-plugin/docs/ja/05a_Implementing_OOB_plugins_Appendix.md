@@ -48,20 +48,20 @@
 
 - `OOBDeviceListItem`はPydanticの`BaseModel`を継承しており、辞書と相互に変換することができます。辞書のキーを`辞書キー`列に示します。
 - `deviceType`と`oobDeviceID`は必須です。  
-  他の項目はOOBプラグインとFMプラグインの連携のために必要な情報です。詳細は[9.1. 注意事項 デバイスの紐づけ](09_特記事項.md#デバイスの紐づけ)を参照してください。
+  他の項目はOOBプラグインとFMプラグインの連携のために必要な情報です。詳細は[9.1. 注意事項 デバイスの紐づけ](09_Special_Notes.md#デバイスの紐づけ)を参照してください。
 
 |No.|属性                      |辞書キー               |型   |値
 |:-:|--------------------------|-----------------------|-----|----------------------------------------------------------
-| 1 |pcie_vendor_id            |PCIeVendorId           |str  |PCIeベンダID
-| 2 |pcie_device_id            |PCIeDeviceId           |str  |PCIeデバイスID
-| 3 |pcie_device_serial_number |PCIeDeviceSerialNumber |str  |PCIeデバイスシリアル番号
-| 4 |cpu_serial_number         |CPUSerialNumber        |str  |プロセッサのシリアル番号
-| 5 |cpu_manufacturer          |CPUManufacturer        |str  |プロセッサの製造元
-| 6 |cpu_model                 |CPUModel               |str  |プロセッサのモデル番号
+| 1 |pcie_vendor_id            |PCIeVendorId           |str  |PCIeベンダID (1文字以上の文字列)
+| 2 |pcie_device_id            |PCIeDeviceId           |str  |PCIeデバイスID (1文字以上の文字列)
+| 3 |pcie_device_serial_number |PCIeDeviceSerialNumber |str  |PCIeデバイスシリアル番号 (1文字以上の文字列)
+| 4 |cpu_serial_number         |CPUSerialNumber        |str  |プロセッサのシリアル番号 (1文字以上の文字列)
+| 5 |cpu_manufacturer          |CPUManufacturer        |str  |プロセッサの製造元 (1文字以上の文字列)
+| 6 |cpu_model                 |CPUModel               |str  |プロセッサのモデル番号 (1文字以上の文字列)
 | 7 |port_keys                 |portKeys               |dict |スイッチのポートをシステムで一意に識別する情報を格納した辞書
 | 8 |device_keys               |deviceKeys             |dict |デバイスをシステムで一意に識別する情報を格納した辞書
 | 9 |device_type               |deviceType             |str  |デバイス種別 ([表5-1. デバイス種別](#表5-1-デバイス種別)参照)
-|10 |oob_device_id             |oobDeviceID            |str  |デバイスをマネージャーで一意に識別するID
+|10 |oob_device_id             |oobDeviceID            |str  |デバイスをマネージャーで一意に識別するID (1文字以上の文字列)
 
 ## 表5-3. 引数`key_values`
 
@@ -69,7 +69,7 @@
 
 |No.|キー           |型    |値
 |:-:|---------------|------|--------------------------------------------------------------------------------------------
-| 1 |oob_device_id  |str   |OOBデバイスID ([`get_device_info`](05_OOBプラグインの実装.md#51-get_device_info)で取得したもの)
+| 1 |oob_device_id  |str   |OOBデバイスID ([`get_device_info`](05_Implementing_OOB_plugins.md#51-get_device_info)で取得したもの)
 | 2 |device_type    |str   |デバイス種別 ([表5-1. デバイス種別](#表5-1-デバイス種別)参照)
 
 ## 表5-4. `get_spec_info`の返り値

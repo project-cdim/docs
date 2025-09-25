@@ -9,9 +9,9 @@ Place them in the `plugins/` directory for each manager type of hardware control
 
 ``` text
 plugins/
-└── Manager type/
-    ├── Configuration file.yaml
-    └── Module.py
+└── manager_type/
+    ├── configuration_file.yaml
+    └── directory/module.py
 ```
 
 Manager types are either `oob` or `fm`. The OOB plugin should be placed in `oob/`, and the FM plugin should be placed in `fm/`.
@@ -19,7 +19,7 @@ Manager types are either `oob` or `fm`. The OOB plugin should be placed in `oob/
 A configuration file is created for each manager, in YAML format, with the file name as "manager ID + `_manager.yaml`".  
 The manager ID is a name that uniquely identifies the manager and can use alphanumeric characters, underscores (`_`), and hyphens (`-`).  
 The configuration file includes the Python module path, class name, and configuration information (details are described [below](#plugin-configuration-file-format)).  
-The Python module path must be unique for each manager type.  
+The Python modules should be placed in subdirectories, and their paths should be unique for each manager type.
 
 The sample file structure is as follows.
 
@@ -55,14 +55,14 @@ Here is an example.
 ``` yaml
 ---
 module: oob_sample.plugin
-class: OobSamplePlugin
+class: OOBSamplePlugin
 specific_data:
   base_url: http://localhost:8080
   timeout_sec: 60
   manager_path: /redfish/v1/Managers/1
 ```
 
-- The module path is `oob_sample.plugin`, and the class name is `OobSamplePlugin`.
+- The module path is `oob_sample.plugin`, and the class name is `OOBSamplePlugin`.
 - The following settings are configured for the plugin-specific information:
   - Manager connection information (`base_url`)
   - Timeout (`timeout_sec`)

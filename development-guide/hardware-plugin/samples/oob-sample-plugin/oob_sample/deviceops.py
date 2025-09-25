@@ -16,7 +16,7 @@
 
 from typing import Any, Iterator
 
-from app.common.basic_exceptions import RequestNotSupportedHwControlError, DeviceNotFoundHwControlError
+from app.common.basic_exceptions import RequestNotSupportedHWControlError, DeviceNotFoundHWControlError
 
 from . import redfish
 
@@ -36,7 +36,7 @@ class DeviceOperations:
         Returns:
             tuple of Schema and Link
         """
-        raise RequestNotSupportedHwControlError
+        raise RequestNotSupportedHWControlError
 
     def get_metric_info(
         self, client: redfish.Client, oob_device_id: str
@@ -49,7 +49,7 @@ class DeviceOperations:
         Returns:
             tuple of Schema, Metric and Environment
         """
-        raise RequestNotSupportedHwControlError
+        raise RequestNotSupportedHWControlError
 
     def get_power_state(self, client: redfish.Client, oob_device_id: str) -> str | None:
         """Get power state.
@@ -60,7 +60,7 @@ class DeviceOperations:
         Returns:
             PowerState if available, None otherwise
         """
-        raise RequestNotSupportedHwControlError
+        raise RequestNotSupportedHWControlError
 
     def power_on(self, client: redfish.Client, oob_device_id: str) -> int:
         """Power on.
@@ -71,7 +71,7 @@ class DeviceOperations:
         Returns:
             response status code
         """
-        raise RequestNotSupportedHwControlError
+        raise RequestNotSupportedHWControlError
 
     def power_off(self, client: redfish.Client, oob_device_id: str) -> int:
         """Power off.
@@ -82,7 +82,7 @@ class DeviceOperations:
         Returns:
             response status code
         """
-        raise RequestNotSupportedHwControlError
+        raise RequestNotSupportedHWControlError
 
     def reset(self, client: redfish.Client, oob_device_id: str) -> int:
         """Reset.
@@ -93,7 +93,7 @@ class DeviceOperations:
         Returns:
             response status code
         """
-        raise RequestNotSupportedHwControlError
+        raise RequestNotSupportedHWControlError
 
     def shutdown_os(self, client: redfish.Client, oob_device_id: str) -> int:
         """Shutdown OS.
@@ -104,7 +104,7 @@ class DeviceOperations:
         Returns:
             response status code
         """
-        raise RequestNotSupportedHwControlError
+        raise RequestNotSupportedHWControlError
 
     # ------------------------------------------------------------
     # Resource accessors
@@ -155,7 +155,7 @@ class DeviceOperations:
             if collection_uri := chassis.link(collection_name):
                 if resource := client.find_resource_in_collection(collection_uri, oob_device_id):
                     return resource
-        raise DeviceNotFoundHwControlError
+        raise DeviceNotFoundHWControlError
 
     def get_resource_in_computer_system(
         self, client: redfish.Client, collection_name: str, oob_device_id: str
@@ -175,7 +175,7 @@ class DeviceOperations:
             if collection_uri := computer_system.link(collection_name):
                 if resource := client.find_resource_in_collection(collection_uri, oob_device_id):
                     return resource, computer_system
-        raise DeviceNotFoundHwControlError
+        raise DeviceNotFoundHWControlError
 
     def get_resource_in_computer_system_or_chassis(
         self, client: redfish.Client, collection_name: str, oob_device_id: str
@@ -192,7 +192,7 @@ class DeviceOperations:
         """
         try:
             return self.get_resource_in_computer_system(client, collection_name, oob_device_id)
-        except DeviceNotFoundHwControlError:
+        except DeviceNotFoundHWControlError:
             resource = self.get_resource_in_chassis(client, collection_name, oob_device_id)
             return resource, None
 
@@ -454,7 +454,7 @@ class StorageOperations(DeviceOperations):
                 try:
                     _, computer_system = self.get_resource_in_computer_system(client, "Storage", storage_oob_device_id)
                     links.extend(self.find_cpu_links(client, computer_system))
-                except DeviceNotFoundHwControlError:
+                except DeviceNotFoundHWControlError:
                     pass  # not used by ComputerSystem
 
         if volume_uri := drive.first_link("Links/Volumes"):
@@ -527,7 +527,7 @@ class NetworkInterfaceOperations(DeviceOperations):
         try:
             _, computer_system = self._get_network_adapter_in_computer_system(client, oob_device_id)
             links.extend(self.find_cpu_links(client, computer_system))
-        except DeviceNotFoundHwControlError:
+        except DeviceNotFoundHWControlError:
             pass  # not used by ComputerSystem
 
         return schema, links
@@ -579,7 +579,7 @@ class NetworkInterfaceOperations(DeviceOperations):
                 nw_adapter = client.get_resource(nw_adapter_uri)
                 if nw_adapter.prop("Id") == oob_device_id:
                     return nw_adapter, computer_system
-        raise DeviceNotFoundHwControlError
+        raise DeviceNotFoundHWControlError
 
 
 class GraphicControllerOperations(DeviceOperations):

@@ -1,4 +1,4 @@
-# Plugin Development Guide ([Japanese](README-ja.md))
+# Hardware Plugin Development Guide ([Japanese](README-ja.md))
 
 ## Table of Contents
 

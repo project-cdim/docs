@@ -1,7 +1,7 @@
 # 3. 開発環境の構築
 
 本章では、HW制御機能にプラグインを組み込み、REST APIを実行する手順を説明します。  
-プラグインの動作確認は、[HW制御機能のREST API](02_HW制御機能.md#21-hw制御機能のrest-api)により行います。詳細は[5章](05_OOBプラグインの実装.md)と[6章](06_FMプラグインの実装.md)に記載します。
+プラグインの動作確認は、[HW制御機能のREST API](02_HWControlFunction.md#21-hw制御機能のrest-api)により行います。詳細は[5章](05_Implementing_OOB_plugins.md)と[6章](06_Implementing_FM_plugins.md)に記載します。
 
 開発は[Python](https://www.python.org/)(3.12以上)と[PDM](https://pdm-project.org/latest/)がインストールされたLinuxで行います。  
 
@@ -64,7 +64,7 @@ pdm sync
   ``` toml
   ...
   [tool.pdm.scripts]
-  start.cmd = "uvicorn app.hw_control_main:app --host 0.0.0.0 --port 8000 --reload"
+  start.cmd = "uvicorn app.hw_control_main:app --host 0.0.0.0 --port 8000 --reload --log-config config/logging_config.yaml"
   start.env = { PYTHONPATH = "${PDM_PROJECT_ROOT}/src" }
   start.env_file = ".env"     # この行を追加します
   ```
@@ -72,8 +72,6 @@ pdm sync
 - `hw-control/.env` (作成)
 
   ``` shell
-  HW_CONTROL_LOG_DIR=./logs
-  HW_CONTROL_LOG_STDOUT=true
   HW_CONTROL_CONFIG_FILE_DIR=./config/
   HW_CONTROL_DATA_FILE_DIR=./data
   HW_CONTROL_AUTHORIZATION_SERVER_TOKEN_ENDPOINT=http://localhost:8001/hw-control/token
@@ -84,11 +82,31 @@ pdm sync
 
   このファイルで以下の設定を行っています。
 
-  - ログ出力ディレクトリを`hw-control/logs`に設定
-  - コンソールへのログ出力を有効化
   - 設定ファイルのディレクトリを`hw-control/config`に設定
   - データ出力ディレクトリを`hw-control/data`に設定
   - 認可サーバーとシークレット管理サーバーをスタブに設定
+
+- `hw-control/config/logging_config.yaml` (編集)
+
+  ``` yaml
+  handlers:
+    app_log_handler:
+      ...
+      filename: ./logs/app_hw_control.log
+      ...
+      level: INFO
+  ...
+  loggers:
+    ...
+    plugins:
+      ...
+      level: INFO
+  ```
+
+  このファイルで以下の設定を行っています。
+
+  - ログ出力ファイルを`hw-control/logs/app_hw_control.log`に設定
+  - ログレベルをINFOに設定 (デバッグログを出力する場合は`DEBUG`に設定します)
 
 - `hw-control/config/device_attribute_setting.yaml` (編集)
 
@@ -144,22 +162,13 @@ Swagger UIへはブラウザで<http://localhost:8000/docs>をオープンして
 Swagger UIでREST APIを実行すると、curlを使用する際のコマンドラインが表示されます。
 
 この段階では、まだプラグインを配置していないため、REST APIはエラーになります。  
-プラグインは[4.1. ファイル構成](04_プラグインの構成.md#41-ファイル構成)にしたがって`hw-control/src/plugins`に配置します。  
+プラグインは[4.1. ファイル構成](04_Configuration.md#41-ファイル構成)にしたがって`hw-control/src/plugins`に配置します。  
 [3.4. サンプルプラグインの配置と実行](#34-サンプルプラグインの配置と実行)でサンプルを用いた手順を示します。  
 なお、プラグインを配置または変更した場合はHW制御機能を再起動します。
 
 ### 停止
 
 スタブまたはHW制御機能を停止するときはコンソールで`Ctrl-C`を押下します。
-
-### ログレベル
-
-デフォルトでINFOレベル以上のログが出力されます。  
-ログレベルをデバッグに変更する場合は環境変数`HW_CONTROL_LOGGING_LEVEL`を`DEBUG`に設定します。
-
-``` shell
-HW_CONTROL_LOGGING_LEVEL=DEBUG pdm start
-```
 
 ## 3.4. サンプルプラグインの配置と実行
 
@@ -182,7 +191,7 @@ hw-control/src/plugins/
 - OOBプラグイン関連ファイルは`plugins/oob/`に配置します。
 - OOBプラグイン設定ファイル名は「マネージャーID + `_manager.yaml`」です。  
   サンプルでは`OOB1`がマネージャーIDになります。  
-  プラグイン設定ファイルについては[4. プラグインの構成](04_プラグインの構成.md)で説明します。
+  プラグイン設定ファイルについては[4. プラグインの構成](04_Configuration.md)で説明します。
 - OOBプラグインはPythonのモジュールです。  
   サンプルでは`oob_sample.plugin`がモジュールの相対パスになります。  
   プラグインについては次章以降で説明します。
@@ -203,7 +212,7 @@ hw-control/src/plugins/
 
 ### サンプルプラグインの実行
 
-HW制御機能Swagger UIにアクセスし、[`デバイスID一覧情報取得`](02_HW制御機能.md#21-hw制御機能のrest-api)を実行します。  
+HW制御機能Swagger UIにアクセスし、[`デバイスID一覧情報取得`](02_HWControlFunction.md#21-hw制御機能のrest-api)を実行します。  
 実行結果は以下のようになります。
 
 ``` json
@@ -224,7 +233,7 @@ HW制御機能Swagger UIにアクセスし、[`デバイスID一覧情報取得`
 ```
 
 `deviceID`はHW制御機能により割り当てられます。  
-`deviceID`のひとつをコピーして[`スペック情報取得`](02_HW制御機能.md#21-hw制御機能のrest-api)を実行します。  
+`deviceID`のひとつをコピーして[`スペック情報取得`](02_HWControlFunction.md#21-hw制御機能のrest-api)を実行します。  
 実行結果は以下のようになります。
 
 ``` json

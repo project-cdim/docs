@@ -16,7 +16,7 @@
 
 from typing import Any, Iterator
 
-from app.common.basic_exceptions import RequestNotSupportedHwControlError
+from app.common.basic_exceptions import RequestNotSupportedHWControlError
 from . import restclt
 
 
@@ -266,4 +266,4 @@ class Client:
         """
         if action_uri := resource.action_target(resource_type, action_name):
             return self.client.post(action_uri, data)
-        raise RequestNotSupportedHwControlError
+        raise RequestNotSupportedHWControlError

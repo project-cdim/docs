@@ -14,9 +14,12 @@ The REST API of the HW control function related to plugins is shown below.
 | 3 |Get spec information            |/cdim/api/v1/devices/{deviceID}/specs       | GET  |Get spec information of the device.
 | 4 |Get metric information          |/cdim/api/v1/devices/{deviceID}/metrics     | GET  |Get metric information of the device.
 | 5 |Get resource information        |/cdim/api/v1/devices/{deviceID}             | GET  |Get spec and metric information of the device.
-| 6 |Change configuration            |/cdim/api/v1/cpu/{CPUDeviceID}/aggregations | PUT  |Connect or disconnect the CPU device from the device.
+| 6 |Change configuration (CPU to Device)     |/cdim/api/v1/cpu/{CPUDeviceID}/aggregations | PUT  |Controls the aggregation state between CPU and device.**Deprecated**
 | 7 |Control power                   |/cdim/api/v1/devices/{deviceID}/power       | PUT  |Controls the power of the device.
 | 8 |Get OS boot status              |/cdim/api/v1/cpu/{CPUDeviceID}/is-os-ready  | GET  |Gets the boot status of the OS.
+| 9 |Change configuration (Device to Device)  |/cdim/api/v1/devices/{sourceDeviceID}/aggregations | PUT  |Controls the aggregation state between upstream side device and downstream side device.
+
+Change configuration (CPU to Device) will be removed in future releases.
 
 ## 2.2. Plugin Overview
 

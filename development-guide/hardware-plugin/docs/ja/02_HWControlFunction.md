@@ -13,13 +13,16 @@ HW制御機能のREST APIでプラグインに関わるものを以下に示し�
 | 3 |スペック情報取得           |/cdim/api/v1/devices/{deviceID}/specs       | GET  |デバイスのスペック情報を取得します。
 | 4 |メトリック情報取得         |/cdim/api/v1/devices/{deviceID}/metrics     | GET  |デバイスのメトリック情報を取得します。
 | 5 |リソース情報取得           |/cdim/api/v1/devices/{deviceID}             | GET  |デバイスのスペック情報とメトリック情報を取得します。
-| 6 |構成変更制御               |/cdim/api/v1/cpu/{CPUDeviceID}/aggregations | PUT  |CPU装置とデバイスを接続または切断します。
+| 6 |構成変更制御 （CPUとデバイス）|/cdim/api/v1/cpu/{CPUDeviceID}/aggregations | PUT  |CPU装置とデバイスを接続または切断します。**非推奨**
 | 7 |電源制御                   |/cdim/api/v1/devices/{deviceID}/power       | PUT  |デバイスの電源を制御します。
 | 8 |OS起動確認                 |/cdim/api/v1/cpu/{CPUDeviceID}/is-os-ready  | GET  |OSの起動状態を取得します。
+| 9 |構成変更制御（デバイスとデバイス） | /cdim/api/v1/devices/{sourceDeviceID}/aggregations | PUT | 上流側デバイスと下流側デバイス間の接続状態を制御します。
+
+構成変更制御（CPUとデバイス）は次回以降のリリースで削除予定です。
 
 ## 2.2. プラグインの概要
 
-プラグインはクラスとして実装します([4.2 クラス構成](04_プラグインの構成.md#42-クラス構成)参照)。  
+プラグインはクラスとして実装します([4.2 クラス構成](04_Configuration.md#42-クラス構成)参照)。  
 HW制御機能のREST APIは、デバイス情報の収集とデバイスの制御を行うにあたって、  
 ハードウェア依存の処理が必要となったときに、対象となるデバイスに応じたプラグインを生成し、  
 生成したプラグインのメソッドを呼び出すことにより、ハードウェア依存の処理をプラグインに委譲します。

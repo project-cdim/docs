@@ -11,7 +11,7 @@ HW制御機能の`plugins/`ディレクトリにマネージャー種別ごと�
 plugins/
 └── マネージャー種別/
     ├── 設定ファイル.yaml
-    └── モジュール.py
+    └── ディレクトリ/モジュール.py
 ```
 
 マネージャー種別は`oob`または`fm`です。OOBプラグインは`oob/`に、FMプラグインは`fm/`に配置します。
@@ -19,7 +19,7 @@ plugins/
 設定ファイルはマネージャーごとに作成し、形式はYAML、ファイル名は「マネージャーID + `_manager.yaml`」です。  
 マネージャーIDはマネージャーを一意に識別する名前です。半角英数字、`_(下線)`、`-(ハイフン)`を使用することができます。  
 設定ファイルにはPythonモジュールのパス、クラス名、設定情報を記載します(詳細は[後述](#プラグイン設定ファイルの形式))。  
-Pythonモジュールのパスはマネージャー種別ごとに一意となる必要があります。  
+Pythonモジュールはサブディレクトリに配置し、そのパスはマネージャー種別ごとに一意となる必要があります。  
 
 サンプルのファイル構成は以下のとおりです。
 
@@ -55,14 +55,14 @@ plugins/
 ``` yaml
 ---
 module: oob_sample.plugin
-class: OobSamplePlugin
+class: OOBSamplePlugin
 specific_data:
   base_url: http://localhost:8080
   timeout_sec: 60
   manager_path: /redfish/v1/Managers/1
 ```
 
-- モジュールパスは`oob_sample.plugin`、クラス名は`OobSamplePlugin`です。
+- モジュールパスは`oob_sample.plugin`、クラス名は`OOBSamplePlugin`です。
 - プラグイン固有の設定情報に以下を設定しています。
   - マネージャーの接続情報(`base_url`)
   - タイムアウト(`timeout_sec`)
@@ -92,10 +92,10 @@ def __init__(self, specific_data: Any = None) -> None:
 
 ### OOBプラグイン基底クラス (OOBPluginBase)
 
-OOBプラグインはこのクラスを継承し、[2.2 プラグインの概要](02_HW制御機能.md#oobプラグインのメソッド)に示したメソッドを実装します。  
-実装の詳細は[5. OOBプラグインの実装](05_OOBプラグインの実装.md)で説明します。
+OOBプラグインはこのクラスを継承し、[2.2 プラグインの概要](02_HWControlFunction.md#oobプラグインのメソッド)に示したメソッドを実装します。  
+実装の詳細は[5. OOBプラグインの実装](05_Implementing_OOB_plugins.md)で説明します。
 
 ### FMプラグイン基底クラス (FMPluginBase)
 
-FMプラグインはこのクラスを継承し、[2.2 プラグインの概要](02_HW制御機能.md#fmプラグインのメソッド)に示したメソッドを実装します。  
-実装の詳細は[6. FMプラグインの実装](06_FMプラグインの実装.md)で説明します。
+FMプラグインはこのクラスを継承し、[2.2 プラグインの概要](02_HWControlFunction.md#fmプラグインのメソッド)に示したメソッドを実装します。  
+実装の詳細は[6. FMプラグインの実装](06_Implementing_FM_plugins.md)で説明します。

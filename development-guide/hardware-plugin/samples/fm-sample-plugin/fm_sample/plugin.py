@@ -20,8 +20,8 @@ from typing import Any, Iterator
 
 import requests
 
-from app.common.basic_exceptions import InternalHwControlError
-from app.common.utils.fm_plugin_base import FMPluginBase, FmPortData, FmSwitchData
+from app.common.basic_exceptions import InternalHWControlError
+from app.common.utils.fm_plugin_base import FMPluginBase, FMPortData, FMSwitchData
 
 
 class RestClient:
@@ -75,18 +75,18 @@ class RestClient:
             response.raise_for_status()
             return response
         except requests.exceptions.RequestException as exc:
-            raise InternalHwControlError(additional_message=f"Failed to {method} {url}") from exc
+            raise InternalHWControlError(additional_message=f"Failed to {method} {url}") from exc
 
 
 @dataclass
-class FmSamplePluginConfig:
+class FMSamplePluginConfig:
     """FM sample plugin configuration."""
 
     base_url: str
     timeout_sec: float
 
 
-class FmSamplePlugin(FMPluginBase):
+class FMSamplePlugin(FMPluginBase):
     """FM sample plugin."""
 
     def __init__(self, specific_data: Any = None) -> None:
@@ -105,23 +105,23 @@ class FmSamplePlugin(FMPluginBase):
         with self._create_rest_client() as client:
             params = {"target": target_id} if target_id else None
             response = client.get("/portinfo", params=params)
-            response["data"] = [FmPortData(**item) for item in response["data"]]
+            response["data"] = [FMPortData(**item) for item in response["data"]]
             return response
 
     def get_switch_info(self, switch_id: str | None = None) -> dict:
         with self._create_rest_client() as client:
             params = {"target": switch_id} if switch_id else None
             response = client.get("/switchinfo", params=params)
-            response["data"] = [FmSwitchData(**item) for item in response["data"]]
+            response["data"] = [FMSwitchData(**item) for item in response["data"]]
             return response
 
     # ------------------------------------------------------------
     # Utilities
     # ------------------------------------------------------------
-    def _get_config(self) -> FmSamplePluginConfig:
+    def _get_config(self) -> FMSamplePluginConfig:
         if not isinstance(self.specific_data, dict):
-            raise InternalHwControlError(additional_message="specific_data is not dictionary.")
-        return FmSamplePluginConfig(
+            raise InternalHWControlError(additional_message="specific_data is not dictionary.")
+        return FMSamplePluginConfig(
             base_url=str(self.specific_data["base_url"]).rstrip("/"),
             timeout_sec=float(self.specific_data["timeout_sec"]),
         )

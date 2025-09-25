@@ -54,16 +54,16 @@ The return value of `get_device_info` is a list of `OOBDeviceListItem` with the 
 
 |No.|Attribute                 |Dictionary Key         |Type |Value
 |:-:|--------------------------|-----------------------|-----|----------------------------------------------------------
-| 1 |pcie_vendor_id            |PCIeVendorId           |str  |PCIe vendor ID
-| 2 |pcie_device_id            |PCIeDeviceId           |str  |PCIe device ID
-| 3 |pcie_device_serial_number |PCIeDeviceSerialNumber |str  |PCIe device serial number
-| 4 |cpu_serial_number         |CPUSerialNumber        |str  |Processor serial number
-| 5 |cpu_manufacturer          |CPUManufacturer        |str  |Processor manufacturer
-| 6 |cpu_model                 |CPUModel               |str  |Processor model number
+| 1 |pcie_vendor_id            |PCIeVendorId           |str  |PCIe vendor ID (string of 1 or more characters)
+| 2 |pcie_device_id            |PCIeDeviceId           |str  |PCIe device ID (string of 1 or more characters)
+| 3 |pcie_device_serial_number |PCIeDeviceSerialNumber |str  |PCIe device serial number (string of 1 or more characters)
+| 4 |cpu_serial_number         |CPUSerialNumber        |str  |Processor serial number (string of 1 or more characters)
+| 5 |cpu_manufacturer          |CPUManufacturer        |str  |Processor manufacturer (string of 1 or more characters)
+| 6 |cpu_model                 |CPUModel               |str  |Processor model number (string of 1 or more characters)
 | 7 |port_keys                 |portKeys               |dict |A dictionary containing information to uniquely identify a port on a switch in the system
 | 8 |device_keys               |deviceKeys             |dict |A dictionary containing information to uniquely identify the device in the system
 | 9 |device_type               |deviceType             |str  |Device type (see [Table 5-1. Device Type](#table-5-1-device-type))
-|10 |oob_device_id             |oobDeviceID            |str  |An ID to uniquely identify the device in the manager
+|10 |oob_device_id             |oobDeviceID            |str  |An ID to uniquely identify the device in the manager (string of 1 or more characters)
 
 ## Table 5-3. Parameter `key_values`
 

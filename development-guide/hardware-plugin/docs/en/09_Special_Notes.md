@@ -44,12 +44,12 @@ and for details on the `get_port_info` method,
 
 ### Implementation of Unsupported Methods
 
-If it is not possible to implement a plugin method due to reasons such as the device not being supported, please raise a [`RequestNotSupportedHwControlError`](07_Handling_Exceptions.md#72-defined-exceptions).  
+If it is not possible to implement a plugin method due to reasons such as the device not being supported, please raise a [`RequestNotSupportedHWControlError`](07_Handling_Exceptions.md#72-defined-exceptions).  
 An example is shown below.
 
 ``` python
 def post_os_shutdown(self, key_values: list[dict[str, str]]) -> dict[str, list[dict]]:
-    raise RequestNotSupportedHwControlError
+    raise RequestNotSupportedHWControlError
 ```
 
 ## 9.2. Restriction

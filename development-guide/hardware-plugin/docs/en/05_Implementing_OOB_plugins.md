@@ -21,8 +21,8 @@ Raise the following exception on errors:
 
 |No.|Case                                     |Exception
 |:-:|------------------------------------------|------------------------------------------------------------------------
-| 1 |If OOB authentication fails               |[`AuthenticationHwControlError`](07_Handling_Exceptions.md#base-exception-classes)
-| 2 |If the manager responds with an error     |[`ControlObjectHwControlError`](07_Handling_Exceptions.md#base-exception-classes)
+| 1 |If OOB authentication fails               |[`AuthenticationHWControlError`](07_Handling_Exceptions.md#base-exception-classes)
+| 2 |If the manager responds with an error     |[`ControlObjectHWControlError`](07_Handling_Exceptions.md#base-exception-classes)
 
 ### 5.1.3. How to Test
 
@@ -53,10 +53,10 @@ Raise the following exception on errors:
 
 |No.|Case                                      |Exception
 |:-:|------------------------------------------|------------------------------------------------------------------------
-| 1 |If the device type of the specified device is not supported by the plugin |[`RequestNotSupportedHwControlError`](07_Handling_Exceptions.md#72-predefined-exceptions)
-| 2 |If the device is not found                |[`DeviceNotFoundHwControlError`](07_Handling_Exceptions.md#72-predefined-exceptions)
-| 3 |If OOB authentication fails               |[`AuthenticationHwControlError`](07_Handling_Exceptions.md#base-exception-classes)
-| 4 |If the manager responds with an error     |[`ControlObjectHwControlError`](07_Handling_Exceptions.md#base-exception-classes)
+| 1 |If the device type of the specified device is not supported by the plugin |[`RequestNotSupportedHWControlError`](07_Handling_Exceptions.md#72-predefined-exceptions)
+| 2 |If the device is not found                |[`DeviceNotFoundHWControlError`](07_Handling_Exceptions.md#72-predefined-exceptions)
+| 3 |If OOB authentication fails               |[`AuthenticationHWControlError`](07_Handling_Exceptions.md#base-exception-classes)
+| 4 |If the manager responds with an error     |[`ControlObjectHWControlError`](07_Handling_Exceptions.md#base-exception-classes)
 
 ### 5.2.3. How to Test
 
@@ -89,10 +89,10 @@ Raise the following exception on errors:
 
 |No.|Case                                      |Exception
 |:-:|------------------------------------------|------------------------------------------------------------------------
-| 1 |If the device type of the specified device is not supported by the plugin |[`RequestNotSupportedHwControlError`](07_Handling_Exceptions.md#72-predefined-exceptions)
-| 2 |If the device is not found                |[`DeviceNotFoundHwControlError`](07_Handling_Exceptions.md#72-predefined-exceptions)
-| 3 |If OOB authentication fails               |[`AuthenticationHwControlError`](07_Handling_Exceptions.md#base-exception-classes)
-| 4 |If the manager responds with an error     |[`ControlObjectHwControlError`](07_Handling_Exceptions.md#base-exception-classes)
+| 1 |If the device type of the specified device is not supported by the plugin |[`RequestNotSupportedHWControlError`](07_Handling_Exceptions.md#72-predefined-exceptions)
+| 2 |If the device is not found                |[`DeviceNotFoundHWControlError`](07_Handling_Exceptions.md#72-predefined-exceptions)
+| 3 |If OOB authentication fails               |[`AuthenticationHWControlError`](07_Handling_Exceptions.md#base-exception-classes)
+| 4 |If the manager responds with an error     |[`ControlObjectHWControlError`](07_Handling_Exceptions.md#base-exception-classes)
 
 ### 5.3.3. How to Test
 
@@ -124,10 +124,10 @@ Raise the following exception on errors:
 
 |No.|Case                                      |Exception
 |:-:|------------------------------------------|------------------------------------------------------------------------
-| 1 |If the device type of the specified device is not supported by the plugin |[`RequestNotSupportedHwControlError`](07_Handling_Exceptions.md#72-predefined-exceptions)
-| 2 |If the device is not found                |[`DeviceNotFoundHwControlError`](07_Handling_Exceptions.md#72-predefined-exceptions)
-| 3 |If OOB authentication fails               |[`AuthenticationHwControlError`](07_Handling_Exceptions.md#base-exception-classes)
-| 4 |If the manager responds with an error     |[`ControlObjectHwControlError`](07_Handling_Exceptions.md#base-exception-classes)
+| 1 |If the device type of the specified device is not supported by the plugin |[`RequestNotSupportedHWControlError`](07_Handling_Exceptions.md#72-predefined-exceptions)
+| 2 |If the device is not found                |[`DeviceNotFoundHWControlError`](07_Handling_Exceptions.md#72-predefined-exceptions)
+| 3 |If OOB authentication fails               |[`AuthenticationHWControlError`](07_Handling_Exceptions.md#base-exception-classes)
+| 4 |If the manager responds with an error     |[`ControlObjectHWControlError`](07_Handling_Exceptions.md#base-exception-classes)
 
 ### 5.4.3. How to Test
 
@@ -202,12 +202,12 @@ Raise the following exception on errors:
 
 |No.|Case                                      |Exception
 |:-:|------------------------------------------|------------------------------------------------------------------------
-| 1 |If the device type of the specified device is not supported by the plugin |[`RequestNotSupportedHwControlError`](07_Handling_Exceptions.md#72-predefined-exceptions)
-| 2 |If the device is not found                |[`DeviceNotFoundHwControlError`](07_Handling_Exceptions.md#72-predefined-exceptions)
-| 3 |If the device is not power capable        |[`RequestNotSupportedHwControlError`](07_Handling_Exceptions.md#72-predefined-exceptions)
-| 4 |If the power fails to turn on             |[`PowerOnFailureHwControlError`](07_Handling_Exceptions.md#72-predefined-exceptions)
-| 5 |If OOB authentication fails               |[`AuthenticationHwControlError`](07_Handling_Exceptions.md#base-exception-classes)
-| 6 |If the manager responds with an error     |[`ControlObjectHwControlError`](07_Handling_Exceptions.md#base-exception-classes)
+| 1 |If the device type of the specified device is not supported by the plugin |[`RequestNotSupportedHWControlError`](07_Handling_Exceptions.md#72-predefined-exceptions)
+| 2 |If the device is not found                |[`DeviceNotFoundHWControlError`](07_Handling_Exceptions.md#72-predefined-exceptions)
+| 3 |If the device is not power capable        |[`RequestNotSupportedHWControlError`](07_Handling_Exceptions.md#72-predefined-exceptions)
+| 4 |If the power fails to turn on             |[`PowerOnFailureHWControlError`](07_Handling_Exceptions.md#72-predefined-exceptions)
+| 5 |If OOB authentication fails               |[`AuthenticationHWControlError`](07_Handling_Exceptions.md#base-exception-classes)
+| 6 |If the manager responds with an error     |[`ControlObjectHWControlError`](07_Handling_Exceptions.md#base-exception-classes)
 
 ### 5.5.3. How to Test
 
@@ -237,12 +237,12 @@ Raise the following exception on errors:
 
 |No.|Case                                      |Exception
 |:-:|------------------------------------------|------------------------------------------------------------------------
-| 1 |If the device type of the specified device is not supported by the plugin |[`RequestNotSupportedHwControlError`](07_Handling_Exceptions.md#72-predefined-exceptions)
-| 2 |If the device is not found                |[`DeviceNotFoundHwControlError`](07_Handling_Exceptions.md#72-predefined-exceptions)
-| 3 |If the device is not power capable        |[`RequestNotSupportedHwControlError`](07_Handling_Exceptions.md#72-predefined-exceptions)
-| 4 |If the power fails to turn off            |[`PowerOffFailureHwControlError`](07_Handling_Exceptions.md#72-predefined-exceptions)
-| 5 |If OOB authentication fails               |[`AuthenticationHwControlError`](07_Handling_Exceptions.md#base-exception-classes)
-| 6 |If the manager responds with an error     |[`ControlObjectHwControlError`](07_Handling_Exceptions.md#base-exception-classes)
+| 1 |If the device type of the specified device is not supported by the plugin |[`RequestNotSupportedHWControlError`](07_Handling_Exceptions.md#72-predefined-exceptions)
+| 2 |If the device is not found                |[`DeviceNotFoundHWControlError`](07_Handling_Exceptions.md#72-predefined-exceptions)
+| 3 |If the device is not power capable        |[`RequestNotSupportedHWControlError`](07_Handling_Exceptions.md#72-predefined-exceptions)
+| 4 |If the power fails to turn off            |[`PowerOffFailureHWControlError`](07_Handling_Exceptions.md#72-predefined-exceptions)
+| 5 |If OOB authentication fails               |[`AuthenticationHWControlError`](07_Handling_Exceptions.md#base-exception-classes)
+| 6 |If the manager responds with an error     |[`ControlObjectHWControlError`](07_Handling_Exceptions.md#base-exception-classes)
 
 ### 5.6.3. How to Test
 
@@ -271,13 +271,13 @@ Raise the following exception on errors:
 
 |No.|Case                                      |Exception
 |:-:|------------------------------------------|------------------------------------------------------------------------
-| 1 |If the device type of the specified device is not supported by the plugin |[`RequestNotSupportedHwControlError`](07_Handling_Exceptions.md#72-predefined-exceptions)
-| 2 |If the device is not found                |[`DeviceNotFoundHwControlError`](07_Handling_Exceptions.md#72-predefined-exceptions)
-| 3 |If the device is not power capable        |[`RequestNotSupportedHwControlError`](07_Handling_Exceptions.md#72-predefined-exceptions)
-| 4 |If the device is turned off               |[`RequestConflictHwControlError`](07_Handling_Exceptions.md#base-exception-classes)
-| 5 |If CPU reset fails                        |[`CpuResetFailureHwControlError`](07_Handling_Exceptions.md#72-predefined-exceptions)
-| 6 |If OOB authentication fails               |[`AuthenticationHwControlError`](07_Handling_Exceptions.md#base-exception-classes)
-| 7 |If the manager responds with an error     |[`ControlObjectHwControlError`](07_Handling_Exceptions.md#base-exception-classes)
+| 1 |If the device type of the specified device is not supported by the plugin |[`RequestNotSupportedHWControlError`](07_Handling_Exceptions.md#72-predefined-exceptions)
+| 2 |If the device is not found                |[`DeviceNotFoundHWControlError`](07_Handling_Exceptions.md#72-predefined-exceptions)
+| 3 |If the device is not power capable        |[`RequestNotSupportedHWControlError`](07_Handling_Exceptions.md#72-predefined-exceptions)
+| 4 |If the device is turned off               |[`RequestConflictHWControlError`](07_Handling_Exceptions.md#base-exception-classes)
+| 5 |If CPU reset fails                        |[`CPUResetFailureHWControlError`](07_Handling_Exceptions.md#72-predefined-exceptions)
+| 6 |If OOB authentication fails               |[`AuthenticationHWControlError`](07_Handling_Exceptions.md#base-exception-classes)
+| 7 |If the manager responds with an error     |[`ControlObjectHWControlError`](07_Handling_Exceptions.md#base-exception-classes)
 
 ### 5.7.3. How to Test
 
@@ -307,12 +307,12 @@ Raise the following exception on errors:
 
 |No.|Case                                      |Exception
 |:-:|------------------------------------------|------------------------------------------------------------------------
-| 1 |If the device type of the specified device is not supported by the plugin |[`RequestNotSupportedHwControlError`](07_Handling_Exceptions.md#72-predefined-exceptions)
-| 2 |If the device is not found                |[`DeviceNotFoundHwControlError`](07_Handling_Exceptions.md#72-predefined-exceptions)
-| 3 |If the device is not power capable        |[`RequestNotSupportedHwControlError`](07_Handling_Exceptions.md#72-predefined-exceptions)
-| 4 |If the OS shutdown fails                  |[`PowerOffFailureHwControlError`](07_Handling_Exceptions.md#72-predefined-exceptions)
-| 5 |If OOB authentication fails               |[`AuthenticationHwControlError`](07_Handling_Exceptions.md#base-exception-classes)
-| 6 |If the manager responds with an error     |[`ControlObjectHwControlError`](07_Handling_Exceptions.md#base-exception-classes)
+| 1 |If the device type of the specified device is not supported by the plugin |[`RequestNotSupportedHWControlError`](07_Handling_Exceptions.md#72-predefined-exceptions)
+| 2 |If the device is not found                |[`DeviceNotFoundHWControlError`](07_Handling_Exceptions.md#72-predefined-exceptions)
+| 3 |If the device is not power capable        |[`RequestNotSupportedHWControlError`](07_Handling_Exceptions.md#72-predefined-exceptions)
+| 4 |If the OS shutdown fails                  |[`PowerOffFailureHWControlError`](07_Handling_Exceptions.md#72-predefined-exceptions)
+| 5 |If OOB authentication fails               |[`AuthenticationHWControlError`](07_Handling_Exceptions.md#base-exception-classes)
+| 6 |If the manager responds with an error     |[`ControlObjectHWControlError`](07_Handling_Exceptions.md#base-exception-classes)
 
 ### 5.8.3. How to Test
 

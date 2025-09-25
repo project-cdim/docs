@@ -6,7 +6,7 @@ The class name is arbitrary and is defined as the `class` property in the plugin
 ```python
 from app.common.utils.fm_plugin_base import FMPluginBase
 
-class FmSamplePlugin(FMPluginBase):
+class FMSamplePlugin(FMPluginBase):
 ```
 
 The constructor of the FM plugin class can either be implemented or omitted.  
@@ -51,26 +51,31 @@ It is assumed that a CPU unit is connected to the FM port on the USP side, and a
 
 Nothing is returned upon normal termination.  
 Please terminate normally if the device indicated by the specified `cpu_id` and `device_id` is already bound.  
-In case of an anomaly, an exception that inherits from `BaseHwControlError` is raised.  
+In case of an anomaly, an exception that inherits from `BaseHWControlError` is raised.  
+**If the device specified by the argument does not exist at the port, raise an exception as soon as it is determined that either device is missing.**  
 Exceptions that the `connect` method can use by default are listed in the table below.
 
 |Situation|Exception Class|
 |---------|---------------|
-|The information specified in the constructor is incomplete|`ConfigurationHwControlError` |
-|FM authentication failed|`AuthenticationHwControlError` |
-|Both the argument's `cpu_id` and `device_id` do not exist|`HostCpuAndDeviceNotFoundHwControlError` |
-|The argument's `cpu_id` does not exist|`HostCpuNotFoundHwControlError` |
-|The argument's `device_id` does not exist|`DeviceNotFoundHwControlError` |
-|The FM port on the DSP side specified by `device_id` is already connected to a different FM port than the one on the USP side specified by `cpu_id`. |`RequestConflictHwControlError` |
-|`cpu_id` and `device_id` are not on the same fabric|`BadRequestHwControlError` |
-|FM failed to connect with the specified cpu_id and device_id.|`FmConnectFailureHwControlError` |
-|Some abnormality occurred in the FM state, etc.|`ControlObjectHwControlError` |
-|An internal error occurred in the FM plugin|`InternalHwControlError` |
-|An unidentified error occurred (not recommended)|`UnknownHwControlError` |
+|The information specified in the constructor is incomplete|`ConfigurationHWControlError` |
+|FM authentication failed|`AuthenticationHWControlError` |
+|The argument's `cpu_id` does not exist|`UpstreamDeviceNotFoundHWControlError`|
+|The argument's `device_id` does not exist|`DownstreamDeviceNotFoundHWControlError`|
+|The FM port on the DSP side specified by `device_id` is already connected to a different FM port than the one on the USP side specified by `cpu_id`. |`RequestConflictHWControlError` |
+|`cpu_id` and `device_id` are not on the same fabric|`BadRequestHWControlError` |
+|FM failed to connect with the specified cpu_id and device_id.|`FMConnectFailureHWControlError` |
+|Some abnormality occurred in the FM state, etc.|`ControlObjectHWControlError` |
+|An internal error occurred in the FM plugin|`InternalHWControlError` |
+|An unidentified error occurred (not recommended)|`UnknownHWControlError` |
 
 The exceptions available by default are defined in the `app.common.basic_exceptions` package.  
 It is also possible to set plugin-specific exceptions.
 For details, refer to [7. Exception Handling](07_Handling_Exceptions.md).  
+
+- Notes
+  - **If the device specified by the argument does not exist at the port, raise an exception as soon as it is determined that either device is missing. If you are using `HostCPUAndDeviceNotFoundHWControlError`, please revise your implementation.**
+  - **If you are using `HostCPUNotFoundHWControlError` for the case where the device indicated by cpu_id does not exist, please change to use `UpstreamDeviceNotFoundHWControlError`.**
+  - **If you are using `DeviceNotFoundHWControlError` for the case where the device indicated by device_id does not exist, please change to use `DownstreamDeviceNotFoundHWControlError`.**
 
 ### 6.1.3. Operation Verification Procedure
 
@@ -78,7 +83,11 @@ Execute the [HW Control Function REST API](02_HWControlFunction.md#21-rest-api-o
 
 1. Execute `Get all device spec information` to obtain the specifications for all devices.
 2. From the returned data, find the device ID of the CPU device and the device you want to connect.
-3. Specify the device ID of the CPU device as a path parameter and set the request body as `{"action": "connect", "deviceID": device_id}`; then execute the connection via `Configuration Change Control` by specifying the device ID of the device you want to connect.
+3. Specify the device ID of the upstream side device in the path parameter, and set the request body as follow; then execute the connection via `Configuration Change Control (Device to Device)` by specifying the device ID of the downstream side device you want to connect.
+
+    ```JSON
+    {"action": "connect", "destinationDeviceID": "<the device ID of the downstream side device>"}
+    ```
 
 With this operation, the `connect` method is called with the FM port ID corresponding to the specified device ID as an argument.  
 The device ID returned by the REST API is a unique string generated by the HW control function.  
@@ -107,33 +116,41 @@ It is assumed that a CPU device is connected to the FM port on the USP side, and
 
 No value is returned upon successful completion.  
 The process should terminate normally if the FM port specified by `device_id` is not bound to anything.  
-In case of an error, an exception inheriting from `BaseHwControlError` will be raised.  
+In case of an error, an exception inheriting from `BaseHWControlError` will be raised.  
 The exceptions that the `disconnect` method may use by default are listed in the table below.  
 
 |Situation|Exception Class|
 |----|----|
-|Incomplete information specified in the constructor|`ConfigurationHwControlError`|
-|Failed to authenticate with FM|`AuthenticationHwControlError`|
-|Both `cpu_id` and `device_id` in the arguments do not exist|`HostCpuAndDeviceNotFoundHwControlError`|
-|`cpu_id` in the arguments does not exist|`HostCpuNotFoundHwControlError`|
-|`device_id` in the arguments does not exist|`DeviceNotFoundHwControlError`|
-|The FM port on the DSP side specified by `device_id` is already connected to a different FM port than the one on the USP side specified by `cpu_id`. |`RequestConflictHwControlError` |
-|The FM failed to disconnect the specified cpu_id and device_id|`FmDisconnectFailureHwControlError`|
-|An abnormal state occurred with FM, etc.|`ControlObjectHwControlError`|
-|An internal error occurred in the FM plugin|`InternalHwControlError`|
-|An unknown error occurred (not recommended)|`UnknownHwControlError`|
+|Incomplete information specified in the constructor|`ConfigurationHWControlError`|
+|Failed to authenticate with FM|`AuthenticationHWControlError`|
+|The argument's `cpu_id` does not exist|`UpstreamDeviceNotFoundHWControlError`|
+|The argument's `device_id` does not exist|`DownstreamDeviceNotFoundHWControlError`|
+|The FM port on the DSP side specified by `device_id` is already connected to a different FM port than the one on the USP side specified by `cpu_id`. |`RequestConflictHWControlError` |
+|The FM failed to disconnect the specified cpu_id and device_id|`FMDisconnectFailureHWControlError`|
+|An abnormal state occurred with FM, etc.|`ControlObjectHWControlError`|
+|An internal error occurred in the FM plugin|`InternalHWControlError`|
+|An unknown error occurred (not recommended)|`UnknownHWControlError`|
 
 The exceptions available by default are defined in the `app.common.basic_exceptions` package.  
 Additionally, it is possible to set exceptions specific to a plugin.
 For details, refer to [7. Handling Exceptions](07_Handling_Exceptions.md).  
+
+- Notes
+  - **If the device specified by the argument does not exist at the port, raise an exception as soon as it is determined that either device is missing. If you are using `HostCPUAndDeviceNotFoundHWControlError`, please revise your implementation.**
+  - **If you are using `HostCPUNotFoundHWControlError` for the case where the device indicated by cpu_id does not exist, please change to use `UpstreamDeviceNotFoundHWControlError`.**
+  - **If you are using `DeviceNotFoundHWControlError` for the case where the device indicated by device_id does not exist, please change to use `DownstreamDeviceNotFoundHWControlError`.**
 
 ### 6.2.3. Operational Verification Procedure
 
 Execute the [HW Control Function REST API](02_HWControlFunction.md#21-rest-api-of-hw-control-function) using the following steps:
 
 1. Execute `Get all device spec information` to obtain the specification information of all devices.
-2. From the returned data, find the device ID of the CPU device and the device you want to disconnect.
-3. Specify the device ID of the CPU device in the path parameter, and set the request body as `{"action": "disconnect", "deviceID": device_id}`. Specify the device ID of the device you want to disconnect to execute the disconnection using `Configuration Change Control`.
+2. From the returned data, find the device ID of the upstream side device and the downstream side device you want to disconnect.
+3. Specify the device ID of the upstream side device in the path parameter, and set the request body as follow. Specify the device ID of the the downstream side device you want to disconnect to execute the disconnection using `Configuration Change Control(Device to Device)`.
+
+    ```JSON
+    {"action": "disconnect", "destinationDeviceID": "<the device ID of the downstream side device>"}
+    ```
 
 By this operation, the `disconnect` method is called with the FM port ID corresponding to the device ID specified as an argument.  
 The device ID returned by the REST API is a unique string generated by the HW control function.  
@@ -142,7 +159,7 @@ This value differs from the FM port ID, but the HW control function converts it 
 ## 6.3. `get_port_info(target_id=None)`
 
 ```python
-get_port_info(target_id: str = None) -> dict[str, list[FmPortData]]:
+get_port_info(target_id: str = None) -> dict[str, list[FMPortData]]:
 ```
 
 A method with the capability to retrieve information about the ports on a switch managed by FM.
@@ -162,20 +179,22 @@ If an argument is specified, port information for the specified ports is obtaine
 If no argument is provided, port information for all ports is obtained.  
 
 Please refer to [6.3.4. Port Information](#634-port-information) for details on port information.  
-If one or more ports can be identified, it returns port information for those ports.  
-Even if some ports could not be retrieved due to failure, it returns only the port information that could be retrieved.  
-It is considered abnormal if no port information can be returned at all or if the port information corresponding to the target_id cannot be returned.  
-In case of an abnormality, an exception inheriting from `BaseHwControlError` is raised.  
+If information for all the ports to be returned can be obtained, the port information for those ports will be returned.  
+If there are any ports (id) that could not be retrieved due to failures or
+other reasons, the result will be regarded as abnormal.  
+Even if there are no failures at the time of acquisition, if there are no valid
+ports (id) due to installation problems, it will also be considered abnormal.  
+In case of an abnormality, an exception inheriting from `BaseHWControlError` is raised.  
 The exceptions that can be used by default with the `get_port_info` method are listed in the table below:  
 
 |Situation|Exception Class|
 |---------|---------------|
-|There is a deficiency in the information specified in the constructor|`ConfigurationHwControlError`|
-|Authentication failed with FM|`AuthenticationHwControlError`|
-|The device specified by the argument `target_id` does not exist|`ResourceNotFoundHwControlError`|
-|Some kind of abnormality occurred in the state of FM, etc.|`ControlObjectHwControlError`|
-|An internal error occurred in the FM plugin|`InternalHwControlError`|
-|An unknown error occurred (not recommended)|`UnknownHwControlError`|
+|There is a deficiency in the information specified in the constructor|`ConfigurationHWControlError`|
+|Authentication failed with FM|`AuthenticationHWControlError`|
+|The device specified by the argument `target_id` does not exist|`ResourceNotFoundHWControlError`|
+|Some kind of abnormality occurred in the state of FM, etc.|`ControlObjectHWControlError`|
+|An internal error occurred in the FM plugin|`InternalHWControlError`|
+|An unknown error occurred (not recommended)|`UnknownHWControlError`|
 
 The exceptions available by default are defined in the `app.common.basic_exceptions` package.  
 Additionally, it is possible to set plugin-specific exceptions.  
@@ -192,16 +211,15 @@ Additionally, part of the port information returned by the `get_port_info` metho
 
 ### 6.3.4. Port Information
 
-Port information data is data of the port information class type (FmPortData).  
-The FmPortData class is defined in the `app.common.utils.fm_plugin_base` module.  
-The details of each field in the FmPortData class are as follows.  
+Port information data is data of the port information class type (FMPortData).  
+The FMPortData class is defined in the `app.common.utils.fm_plugin_base` module.  
+The details of each field in the FMPortData class are as follows.  
 If inappropriate data is specified, a pydantic.ValidationError will occur.  
-
 
 | No | Field Name | Type | Description |
 | -- | -- | -- | -- |
-|  1 | id | str | FM port ID. Can be used as an argument in `get_port_info`/`connect`/`disconnect`. <BR>If `target_id` is specified in `get_port_info`, the specified ID. <BR>Used by FM plugins to identify the target port. <BR>FM port ID is unique per FM. |
-|  2 | switch_id | Optional[str] | Returns the identifier of the switch as a string. <BR>Can be used to specify `switch_id` in `get_switch_info`. <BR>Returns None if not obtainable from FM, or if an error occurs during retrieval.<BR>None is set when unspecified. |
+|  1 | id | str | A string of one or more characters representing the FM port ID. Can be used as an argument in `get_port_info`/`connect`/`disconnect`. <BR>If `target_id` is specified in `get_port_info`, the specified ID. <BR>Used by FM plugins to identify the target port. <BR>FM port ID is unique per FM. |
+|  2 | switch_id | Optional[str] | Returns the identifier of the switch as a string of at least one character. <BR>Can be used to specify `switch_id` in `get_switch_info`. <BR>Returns None if not obtainable from FM, or if an error occurs during retrieval.<BR>None is set when unspecified. |
 |  3 | switch_port_number | Optional[str] | Returns the port number of the switch as a string. <BR>switch_port_number is unique per switch. <BR>Returns None if not obtainable from FM, or if an error occurs during retrieval.<BR>None is set when unspecified. |
 |  4 | switch_port_type | Optional[str] | Whether the port is on the USP side or DSP side. Returns "USP" for the USP side (host) and "DSP" for the DSP side (device). <BR>Returns None if an error occurs during retrieval.<BR>None is set when unspecified. |
 |  5 | fabric_id | Optional[str] | Returns the identifier to distinguish the fabric as a string. <BR>fabricId is unique per system. <BR>To avoid collisions with fabricId managed by other FM plugins, include the FM manufacturer, model name, and serial number of switches contained in the fabric in the fabricId. <BR>If FM doesn't have a function to obtain the serial number of switches and the fabric can only be identified by logical information, create a non-colliding identifier by including information such as FM connection details obtained from the constructor. <BR>Ensure there are no changes to the identifier during post-construction operations. However, if a switch constituting the fabric is replaced, updating the identifier is allowed. <BR>FM port IDs returning the same fabricId (USP and DSP) can be connected. <BR>Returns None if obtaining the switch interconnection information fails.<BR>None is set when unspecified. |
@@ -211,9 +229,9 @@ If inappropriate data is specified, a pydantic.ValidationError will occur.
 |  9 | pcie_vendor_id | Optional[str] | Returns the PCIe vendor ID of the device connected to the DSP side as a 4-digit hexadecimal string. <BR>Returns None for the USP side, if no device is connected, if not obtainable from FM, or if an error occurs during retrieval. <BR>Note: If anything other than None is returned on the USP side, the device will not be correctly recognized.<BR>None is set when unspecified. |
 | 10 | pcie_device_id | Optional[str] | Returns the PCIe device ID of the device connected to the DSP side as a 4-digit hexadecimal string. <BR>Returns None for the USP side, if no device is connected, if not obtainable from FM, or if an error occurs during retrieval. <BR>Note: If anything other than None is returned on the USP side, the device will not be correctly recognized.<BR>None is set when unspecified. |
 | 11 | pcie_device_serial_number | Optional[str] | Returns the PCIe device serial number of the device connected to the DSP side as a 16-digit hexadecimal string. <BR>Returns None for the USP side, if no device is connected, if not obtainable from FM, or if an error occurs during retrieval. <BR>Note: If anything other than None is returned on the USP side, the device will not be correctly recognized.<BR>None is set when unspecified. |
-| 12 | cpu_manufacturer | Optional[str] | Returns the vendor name of the CPU device (host) connected to the USP side as a string. <BR>Returns None for the DSP side, if not obtainable from FM, or if an error occurs during retrieval. <BR>Note: If anything other than None is returned on the DSP side, the device will not be correctly recognized.<BR>None is set when unspecified. |
-| 13 | cpu_model | Optional[str] | Returns the model name of the CPU device (host) connected to the USP side as a string. <BR>Returns None for the DSP side, if not obtainable from FM, or if an error occurs during retrieval. <BR>Note: If this information is returned on the DSP side, the device will not be correctly recognized.<BR>None is set when unspecified. |
-| 14 | cpu_serial_number | Optional[str] | Returns the serial number of the CPU device (host) connected to the USP side as a string. <BR>Returns None for the DSP side, if not obtainable from FM, or if an error occurs during retrieval. <BR>Note: If anything other than None is returned on the DSP side, the device will not be correctly recognized.<BR>None is set when unspecified. |
+| 12 | cpu_manufacturer | Optional[str] | Returns the vendor name of the CPU device (host) connected to the USP side as a string of at least one character. <BR>Returns None for the DSP side, if not obtainable from FM, or if an error occurs during retrieval. <BR>Note: If anything other than None is returned on the DSP side, the device will not be correctly recognized.<BR>None is set when unspecified. |
+| 13 | cpu_model | Optional[str] | Returns the model name of the CPU device (host) connected to the USP side as a string of at least one character. <BR>Returns None for the DSP side, if not obtainable from FM, or if an error occurs during retrieval. <BR>Note: If this information is returned on the DSP side, the device will not be correctly recognized.<BR>None is set when unspecified. |
+| 14 | cpu_serial_number | Optional[str] | Returns the serial number of the CPU device (host) connected to the USP side as a string of at least one character. <BR>Returns None for the DSP side, if not obtainable from FM, or if an error occurs during retrieval. <BR>Note: If anything other than None is returned on the DSP side, the device will not be correctly recognized.<BR>None is set when unspecified. |
 | 15 | ltssm_state | Optional[str] | Returns the LTSSM state of the port ("L0"/"L0s"/"L2"/"Detect"/"Polling"/"Configuration"/"Recovery"/"HotReset"/"Disable"/"Loopback") as a string. <BR>Returns None if not obtainable from FM, or if an error occurs during retrieval.<BR>None is set when unspecified. |
 | 16 | device_keys | dict | Returns device-specific information obtainable from FM, uniquely identifying the device, in dictionary format. <BR>Used to link with the device information returned by the OOB plugin. <BR>Return keys are variable but need to be predetermined between FM and OOB according to device type, and the relevant keys must be returned. <BR>If the predetermined key information cannot be obtained, return a dictionary with the value as None. <BR>Refer to [9.1 Precautions Device Linking](09_Special_Notes.md#device-linking) for details.<BR>{} is set when unspecified. |
 | 17 | port_keys | dict | Returns switch port-specific information obtainable from FM, uniquely identifying the port, in dictionary format. <BR>Used to link with the device information returned by the OOB plugin. <BR>Return keys are variable but need to be predetermined between FM and OOB according to device type, and the relevant keys must be returned. <BR>If the predetermined key information cannot be obtained, return a dictionary with the value as None. <BR>Refer to [9.1 Precautions Device Linking](09_Special_Notes.md#device-linking) for details.<BR>{} is set when unspecified. |
@@ -222,7 +240,7 @@ If inappropriate data is specified, a pydantic.ValidationError will occur.
 ## 6.4. `get_switch_info(switch_id=None)`
 
 ```python
-get_switch_info(target_id: str = None) -> dict[str, list[FmSwitchData]]:
+get_switch_info(target_id: str = None) -> dict[str, list[FMSwitchData]]:
 ```
 
 Method to retrieve information about switches managed by FM.
@@ -242,20 +260,23 @@ If an argument is specified, it returns the switch information for the specified
 If the argument is omitted, it returns the switch information for all switches.  
 
 For details on the switch information, please refer to [6.4.4. Switch Information](#644-switch-information).  
-If one or more switches are identified, switch information corresponding to those switches will be returned.  
-Even if there are switches that cannot be retrieved due to failures, only the retrievable switch information will be returned.  
-It is considered abnormal if no switch information can be returned at all or if the switch information corresponding to the target_id cannot be returned.  
-In case of an abnormality, an exception inheriting `BaseHwControlError` will be raised.  
+If information for all the switches to be returned can be obtained, the switch information for those switches will be returned.  
+If there are any switches (switchId) that could not be retrieved due to
+failures or other reasons, the result will be regarded as abnormal.  
+Even if there are no failures at the time of acquisition, if there are no valid
+switches (switchId) due to installation issues or the like, it will also be
+considered abnormal.  
+In case of an abnormality, an exception inheriting `BaseHWControlError` will be raised.  
 The exceptions available for use with the `get_switch_info` method are listed in the table below.  
 
 |Situation|Exception Class|
 |----|----|
-|Incomplete information specified in the constructor|`ConfigurationHwControlError`|
-|FM authentication failed|`AuthenticationHwControlError`|
-|The switch specified by the argument `switch_id` does not exist|`SwitchNotFoundHwControlError`|
-|An abnormality occurred in the FM state or similar|`ControlObjectHwControlError`|
-|An internal error occurred in the FM plugin|`InternalHwControlError`|
-|An unknown error occurred (not recommended)|`UnknownHwControlError`|
+|Incomplete information specified in the constructor|`ConfigurationHWControlError`|
+|FM authentication failed|`AuthenticationHWControlError`|
+|The switch specified by the argument `switch_id` does not exist|`SwitchNotFoundHWControlError`|
+|An abnormality occurred in the FM state or similar|`ControlObjectHWControlError`|
+|An internal error occurred in the FM plugin|`InternalHWControlError`|
+|An unknown error occurred (not recommended)|`UnknownHWControlError`|
 
 The exceptions available by default are defined in the `app.common.basic_exceptions` package.  
 It is also possible to set new plugin-specific exceptions.  
@@ -272,15 +293,15 @@ At present, there is no case where the HW control function is executed with spec
 
 ### 6.4.4. Switch Information
 
-Switch information data is data of the switch information class type (FmSwitchData).  
-The FmSwitchData class is defined in the `app.common.utils.fm_plugin_base` module.  
-The details of each field in the FmSwitchData class are as follows.  
+Switch information data is data of the switch information class type (FMSwitchData).  
+The FMSwitchData class is defined in the `app.common.utils.fm_plugin_base` module.  
+The details of each field in the FMSwitchData class are as follows.  
 If inappropriate data is specified, a pydantic.ValidationError will occur.  
 
 | No | Field Name | Type | Description |
 | -- | -- | -- | -- |
-|  1 | switch_id | str | Returns the switch identifier as a string. <BR>The same value as the port information's switchId. When `switch_id` is specified in `get_switch_info`, it is the identifier of the specified switch. <BR>Used by the FM plugin to identify the switch. <BR>switchId should be a unique value per FM unit. |
-|  2 | switch_manufacturer | Optional[str] | Returns the manufacturer of the switch as a string. <BR>Returns None if it cannot be obtained from FM or if there is an error during acquisition. <BR>None is set when unspecified. |
-|  3 | switch_model | Optional[str] | Returns the model of the switch as a string. <BR>Returns None if it cannot be obtained from FM or if there is an error during acquisition. <BR>None is set when unspecified. |
-|  4 | switch_serial_number | Optional[str] | Returns the serial number of the switch as a string. <BR>Returns None if it cannot be obtained from FM or if there is an error during acquisition. <BR>None is set when unspecified. |
+|  1 | switch_id | str | Returns the switch identifier as a string of at least one character. <BR>The same value as the port information's switchId. When `switch_id` is specified in `get_switch_info`, it is the identifier of the specified switch. <BR>Used by the FM plugin to identify the switch. <BR>switchId should be a unique value per FM unit. |
+|  2 | switch_manufacturer | Optional[str] | Returns the manufacturer of the switch as a string of at least one character. <BR>Returns None if it cannot be obtained from FM or if there is an error during acquisition. <BR>None is set when unspecified. |
+|  3 | switch_model | Optional[str] | Returns the model of the switch as a string of at least one character. <BR>Returns None if it cannot be obtained from FM or if there is an error during acquisition. <BR>None is set when unspecified. |
+|  4 | switch_serial_number | Optional[str] | Returns the serial number of the switch as a string of at least one character. <BR>Returns None if it cannot be obtained from FM or if there is an error during acquisition. <BR>None is set when unspecified. |
 |  5 | link | Optional[List[str]] | Returns a list of identifiers for switches directly connected by cable. <BR>Returns an empty list if the switch is not connected to other switches. <BR>Returns None if it cannot be obtained from FM or if there is an error during acquisition. <BR>None is set when unspecified. |

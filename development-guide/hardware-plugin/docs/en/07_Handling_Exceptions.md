@@ -1,6 +1,6 @@
 # 7. Handling Exceptions
 
-Errors that occur while running the plugin need to be set in a class that inherits from `BaseHwControlError` and returned with error information.  
+Errors that occur while running the plugin need to be set in a class that inherits from `BaseHWControlError` and returned with error information.  
 This error information is often used as the error information returned to the upper module that calls the HW control functions.  
 Check the various HW Control Errors and use the one that is most suitable for the error situation.  
 
@@ -20,7 +20,7 @@ Exceptions used in HW control functions are derived from the classes defined bel
 ### Base Exception Class
 
 ```python
-class BaseHwControlError(Exception):
+class BaseHWControlError(Exception):
 ```
 
 This exception class inherits from the built-in `Exception` class in Python.  
@@ -61,40 +61,196 @@ The error code is a string consisting of information that identifies an error, c
 The base exception class is a basic exception categorized by error codes, inheriting from the fundamental exception class.  
 The following are defined.
 
-|Base Exception Class|Base Exception Class Code|Error Code|HTTP Status Code|Default Error Message|
-|----|----|----|----|----|
-|UnknownHwControlError|"001"|"CF001BAS000"|500|"The server encountered an internal error and was unable to complete your request."|
-|AuthenticationHwControlError|"002"|"EF002BAS000"|401|"Authentication failed."|
-|BadRequestHwControlError|"003"|"EF003BAS000"|400|"Your request is invalid."|
-|ControlObjectHwControlError|"004"|"EF004BAS000"|500|"Failed to operate the specified device."|
-|ResourceBusyHwControlError|"005"|"ER005BAS000"|503|"The specified resource is busy."|
-|ConfigurationHwControlError|"007"|"EF007BAS000"|500|"Your request failed due to the missing required system configuration."|
-|InternalHwControlError|"010"|"EF010BAS000"|500|"The server encountered an internal error."|
-|RequestConflictHwControlError|"011"|"EF011BAS000"|409|"The request conflicts with the current resource state."|
-|DependencyServiceHwControlError|"012"|"EF012BAS000"|500|"Operation could not be completed due to a failure in external dependencies."|
-|DeviceNotFoundHwControlError|"013"|"EF011BAS000"|404|"The specified target device is not found."|
+* `UnknownHWControlError`
+  * Please raise this exception when an unknown critical error occurs. For example, cases where continuing the process could lead to hardware destruction are assumed.
+  * Base Exception Class Code:`"001"`
+  * Error Code: `"CF001BAS000"`
+  * HTTP Status Code: `500`
+  * Default Error Message: `"The server encountered an internal error and was unable to complete your request."`
+
+* `AuthenticationHWControlError`
+  * Please raise this exception when an authentication-related error occurs.
+  * Base Exception Class Code: `"002"`
+  * Error Code: `"EF002BAS000"`
+  * HTTP Status Code: `401`
+  * Default Error Message: `"Authentication failed."`
+
+* `BadRequestHWControlError`
+  * Please raise this exception when an error occurs due to an invalid request. For example, requesting power control for a device that does not support power control.
+  * Base Exception Class Code: `"003"`
+  * Error Code: `"EF003BAS000"`
+  * HTTP Status Code: `400`
+  * Default Error Message: `"Your request is invalid."`
+
+* `ControlObjectHWControlError`
+  * Please raise this exception when an error occurs in the OOB Controller or Fabric Manager.
+  * Base Exception Class Code: `"004"`
+  * Error Code: `"EF004BAS000"`
+  * HTTP Status Code: `500`
+  * Default Error Message: `"Failed to operate the specified device."`
+
+* `ResourceBusyHWControlError`
+  * Please raise this exception when the specified resource is busy and the requested operation cannot be performed.
+  * Base Exception Class Code: `"005"`
+  * Error Code: `"ER005BAS000"`
+  * HTTP Status Code: `503`
+  * Default Error Message:  `"The specified resource is not found."`
+
+* `ConfigurationHWControlError`
+  * Please raise this exception when an error occurs due to a configuration or setup issue in hw-control. For example, when processing cannot be executed due to a plugin configuration file problem.
+  * Base Exception Class Code: `"007"`
+  * Error Code: `"EF007BAS000"`
+  * HTTP Status Code: `500`
+  * Default Error Message: `"Your request failed due to the missing required system configuration."`
+
+* `InternalHWControlError`
+  * Please raise this exception when an internal error occurs in the hw-control application, including plugins.
+  * Base Exception Class Code: `"010"`
+  * Error Code: `"EF010BAS000"`
+  * HTTP Status Code: `500`
+  * Default Error Message: `"The server encountered an internal error."`
+
+* `RequestConflictHWControlError`
+  * Please raise this exception when the state of the specified resource conflicts with the request. For example, requesting a connection to a device that is already connected to another device.
+  * Base Exception Class Code: `"011"`
+  * Error Code: `"EF011BAS000"`
+  * HTTP Status Code: `409`
+  * Default Error Message: `"The request conflicts with the current resource state."`
+
+* `DependencyServiceHWControlError`
+  * Please raise this exception when processing fails due to an error in an external CDIM component outside of hw-control.
+  * Base Exception Class Code: `"012"`
+  * Error Code: `"EF012BAS000"`
+  * HTTP Status Code: `500`
+  * Default Error Message: `"Operation could not be completed due to a failure in external dependencies."`
+
+* `DeviceNotFoundHWControlError`
+  * Please raise this exception when the target device for control or information retrieval does not exist.
+  * Base Exception Class Code: `"013"`
+  * Error Code: `"EF013BAS000"`
+  * HTTP Status Code: `404`
+  * Default Error Message: `"The specified target device is not found."`
 
 ## 7.2. Defined Exceptions
 
 These exception classes are intended for use when a plugin detects an anomaly, and they inherit from the same base exception class as the base exception class code.  
 These classes, which inherit from the base exception class, are called detailed exception classes.  
 
-|Exception Class|Target Plugin|Error Code|HTTP Status Code|Default Error Message|
-|----|----|----|----|----|
-|OobAuthenticationHwControlError|OOB|"EF002BAS002"|401|"Authentication to the Out-of-Band Controller failed."|
-|HostCpuNotFoundHwControlError|FM|"EF013BAS001"|404|"The specified Host CPU is not found."|
-|HostCpuAndDeviceNotFoundHwControlError|FM|"EF013BAS002"|404|"The specified Host CPU and target device are not found."|
-|ResourceNotFoundHwControlError|FM|"EF013BAS003"|404|"The specified resource is not found."|
-|SwitchNotFoundHwControlError|FM|"EF013BAS004"|404|"The specified switch is not found."|
-|RequestNotSupportedHwControlError|OOB|"EF003BAS010"|400|"Your request is not supported for the specified target device."|
-|FmConnectFailureHwControlError|FM|"EF004BAS001"|500|"The Fabric Manager failed to establish a connection between the specified Host CPU and target device."|
-|FmDisconnectFailureHwControlError|FM|"EF004BAS002"|500|"The Fabric Manager failed to disconnect a connection between the specified Host CPU and the target device."|
-|PowerOnFailureHwControlError|OOB|"EF004BAS003"|500|"The Out-of-Band Controller failed to power on the specified device."|
-|PowerOffFailureHwControlError|OOB|"EF004BAS004"|500|"The Out-of-Band Controller failed to power off the specified device."|
-|CpuResetFailureHwControlError|OOB|"EF004BAS005"|500|"The Out-of-Band Controller failed to reset the specified Host CPU."|
-|PluginConfigFileIncorrectHwControlError|OOB/FM|"EF007BAS005"|500|"The Plugin Configuration File is incorrect."|
-|InvalidDeviceTypeParameterHwControlError|OOB|"EF007BAS016"|500|"The specified Device Type is invalid."|
-|InvalidLogMessageParameterHwControlError|OOB/FM|"EF007BAS017"|500|"An invalid argument was specified to 'get_log_message' function."|
+The following exception classes are defined:
+
+* `OOBAuthenticationHWControlError`
+  * Raise this exception when authentication to the OOB Controller fails.
+  * Base class：`AuthenticationHWControlError`
+  * Target Plugin: OOB
+  * Error Code: `"EF002BAS002"`
+  * HTTP Status Code: `401`
+  * Default Error Message: `"Authentication to the Out-of-Band Controller failed."`
+
+* `HostCPUNotFoundHWControlError`
+  * **Deprecated**
+  * This class is retained for compatibility with legacy plugins, but is scheduled for removal in the next release. Please use `UpstreamDeviceNotFoundHWControlError` instead.
+  * Base class：`DeviceNotFoundHWControlError`
+  * Target Plugin: FM
+  * Error Code: `"EF013BAS001"`
+  * HTTP Status Code: `404`
+  * Default Error Message: `"The specified Host CPU is not found."`
+
+* `HostCPUAndDeviceNotFoundHWControlError`
+  * **Deprecated**
+  * This class is retained for compatibility with legacy plugins, but is scheduled for removal in the next release. In the FM plugin's `connect` or `disconnect` method, if it is determined that the target device does not exist, please raise `UpstreamDeviceNotFoundHWControlError` or `DownstreamDeviceNotFoundHWControlError`.
+  * Base class：`DeviceNotFoundHWControlError`
+  * Target Plugin: FM
+  * Error Code: `"EF013BAS002"`
+  * HTTP Status Code: `404`
+  * Default Error Message: `"The specified Host CPU and target device are not found."`
+
+* `UpstreamDeviceNotFoundHWControlError`
+  * Raise this exception in the FM plugin's `connect` or `disconnect` method when the specified USP does not contain a device.
+  * Base class: `DeviceNotFoundHWControlError`
+  * Target Plugin: FM
+  * Error Code: `"EF013BAS000"` (inherits the value from the base class)
+  * HTTP Status Code: `404`
+  * Default Error Message: `"The specified target device is not found."` (inherits the value from the base class)
+
+* `DownstreamDeviceNotFoundHWControlError`
+  * Raise this exception in the FM plugin's `connect` or `disconnect` method when the specified DSP does not contain a device.
+  * Base class: `DeviceNotFoundHWControlError`
+  * Target Plugin: FM
+  * Error Code: `"EF013BAS000"` (inherits the value from the base class)
+  * HTTP Status Code: `404`
+  * Default Error Message: `"The specified target device is not found."` (inherits the value from the base class)
+
+* `ResourceNotFoundHWControlError`
+  * Raise this exception in the FM plugin when the specified resource does not exist.
+  * Base class：`DeviceNotFoundHWControlError`
+  * Target Plugin: FM
+  * Error Code: `"EF013BAS003"`
+  * HTTP Status Code: `404`
+  * Default Error Message: `"The specified resource is not found."`
+
+* `SwitchNotFoundHWControlError`
+  * Raise this exception in the FM plugin when the specified switch does not exist.
+  * Base class：`DeviceNotFoundHWControlError`
+  * Target Plugin: FM
+  * Error Code: `"EF013BAS004"`
+  * HTTP Status Code: `404`
+  * Default Error Message: `"The specified switch is not found."`
+
+* `RequestNotSupportedHWControlError`
+  * Raise this exception when a request is made for an operation that is not supported for the specified device.
+  * Base class：`DeviceNotFoundHWControlError`
+  * Target Plugin: OOB
+  * Error Code: `"EF003BAS010"`
+  * HTTP Status Code: `400`
+  * Default Error Message: `"Your request is not supported for the specified target device."`
+
+* `FMConnectFailureHWControlError`
+  * Raise this exception in the Fabric Manager when a connection between the specified Host CPU and device fails.
+  * Base class：`ControlObjectHWControlError`
+  * Target Plugin: FM
+  * Error Code: `"EF004BAS001"`
+  * HTTP Status Code: `500`
+  * Default Error Message: `"The Fabric Manager failed to establish a connection between the specified Host CPU and target device."`
+
+* `FMDisconnectFailureHWControlError`
+  * Raise this exception in the Fabric Manager when disconnection between the specified Host CPU and device fails.
+  * Base class：`ControlObjectHWControlError`
+  * Target Plugin: FM
+  * Error Code: `"EF004BAS002"`
+  * HTTP Status Code: `500`
+  * Default Error Message: `"The Fabric Manager failed to disconnect a connection between the specified Host CPU and the target device."`
+
+* `PowerOnFailureHWControlError`
+  * Raise this exception when the OOB Controller fails to power on the specified device.
+  * Base class：`ControlObjectHWControlError`
+  * Target Plugin: OOB
+  * Error Code: `"EF004BAS003"`
+  * HTTP Status Code: `500`
+  * Default Error Message: `"The Out-of-Band Controller failed to power on the specified device."`
+
+* `PowerOffFailureHWControlError`
+  * Raise this exception when the OOB Controller fails to power off the specified device.
+  * Base class：`ControlObjectHWControlError`
+  * Target Plugin: OOB
+  * Error Code: `"EF004BAS004"`
+  * HTTP Status Code: `500`
+  * Default Error Message: `"The Out-of-Band Controller failed to power off the specified device."`
+
+* `CPUResetFailureHWControlError`
+  * Raise this exception when the OOB Controller fails to reset the specified Host CPU.
+  * Base class：`ControlObjectHWControlError`
+  * Target Plugin: OOB
+  * Error Code: `"EF004BAS005"`
+  * HTTP Status Code: `500`
+  * Default Error Message: `"The Out-of-Band Controller failed to reset the specified Host CPU."`
+
+* `InvalidDeviceTypeParameterHWControlError`
+  * Raise this exception in the OOB plugin when the specified device type is invalid.
+  * Base class：`ConfigurationHWControlError`
+  * Target Plugin: OOB
+  * Error Code: `"EF007BAS016"`
+  * HTTP Status Code: `500`
+  * Default Error Message: `"The specified Device Type is invalid."`
 
 ## 7.3. Adding Exceptions
 
@@ -109,7 +265,7 @@ The vendor-dependent extended exception class code is assumed to be a string tha
 For details, refer to [9.2. Limitations Vendor-dependent extended exception class code](09_Special_Notes.md#vendor-dependent-extended-exception-class-code).
 
 * Base Class for Exceptions  
-Select one exception that is close from the [Base Exception Classes](#base-exception-classes) or [Detailed Exception Class](#72-predefined-exceptions).  
+Select one exception that is close from the [Base Exception Classes](#base-exception-classes) or [Defined Exceptions](#72-defined-exceptions).  
 
 * Error Level  
 Verify whether the error is fatal or not.  
@@ -124,7 +280,7 @@ Determine the HTTP status code to return to the upper level, following the Statu
 Determine the default error message in English to be returned to the higher level.  
 
 * Exception Class Name  
-The class name is arbitrary but should end with `HwControlError`.  
+The class name is arbitrary but should end with `HWControlError`.  
 
 * Detailed Exception Class Code  
 Choose a unique three-digit number that can be identified within the inherited base exception class.  
@@ -134,22 +290,22 @@ An example of adding such an exception to a class is shown below.
 |Item Name|Example|
 |--|--|
 |Vendor-Specific Extension Exception Code|"SPL"|
-|Base Class for Exception|`BadRequestHwControlError`|
+|Base Class for Exception|`BadRequestHWControlError`|
 |Error Level|Non-fatal|
 |Retry Possibility|No point in retrying for a continuing error|
 |HTTP Status Code|400|
 |Default Error Message|"Sample exception message."|
-|Exception Class Name|`SampleHwControlError`|
+|Exception Class Name|`SampleHWControlError`|
 |Detailed Exception Class Code|"001"|
 
 ```python
 import app.common.basic_exceptions as exc
 
 
-class SampleHwControlError(exc.BadRequestHwControlError):
-    """HwControl Sample Error Expansion Exception class
+class SampleHWControlError(exc.BadRequestHWControlError):
+    """Sample extended exception class
 
-    sample docstrings
+    sample docstring
     """
     # To change the HTTP status code from an inherited class, set the class variable http_code.
     # In this example, the same value as the parent is used, so no setting is necessary.
@@ -159,7 +315,7 @@ class SampleHwControlError(exc.BadRequestHwControlError):
     # In this example, the error code is "EF003SPL001".
     # - Error Level: Non-critical "E"  
     # - Retry Possibility: No possibility of success with retry "F"
-    # - Base Exception Class Code: BadRequestHwControlError "003"
+    # - Base Exception Class Code: BadRequestHWControlError "003"
     # - Vendor-Specific Extension Exception Code: "SPL"
     # - Detailed Exception Class Code: "001"
     error_code: str = "EF003SPL001"

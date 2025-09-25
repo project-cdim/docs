@@ -1,6 +1,6 @@
 ---
 module: oob_sample.plugin
-class: OobSamplePlugin
+class: OOBSamplePlugin
 specific_data:
   base_url: http://localhost:8001/oob-sample
   timeout_sec: 60

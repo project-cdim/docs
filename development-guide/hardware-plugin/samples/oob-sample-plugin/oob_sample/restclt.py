@@ -18,7 +18,7 @@ REST API client.
 
 import requests
 
-from app.common.basic_exceptions import InternalHwControlError
+from app.common.basic_exceptions import InternalHWControlError
 
 
 class RestClient:
@@ -72,4 +72,4 @@ class RestClient:
             response.raise_for_status()
             return response
         except requests.exceptions.RequestException as exc:
-            raise InternalHwControlError(additional_message=f"Failed to {method} {url}") from exc
+            raise InternalHWControlError(additional_message=f"Failed to {method} {url}") from exc

@@ -19,13 +19,13 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import Iterator, Any
 
-from app.common.basic_exceptions import RequestNotSupportedHwControlError, InternalHwControlError
+from app.common.basic_exceptions import RequestNotSupportedHWControlError, InternalHWControlError
 from app.common.utils.oob_plugin_base import OOBPluginBase, OOBDeviceListItem
 from . import restclt, redfish, devicefinder, deviceops
 
 
 @dataclass
-class OobSamplePluginConfig:
+class OOBSamplePluginConfig:
     """OOB sample plugin configuration."""
 
     base_url: str
@@ -33,7 +33,7 @@ class OobSamplePluginConfig:
     manager_uri: str
 
 
-class OobSamplePlugin(OOBPluginBase):
+class OOBSamplePlugin(OOBPluginBase):
     """OOB sample plugin."""
 
     def __init__(self, specific_data: Any = None) -> None:
@@ -203,17 +203,17 @@ class OobSamplePlugin(OOBPluginBase):
     }
 
     def _device_operations_for(self, device_type: str) -> deviceops.DeviceOperations:
-        if device_ops_class := OobSamplePlugin._DEVICE_OPERATIONS_BY_DEVICE_TYPE.get(device_type):
+        if device_ops_class := OOBSamplePlugin._DEVICE_OPERATIONS_BY_DEVICE_TYPE.get(device_type):
             return device_ops_class(self.config.manager_uri)
-        raise RequestNotSupportedHwControlError
+        raise RequestNotSupportedHWControlError
 
     # ------------------------------------------------------------
     # Utilities
     # ------------------------------------------------------------
-    def _get_config(self) -> OobSamplePluginConfig:
+    def _get_config(self) -> OOBSamplePluginConfig:
         if not isinstance(self.specific_data, dict):
-            raise InternalHwControlError(additional_message="specific_data is not dictionary.")
-        return OobSamplePluginConfig(
+            raise InternalHWControlError(additional_message="specific_data is not dictionary.")
+        return OOBSamplePluginConfig(
             base_url=self.specific_data["base_url"],
             timeout_sec=float(self.specific_data["timeout_sec"]),
             manager_uri=self.specific_data["manager_uri"],
