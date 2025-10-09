@@ -58,8 +58,19 @@ Function descriptions are as follows:
 | Function Name            | Repository                     | Description                                              |
 |--|--|--|
 | Configuration Manager    | [configuration-manager][]      | Manages configuration data and status for resources and compute nodes in a database. |
-| Configuration Collector  | [configuration-collector][]    | Collects configuration data and status for resources and compute nodes. |
 | Configuration Exporter  | [configuration-exporter][]     | Exports configuration data and status for resources and compute nodes. |
+
+#### Alert Management Services
+
+| Function Name | Repository | Description |
+|--|--|--|
+| Alert Manager | [alert-manager-compose][] | Manage alert information such as hardware errors. |
+
+#### Job Management Services
+
+| Function Name | Repository | Description |
+|--|--|--|
+| Job Manager | [job-manager-compose][] | Automatically executes pre-registered jobs according to the set schedule. By default, it runs two jobs: an information collection job from the Configuration Exporter and a housekeeping job for the Alert Manager. |
 
 #### Layout Apply Services
 
@@ -111,8 +122,10 @@ Function descriptions are as follows:
 [mf-shared-modules]: https://github.com/project-cdim/mf-shared-modules
 
 [configuration-manager]: https://github.com/project-cdim/configuration-manager
-[configuration-collector]: https://github.com/project-cdim/configuration-collector
 [configuration-exporter]: https://github.com/project-cdim/configuration-exporter
+
+[alert-manager-compose]: https://github.com/project-cdim/alert-manager-compose
+[job-manager-compose]: https://github.com/project-cdim/job-manager-compose
 
 [layout-apply]: https://github.com/project-cdim/layout-apply
 [migration-procedure-generator]: https://github.com/project-cdim/migration-procedure-generator

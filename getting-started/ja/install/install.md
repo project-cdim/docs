@@ -1,9 +1,39 @@
 # CDIM をインストールする
 
-## 1. Prerequisites
+## 1. 前提条件
 
 - Docker
 - Git
+
+### 1.1. Dockerのproxy設定について
+
+> [!WARNING]
+> 以下のDocker公式で紹介されている``~/.docker/config.json`` ファイルを作成・編集する方法は使用しないでください。  
+> https://docs.docker.jp/network/proxy.html#id2  
+> 上記方法によるproxy設定はビルド時およびすべての起動したコンテナに反映されるため、Dapr side carの通信ができなくなります。
+
+#### 1.1.1. docker image pull時のproxy設定  
+
+以下のDocker公式で紹介されている ``~/.config/systemd/user/docker.service.d/`` で設定する方法を推奨します。  
+https://docs.docker.jp/config/daemon/systemd.html#id6
+
+#### 1.1.2. docker image build時のproxy設定  
+
+compose.override.ymlによる設定を推奨します。  
+対象は以下です。
+
+| composeレシピ                         | dockerサービス                |
+| ------------------------------------- | ----------------------------- |
+| base-compose                          | message-broker-setting        |
+| configuration-exporter-compose        | configuration-exporter        |
+| configuration-manager-compose         | configuration-manager         |
+| hw-control-compose                    | hw-control                    |
+| job-manager-compose                   | job-manager-setup             |
+| layout-apply-compose                  | layout-apply                  |
+| migration-procedure-generator-compose | migration-procedure-generator |
+| performance-collector-compose         | performance-collector         |
+| performance-exporter-compose          | performance-exporter          |
+| set-up-tools                          | gateway-set-up-tools          |
 
 ## 2. インストーラーを取得する
 
@@ -81,32 +111,38 @@ sed -e "/^NEXT_PUBLIC/s/localhost/$(hostname -f)/g" .env.example > .env
 cd ..
 ```
 
-### 3.2. 構成情報
+### 3.2. ジョブ管理
 
 変更が不要な場合は以下の修正は不要です。
 
-下記のファイルを修正することで HW の情報取得の収集間隔を環境に合わせて変更できます。
+下記のファイルを修正することでHWの情報取得の収集間隔を環境に合わせて変更できます。
 
 ```sh
-configuration-collector-compose/configuration-collector/configuration-collector/config/collect.yaml
+job-manager-compose/job-manager-setup/HW_configuration_information_data_linkage_job.yaml
 ```
 
-hw_collect_configs の「interval」、「timeout」を修正します。
-以下は 120 秒に修正した例です。
+scheduleの「time」を修正します。
+以下は5分に修正した例です。
 
 ```sh
-global:
-  max_jobs: 200
-  job_interval: 600
-  job_timeout: 600
-hw_collect_configs:
-  - job_name: 'Hardware-Sync'
-    interval: 120
-    timeout: 120
-    collect:
-      url: 'http://configuration-exporter:8080/cdim/api/v1/devices'
-    forwarding:
-      url: 'http://configuration-manager:8080/cdim/api/v1/devices'
+- defaultTab: nodes
+  description: ''
+  executionEnabled: true
+  id: 9d6fd442-71e3-412d-be58-17487269787a
+  loglevel: INFO
+  name: HW configuration information data linkage job
+  nodeFilterEditable: false
+  plugins:
+    ExecutionLifecycle: null
+  schedule:
+    dayofmonth:
+      day: '*'
+    month: '*'
+    time:
+      hour: '*'
+      minute: '0/5'
+      seconds: '0'
+    year: '*'
 ```
 
 ## 4. コンテナを起動する

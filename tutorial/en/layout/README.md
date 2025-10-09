@@ -157,14 +157,7 @@ $ vi test/template_1.json
     $ curl -XPOST -H 'Content-Type: application/json' http://<ip-address>:8013/cdim/api/v1/layout-apply -d @test/procedure_template_1.json
     ```
 
-4. Update metrics information:
-   Note that updating metrics may take several minutes.
-   ```sh
-    $ docker exec -it performance-collector /bin/sh
-    $ curl -i -s -X PUT http://localhost:8080/cdim/api/v1/configs
-    ```
-
-5. Verify the configuration changes in the user interface:
+4. Verify the configuration changes in the user interface:
    > Please allow a few minutes for the node and resource lists to reflect the changes post execution.
 
    ![](imgs/result_template_1.png)
@@ -313,6 +306,7 @@ $ vi test/template_2.json
    $ curl -XPOST -H 'Content-Type: application/json' http://<ip-address>:8013/cdim/api/v1/migration-procedures -d @test/template_2.json | jq > test/procedure_template_2.json
    $ cat test/procedure_template_2.json 
    ```
+
 2. Modify the output migration procedure if necessary:
    ```sh
    $ vi test/procedure_template_2.json
@@ -322,17 +316,13 @@ $ vi test/template_2.json
     ]
    }
    ```
+
 3. Apply the prepared migration procedure:
    ```sh
    $ curl -XPOST -H 'Content-Type: application/json' http://<ip-address>:8013/cdim/api/v1/layout-apply -d @test/procedure_template_2.json
    ```
-4. Update the metrics data:
-   Updating metrics can take a few minutes.
-   ```sh
-    $ docker exec -it performance-collector /bin/sh
-    $ curl -i -s -X PUT http://localhost:8080/cdim/api/v1/configs
-    ```
-5. Verify the configuration changes in the user interface:
+
+4. Verify the configuration changes in the user interface:
    > Note: Post-execution changes might take a few minutes to reflect in the node and resource lists.
 
    ![](imgs/result_template_2.png)
@@ -388,6 +378,7 @@ $ vi test/template_3.json
    $ curl -XPOST -H 'Content-Type: application/json' http://<ip-address>:8013/cdim/api/v1/migration-procedures -d @test/template_3.json | jq > test/procedure_template_3.json
    $ cat test/procedure_template_3.json 
    ```
+
 2. Modify the migration procedure as needed:
    ```sh
    $ vi test/procedure_template_3.json
@@ -397,17 +388,13 @@ $ vi test/template_3.json
     ]
    }
    ```
+
 3. Modify the output migration procedure if necessary:
    ```sh
    $ curl -XPOST -H 'Content-Type: application/json' http://<ip-address>:8013/cdim/api/v1/layout-apply -d @test/procedure_template_3.json
    ```
-4. Update metrics information:
-   Note that metrics update can take several minutes.
-   ```sh
-    $ docker exec -it performance-collector /bin/sh
-    $ curl -i -s -X PUT http://localhost:8080/cdim/api/v1/configs
-    ```
-5. Verify the configuration changes in the user interface:
+
+4. Verify the configuration changes in the user interface:
    > Please allow a few minutes for the node list and resource list to update reflecting the changes post-execution.
    
    ![](imgs/result_template_3.png)
@@ -498,14 +485,6 @@ This section explains how to perform configuration changes that are too complex 
     Verify the connection state
     ![](imgs/check_cpu_after_connect.png)
     > Note: It may take a few minutes for the node list and resource list to update post execution.
-    
-
-3. **Update metrics information**:  
-   Note that updating metrics information can take a few minutes.
-   ```sh
-   $ docker exec -it performance-collector /bin/sh
-   $ curl -i -s -X PUT http://localhost:8080/cdim/api/v1/configs
-   ```
 
 ### 2.5. Details of Configuration Change Descriptions (Sample File)
 

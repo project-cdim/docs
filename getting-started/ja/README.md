@@ -35,21 +35,23 @@ CDIM が使用するポート番号とプロトコルを記載します。
 | プロトコル | 方向 | ポート範囲 | 目的 |
 | --- | --- | --- | --- |
 | TCP | Inbound | 3000,3003-3005 | フロントエンド |
-| TCP | Inbound | 3500,3503-3505,3507-3509,3512,3514,50006 | DAPR 通信 |
+| TCP | Inbound | 3500,3503-3505,3507-3509,3512-3515,3517,50006 | DAPR 通信 |
 | TCP | Inbound | 5000 | リファレンスハードウェアエミュレータ |
-| TCP | Inbound | 5442,5443,5445,5464 | データベース |
 | TCP | Inbound | 8000 | ハードウェア制御 |
 | TCP | Inbound | 8012 | 移行手順生成 |
 | TCP | Inbound | 8013 | 構成案反映 |
 | TCP | Inbound | 8014 | Gateway(Kong) |
 | TCP | Inbound | 8280 | 構成情報管理 |
-| TCP | Inbound | 8281 | 構成情報収集 |
 | TCP | Inbound | 8283 | 構成情報エクスポーター |
 | TCP | Inbound | 8284 | 性能情報収集 |
 | TCP | Inbound | 8285 | 性能情報エクスポーター |
+| TCP | Inbound | 8286 | アラート管理(Alerta) |
 | TCP | Inbound | 8287 | IAM(Keycloak) |
+| TCP | Inbound | 8288 | ジョブ管理(Rundeck) |
+| TCP | Inbound | 8289 | メッセージブローカー(NATS) |
 | TCP | Inbound | 8428 | 性能情報管理(VictriaMetrics) |
 | TCP | Inbound | 9090 | 性能情報収集(Prometheus) |
+| TCP | Inbound | 9094 | アラート管理(AlertManager) |
 
 ## 環境概要
 

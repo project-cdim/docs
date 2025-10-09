@@ -35,7 +35,6 @@ To modify the log output settings, update the settings file corresponding to eac
 |:--|:--|:--|
 | Audit Log (Performance Information Collection) | main.go | performance-collector-compose/performance-collector/performance-collector |
 | Audit Log (Performance Information Exporter) | main.go | performance-exporter-compose/performance-exporter/performance-exporter |
-| Audit Log (Configuration Information Collection) | run_collect.go | configuration-collector-compose/configuration-collector/configuration-collector/cmd |
 | Audit Log (Configuration Information Exporter) | main.go | configuration-exporter-compose/configuration-exporter/configuration-exporter |
 | Audit Log (Configuration Information Management) | main.go | configuration-manager-compose/configuration-manager/configuration-manager |
 | Hardware Control | settings.py | hw-control-compose/hw-control/src/app/common |
@@ -43,7 +42,6 @@ To modify the log output settings, update the settings file corresponding to eac
 | Migration Procedure Generation | migrationprocedures_config.yaml | migration-procedure-generator-compose/migration-procedure-generator/src/migrationproceduregenerator/config |
 | Performance Information Collection | logger.go | performance-collector-compose/performance-collector/performance-collector/internal/service |
 | Performance Information Exporter | logger.go | performance-exporter-compose/performance-exporter/performance-exporter/internal/service |
-| Configuration Information Collection | collect_logger.go | configuration-collector-compose/configuration-collector/configuration-collector/service |
 | Configuration Information Exporter | controller_common.go | configuration-exporter-compose/configuration-exporter/configuration-exporter/controller |
 | Configuration Information Management | gi_cm_applog.go | configuration-manager-compose/configuration-manager/configuration-manager/common |
 
@@ -66,16 +64,25 @@ After modifying the settings, restart the component using [this procedure](../ap
 #### 3.2. Change Information Collection Settings 
 Modify the settings file of each collection component to adjust the collection interval and other parameters.
 
-Configuration Information Collection: configuration-collector-compose/configuration-collector/configuration-collector/config/collect.yaml
+Job Manager - Configuration Collector Settings: job-manager-compose/job-manager-setup/HW_configuration_information_data_linkage_job.yaml
 
 ```yaml
-hw_collect_configs:
-  - job_name: 'Hardware-Sync'
-    interval: 600   # Configuration information retrieval interval (s)
-    timeout: 600    # Configuration information timeout value (s)
+  schedule:    # Configuration information retrieval interval
+    dayofmonth:
+      day: '*'
+    month: '*'
+    time:
+      hour: '*'
+      minute: '0/10'
+      seconds: '0'
+    year: '*'
+  timeout: '600'  # Configuration information timeout value (s)
 ```
-After modifying the setting, restart the component.  
-Refer to [this procedure](../appendix/troubleshooting/README.md#4-restart-a-specific-component) for the restart.
+After changing the collection interval, apply the settings with the following command.
+
+```sh
+$ curl -X POST 'http://localhost:8288/api/14/project/CDIM/jobs/import?fileformat=yaml&dupeOption=update' -H "X-Rundeck-Auth-Token:$(cut -d' ' -f2 ../share/token/tokens.properties | cut -d',' -f1)" -H "Content-Type: application/yaml" --data-binary '@HW_configuration_information_data_linkage_job.yaml'
+```
 
 Performance Information Collection: performance-collector-compose/share/prometheus.yml
 

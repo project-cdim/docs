@@ -7,6 +7,36 @@ Ensure you have the following installed:
 - Docker
 - Git
 
+### 1.1. About Docker proxy settings
+
+> [!WARNING]  
+> Do not use the method of creating or editing the `~/.docker/config.json` file as introduced in the official Docker documentation.  
+> https://docs.docker.com/engine/cli/proxy/#configure-the-docker-client  
+> The proxy settings from the above method will apply during builds and to all running containers, causing communication issues with the Dapr sidecar.
+
+#### 1.1.1. Proxy settings for docker image pull  
+
+Recommend using the method described in the official Docker documentation to set up under ``~/.config/systemd/user/docker.service.d/``.
+https://docs.docker.com/engine/daemon/proxy/#environment-variables
+
+#### 1.1.2. Proxy settings docker image build
+
+Configuration using compose.override.yml is recommended.  
+The targets are as follows.
+
+| compose recipes                       | docker services               |
+| ------------------------------------- | ----------------------------- |
+| base-compose                          | message-broker-setting        |
+| configuration-exporter-compose        | configuration-exporter        |
+| configuration-manager-compose         | configuration-manager         |
+| hw-control-compose                    | hw-control                    |
+| job-manager-compose                   | job-manager-setup             |
+| layout-apply-compose                  | layout-apply                  |
+| migration-procedure-generator-compose | migration-procedure-generator |
+| performance-collector-compose         | performance-collector         |
+| performance-exporter-compose          | performance-exporter          |
+| set-up-tools                          | gateway-set-up-tools          |
+
 ## 2. Retrieve the Installer
 
 First, retrieve the CDIM installer from the repository:
@@ -84,31 +114,38 @@ Return to the repository root directory.
 cd ..
 ```
 
-### 3.2. Backend Configuration
+### 3.2. Job Management Configuration
 
 Adjust backend settings if necessary. You may need to modify hardware information retrieval intervals to match your operational environment.
 
 Navigate to the following configuration and make the desired changes:
 
 ```sh
-configuration-collector-compose/configuration-collector/configuration-collector/config/collect.yaml
+job-manager-compose/job-manager-setup/HW_configuration_information_data_linkage_job.yaml
 ```
 
-Modify the "interval" and "timeout" values under `hw_collect_configs`. Here is an example modification setting the interval to 120 seconds:
+Modify the "time" in schedule.
+Here is an example of adjusting it to 5 minutes.
 
 ```yaml
-global:
-  max_jobs: 200
-  job_interval: 600
-  job_timeout: 600
-hw_collect_configs:
-  - job_name: 'Hardware-Sync'
-    interval: 120
-    timeout: 120
-    collect:
-      url: 'http://configuration-exporter:8080/cdim/api/v1/devices'
-    forwarding:
-      url: 'http://configuration-manager:8080/cdim/api/v1/devices'
+- defaultTab: nodes
+  description: ''
+  executionEnabled: true
+  id: 9d6fd442-71e3-412d-be58-17487269787a
+  loglevel: INFO
+  name: HW configuration information data linkage job
+  nodeFilterEditable: false
+  plugins:
+    ExecutionLifecycle: null
+  schedule:
+    dayofmonth:
+      day: '*'
+    month: '*'
+    time:
+      hour: '*'
+      minute: '0/5'
+      seconds: '0'
+    year: '*'
 ```
 
 ## 4. Start the Containers

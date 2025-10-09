@@ -37,7 +37,6 @@ $ ls /var/log/cdim
 |:--|:--|:--|
 |証跡ログ(性能情報収集)|main.go|performance-collector-compose/performance-collector/performance-collector|
 |証跡ログ(性能情報収集エクスポーター)|main.go|performance-exporter-compose/performance-exporter/performance-exporter|
-|証跡ログ(構成情報収集)|run_collect.go|configuration-collector-compose/configuration-collector/configuration-collector/cmd|
 |証跡ログ(構成情報収集エクスポーター)|main.go|configuration-exporter-compose/configuration-exporter/configuration-exporter|
 |証跡ログ(構成情報収集管理)|main.go|configuration-manager-compose/configuration-manager/configuration-manager|
 |ハードウェア制御|setting.py|hw-control-compose/hw-control/src/app/common|
@@ -45,7 +44,6 @@ $ ls /var/log/cdim
 |移行手順生成|migrationprocedures_config.yaml|migration-procedure-generator-compose/migration-procedure-generator/src/migrationproceduregenerator/config|
 |性能情報収集|logger.go|performance-collector-compose/performance-collector/performance-collector/internal/service|
 |性能情報収集エクスポーター|logger.go|performance-exporter-compose/performance-exporter/performance-exporter/internal/service|
-|構成情報収集|collect_logger.go|configuration-collector-compose/configuration-collector/configuration-collector/service|
 |構成情報収集エクスポーター|controller_common.go|configuration-exporter-compose/configuration-exporter/configuration-exporter/controller|
 |構成情報収集管理|gi_cm_applog.go|configuration-manager-compose/configuration-manager/configuration-manager/common|
 
@@ -70,16 +68,26 @@ $ ls /var/log/cdim
 #### 3.2. 情報収集の設定を変更する 
 各コンポーネントの設定ファイルを変更することで、収集のインターバルなどの変更が可能です。
 
-構成情報収集 : configuration-collector-compose/configuration-collector/configuration-collector/config/collect.yaml
+ジョブ管理 構成情報収集設定 : job-manager-compose/job-manager-setup/HW_configuration_information_data_linkage_job.yaml
 
 ```yaml
-hw_collect_configs:
-  - job_name: 'Hardware-Sync'
-    interval: 600   # 構成情報の取得インターバル(s)
-    timeout: 600    # 構成情報のタイムアウト値(s)
+  schedule:    # 構成情報の取得インターバル
+    dayofmonth:
+      day: '*'
+    month: '*'
+    time:
+      hour: '*'
+      minute: '0/10'
+      seconds: '0'
+    year: '*'
+  timeout: '600'  # 構成情報のタイムアウト値(s)
 ```
-収集方法を変更した後は、コンポーネントを再起動する必要があります。  
-[この手順](../appendix/troubleshooting/README.md#4-特定のコンポーネントを再起動したい場合)に従って再起動してください。
+
+収集間隔を変更した後は、以下のコマンドで設定を反映する必要があります。  
+
+```sh
+$ curl -X POST 'http://localhost:8288/api/14/project/CDIM/jobs/import?fileformat=yaml&dupeOption=update' -H "X-Rundeck-Auth-Token:$(cut -d' ' -f2 ../share/token/tokens.properties | cut -d',' -f1)" -H "Content-Type: application/yaml" --data-binary '@HW_configuration_information_data_linkage_job.yaml'
+```
 
 性能情報収集 : performance-collector-compose/share/prometheus.yml
 

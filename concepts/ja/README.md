@@ -39,7 +39,7 @@ CDIMの最終目標達成には大きくは以下の機能が必要と想定し�
 | 機能名 | リポジトリ | 説明 |
 |--|--|--|
 | Gateway(Kong) | [base-compose][] | バックエンドサービスが提供するAPIのAPIゲートウェイです。実装としてはKongを使用しています。 |
-| IAM(Keycloak) | [base-compose][] | 認証・認可の機能を提供します。実装としてはKeycroakを使用しています。 |
+| IAM(Keycloak) | [base-compose][] | 認証・認可の機能を提供します。実装としてはKeycloakを使用しています。 |
 
 ### フロントエンドサービス
 
@@ -58,8 +58,19 @@ CDIMの最終目標達成には大きくは以下の機能が必要と想定し�
 | 機能名 | リポジトリ | 説明 |
 |--|--|--|
 | 構成情報管理 | [configuration-manager][] | リソースと計算ノードの構成情報およびステータスをデータベースで管理します。 |
-| 構成情報収集 | [configuration-collector][] | リソースと計算ノードの構成情報およびステータスを収集します。 |
 | 構成情報エクスポーター | [configuration-exporter][] | リソースと計算ノードの構成情報およびステータスのエクスポーターです。 |
+
+#### アラート管理サービス
+
+| 機能名 | リポジトリ | 説明 |
+|--|--|--|
+| アラート管理 | [alert-manager-compose][] | アラート情報（ハードウェアの異常など）を管理します。 |
+
+#### ジョブ管理サービス
+
+| 機能名 | リポジトリ | 説明 |
+|--|--|--|
+| ジョブ管理 | [job-manager-compose][] | 事前に登録された処理（ジョブ）を設定されたスケジュールに従って自動的に実行します。既定では、構成情報エクスポーターからの情報収集ジョブとアラート管理のハウスキーピングジョブの2つを実行します。 |
 
 #### 構成案反映サービス
 
@@ -72,7 +83,7 @@ CDIMの最終目標達成には大きくは以下の機能が必要と想定し�
 
 | 機能名 | リポジトリ | 説明 |
 |--|--|--|
-| 性能情報管理(VictriaMetrics) | [performance-manager-compose][] | VictoriaMetricsを使用してリソースと計算ノードのパフォーマンス情報を管理します。 |
+| 性能情報管理(VictoriaMetrics) | [performance-manager-compose][] | VictoriaMetricsを使用してリソースと計算ノードのパフォーマンス情報を管理します。 |
 | 性能情報収集 | [performance-collector][] | リソースと計算ノードのパフォーマンス情報を収集し、構成情報管理と連携動作します。基本機能にはPrometheusを使用しています。 |
 | 性能情報エクスポーター | [performance-exporter][] | リソースと計算ノードのパフォーマンス情報のためのPrometheusエクスポーターです。 |
 
@@ -111,8 +122,10 @@ CDIMの最終目標達成には大きくは以下の機能が必要と想定し�
 [mf-shared-modules]: https://github.com/project-cdim/mf-shared-modules
 
 [configuration-manager]: https://github.com/project-cdim/configuration-manager
-[configuration-collector]: https://github.com/project-cdim/configuration-collector
 [configuration-exporter]: https://github.com/project-cdim/configuration-exporter
+
+[alert-manager-compose]: https://github.com/project-cdim/alert-manager-compose
+[job-manager-compose]: https://github.com/project-cdim/job-manager-compose
 
 [layout-apply]: https://github.com/project-cdim/layout-apply
 [migration-procedure-generator]: https://github.com/project-cdim/migration-procedure-generator

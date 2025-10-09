@@ -31,17 +31,18 @@ Realm を「CDIM」に切り替えます。
 -----END PUBLIC KEY-----
 ```
 
-`setup` スクリプトを実行して初期設定を行います。
+`post_install` スクリプトを実行して初期設定を行います。
 
 ```sh
-./setup
+./post_install
 ```
 
-基盤のコンテナを再起動します。
+基盤のgatewayコンテナを再起動します。
 
 ```sh
 cd base-compose
-docker compose down
+docker compose down gateway-dapr
+docker compose down gateway
 docker compose up -d --build
 ```
 

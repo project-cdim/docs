@@ -16,7 +16,7 @@
 [Getting started](../../../../getting-started/ja/setup/setup.md#2-フロントエンド)の手順を参照ください。  
 keycloakの管理URLからログインすることでCDIMの認証情報を確認・変更することが可能です。  
 デフォルトのログイン情報は以下のとおりです。
-```
+```text
 url : http://<ipアドレス>:8287
 ユーザー : admin
 パスワード : admin
@@ -29,7 +29,7 @@ url : http://<ipアドレス>:8287
 認証には、以下の3つでclientの名称が揃っている必要があります。
 - keycloakのclient
 - mf-coreの.env  NEXT_PUBLIC_AUTH_CLIENT_ID
-- kongの設定 
+- kongの設定
 kongの設定に関しては使用しているpublic_keyが適切かを
 set-up-toolsディレクトリ内のpublic_key.pemの形式が間違っていないか、鍵の内容がcdimのpublic keyのものと同じか確認してください。  
 間違いがある場合は修正した後、[kongの設定を初期化する](#kongの設定を初期化する)を実施したのちに、再度[set-up-toolsの設定](../../../../getting-started/ja/setup/setup.md#12-gateway-の初期設定)を行ってください。  
@@ -37,7 +37,7 @@ set-up-toolsディレクトリ内のpublic_key.pemの形式が間違っていな
 ##### ネットワークエラーと表示されている場合
 kongに接続できず404エラーと表示されている可能性があります。  
 作成したdockerコンテナのネットワークにプロキシ設定やルーティング設定が入っていないかを確認してください。  
-コンテナ内にプロキシ設定が入っていると動かなくなることがあります。    
+コンテナ内にプロキシ設定が入っていると動かなくなることがあります。
 
 ##### 500エラーと表示されている場合  
 kongと他コンポーネントが接続できなくなっている可能性があります。  
@@ -48,8 +48,9 @@ kongと他コンポーネントが接続できなくなっている可能性が�
 以下のコマンドでkongの再起動を実施してください。
 ```
 $ cd ~/cdim/base-compose
-$ docker-compose down
-$ docker-compose up -d --build
+$ docker compose down gateway-dapr
+$ docker compose down gateway
+$ docker compose up -d --build
 ```
 
 ##### kongの設定を初期化する
@@ -57,10 +58,11 @@ $ docker-compose up -d --build
 
 ```
 $ cd ~/cdim/base-compose
-$ docker-compose down
+$ docker compose down gateway-dapr
+$ docker compose down gateway
 $ docker volume ls
 $ docker volume rm base-compose_gateway-db
-$ docker-compose up -d --build
+$ docker compose up -d --build
 ```
 #### 3. CDIMのダッシュボードに接続できない/ダッシュボード画面が真っ白になる
 mf-core/.envファイルを確認ください。  
@@ -77,11 +79,26 @@ $ ip address [| grep ens]
 すべてのコンポーネントを再起動する必要がある場合は、[初期化する](#5-初期化したい場合)の内容を参照してください。  
 ```sh
 再起動したいコンポーネントのディレクトリに移動しコンテナを停止します
-$ cd ~/cdim/base-compose
+$ cd ~/cdim/performance-manager-compose
 $ docker compose down
 コンテナの停止が確認出来たらコンテナを再起動します
 $ docker compose up -d --build
 ```
+
+ただし、base-composeについては同様の手順で再起動しないでください。
+これは、base-composeに含まれるmessage-brokerサービスを再起動すると、本サービスに依存する、その他のサービスが動作できなくなるためです。
+
+そのため、base-composeのmessage-broker以外のサービスは、サービスを指定して再起動してください。
+```sh
+base-composeのディレクトリに移動します
+$ cd ~/cdim/base-compose
+サービスを指定してコンテナを停止します
+$ docker compose down <service名 (例: gateway など)>
+コンテナの停止が確認出来たらコンテナを再起動します
+$ docker compose up -d --build
+```
+
+message-brokerの再起動が必要な場合は、[初期化する](#5-初期化したい場合)の内容を参照し、すべてのコンポーネントを再起動してください。
 
 #### 5. 初期化したい場合
 CDIMを初期化する方法を説明します。

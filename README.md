@@ -11,7 +11,7 @@
 
 ## Startup Guide
 
-* Getting started
+* Getting Started
   * [English][Getting-Started]
   * [Japanese][Getting-Started-ja]
 * Tutorial
@@ -26,7 +26,7 @@
 
 ## Development
 
-* Hardware Plugin development guide
+* Hardware Plugin Development Guide
   * [English][Plugin-Dev-Guide]
   * [Japanese][Plugin-Dev-Guide-ja]
 

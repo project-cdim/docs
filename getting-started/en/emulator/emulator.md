@@ -30,16 +30,10 @@ docker compose up -d --build
 
 ## 4. Verify Emulator Operation
 
-Enter the container using the following command.
+Execute the following command.
 
 ```sh
-docker container exec -it hw-emulator bash
-```
-
-Execute the following within the container.
-
-```sh
-curl http://localhost:5000/redfish/v1/Systems/System-1/Processors | python -m json.tool
+docker exec hw-emulator curl http://localhost:5000/redfish/v1/Systems/System-1/Processors | python -m json.tool
 ```
 
 If you receive a response similar to the one below, the emulator is operating correctly.

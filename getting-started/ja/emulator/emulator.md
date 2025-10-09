@@ -1,6 +1,6 @@
 # エミュレーターをインストールする
 
-## 1. Prerequisites
+## 1. 前提条件
 
 - Docker
 - Git
@@ -30,16 +30,10 @@ docker compose up -d --build
 
 ## 4. エミュレーターの動作確認
 
-以下のコマンドでコンテナに入ります。
+以下のコマンドを実行します。
 
 ```sh
-docker container exec -it hw-emulator bash
-```
-
-コンテナで以下を実行します。
-
-```sh
-curl http://localhost:5000/redfish/v1/Systems/System-1/Processors | python -m json.tool
+docker exec hw-emulator curl http://localhost:5000/redfish/v1/Systems/System-1/Processors | python -m json.tool
 ```
 
 以下のようなレスポンスが取得できれば正常に動作しています。
@@ -57,12 +51,6 @@ curl http://localhost:5000/redfish/v1/Systems/System-1/Processors | python -m js
     "Members@odata.count": 1,
     "Name": "Processors Collection"
 }
-```
-
-コンテナから出ます。
-
-```sh
-exit
 ```
 
 [Next step: CDIM をインストールする](../install/install.md)

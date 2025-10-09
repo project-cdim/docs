@@ -16,11 +16,11 @@ CDIMでは実際に構築したいノード構成を入力することで、手�
   - [2.1.3. 実行する](#213-実行する)
 - [2.2. ノードを変更追加する](#22-ノードを変更追加する)
   - [2.2.1. デバイス情報を確認する](#221-デバイス情報を確認する)
-  - [2.2.2. 構成したい内容を記述登録する](#222-構成したい内容を記述登録する)
+  - [2.2.2. 構成したい内容を記述(登録)する](#222-構成したい内容を記述登録する)
   - [2.2.3. 実行する](#223-実行する)
 - [2.3. ノードを削除する](#23-ノードを削除する)
   - [2.3.1. デバイス情報を確認する](#231-デバイス情報を確認する)
-  - [2.3.2. 構成したい内容を記述登録する](#232-構成したい内容を記述登録する)
+  - [2.3.2. 構成したい内容を記述(登録)する](#232-構成したい内容を記述登録する)
   - [2.3.3. 実行する](#233-実行する)
 - [2.4. APIを用いた構成変更](#24-apiを用いた構成変更)
   - [2.4.1. デバイスの電源状態を変える](#241-デバイスの電源状態を変える)
@@ -158,14 +158,7 @@ $ vi test/template_1.json
     $ curl -XPOST -H 'Content-Type: application/json' http://<ipアドレス>:8013/cdim/api/v1/layout-apply -d @test/procedure_template_1.json
     ```
 
-4. メトリクス情報の更新する  
-   メトリクス情報の更新には、数分の時間がかかります。
-   ```sh
-    $ docker exec -it performance-collector /bin/sh
-    $ curl -i -s -X PUT http://localhost:8080/cdim/api/v1/configs
-    ```
-
-5. 構成変更されたことをUIで確認する
+4. 構成変更されたことをUIで確認する
    > 実行後、ノード一覧やリソース一覧に反映されるまで数分かかります。
 
    ![](imgs/result_templete_1.png)
@@ -313,6 +306,7 @@ $ vi test/template_2.json
    $ curl -XPOST -H 'Content-Type: application/json' http://<ipアドレス>:8013/cdim/api/v1/migration-procedures -d @test/template_2.json | jq > test/procedure_template_2.json
    $ cat test/procedure_template_2.json 
    ```
+
 2. 出力された移行手順を編集する  
    出力された移行手順が以下の形式になっていない場合は、以下の形式に修正します。
    ```sh
@@ -323,17 +317,13 @@ $ vi test/template_2.json
     ]
    }
    ```
+
 3. 作成した移行手順を反映する
    ```sh
    $ curl -XPOST -H 'Content-Type: application/json' http://<ipアドレス>:8013/cdim/api/v1/layout-apply -d @test/procedure_template_2.json
    ```
-4. メトリクス情報の更新する  
-   メトリクス情報の更新には、数分の時間がかかります。
-   ```sh
-    $ docker exec -it performance-collector /bin/sh
-    $ curl -i -s -X PUT http://localhost:8080/cdim/api/v1/configs
-    ```
-5. 構成変更されたことをUIで確認する
+
+4. 構成変更されたことをUIで確認する
    > 実行後、ノード一覧やリソース一覧に反映されるまで数分かかります。
 
    ![](imgs/result_templete_2.png)
@@ -388,6 +378,7 @@ $ vi test/template_3.json
    $ curl -XPOST -H 'Content-Type: application/json' http://<ipアドレス>:8013/cdim/api/v1/migration-procedures -d @test/template_3.json | jq > test/procedure_template_3.json
    $ cat test/procedure_template_3.json 
    ```
+
 2. 出力された移行手順を編集する  
    出力された移行手順が以下の形式になっていない場合は、以下の形式に修正します。
    ```sh
@@ -398,17 +389,13 @@ $ vi test/template_3.json
     ]
    }
    ```
+
 3. 作成した移行手順を反映する
    ```sh
    $ curl -XPOST -H 'Content-Type: application/json' http://<ipアドレス>:8013/cdim/api/v1/layout-apply -d @test/procedure_template_3.json
    ```
-4. メトリクス情報の更新する  
-   メトリクス情報の更新には、数分の時間がかかります。
-   ```sh
-    $ docker exec -it performance-collector /bin/sh
-    $ curl -i -s -X PUT http://localhost:8080/cdim/api/v1/configs
-    ```
-5. 構成変更されたことをUIで確認する
+
+4. 構成変更されたことをUIで確認する
    > 実行後、ノード一覧やリソース一覧に反映されるまで数分かかります。
 
    ![](imgs/result_templete_3.png)
@@ -483,7 +470,8 @@ $ vi test/template_3.json
             :
     }
     ```
-1. 接続状態を変更する
+
+2. 接続状態を変更する
 
     　下の接続状態一覧から接続状態を選択し、以下のコマンドを実行します。
 
@@ -497,13 +485,6 @@ $ vi test/template_3.json
     デバイスの接続状態を確認します。
     ![](imgs/check_cpu_after_connect.png)
     > 実行後、ノード一覧やリソース一覧に反映されるまで数分かかります。
-
-1. メトリクス情報の更新する
-    メトリクス情報の更新には、数分の時間がかかります。
-    ```sh
-    $ docker exec -it performance-collector /bin/sh
-    $ curl -i -s -X PUT http://localhost:8080/cdim/api/v1/configs
-    ```
 
 ### 2.5. 構成変更機能の記述内容(サンプルファイル)
 

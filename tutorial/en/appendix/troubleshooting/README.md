@@ -40,18 +40,20 @@ Kong might be unable to connect with other components. Again, check for improper
 Restart Kong with the following commands:
 ```sh
 $ cd ~/cdim/base-compose
-$ docker-compose down
-$ docker-compose up -d --build
+$ docker compose down gateway-dapr
+$ docker compose down gateway
+$ docker compose up -d --build
 ```
 
 ##### Initialize Kong Settings
 Reset Kong configuration by deleting and recreating the related volume:
 ```sh
 $ cd ~/cdim/base-compose
-$ docker-compose down
+$ docker compose down gateway-dapr
+$ docker compose down gateway
 $ docker volume ls
 $ docker volume rm base-compose_gateway-db
-$ docker-compose up -d --build
+$ docker compose up -d --build
 ```
 
 #### 3. Cannot Connect to CDIM Dashboard/Dashboard Screen is Blank
@@ -73,6 +75,20 @@ $ docker compose down
 $ docker compose up -d --build
 ```
 For a full restart, refer to [Initialize CDIM](#5-initialize-cdim).
+
+However, do not restart base-compose using the same procedure.
+This is because restarting the message-broker service included in base-compose will cause other services that depend on this service to be unable to operate.
+Therefore, for services in base-compose other than the message-broker, please specify the service and restart it.
+```sh
+Navigate to the base-compose directory
+$ cd ~/cdim/base-compose
+Stop the container by specifying the service
+$ docker compose down <service name (e.g., gateway)>
+Once the container stop is confirmed, restart the container
+$ docker compose up -d --build
+```
+
+If it is necessary to restart the message-broker, refer to the content of [Initialize CDIM](#5-initialize-cdim), and restart all components.
 
 #### 5. Initialize CDIM
 Resetting CDIM involves stopping and deleting all Docker containers, images, and volumes. Execute the following with caution:

@@ -30,17 +30,18 @@ Using the copied Public Key from "1.1", create a `public_key.pem` file in the `s
 -----END PUBLIC KEY-----
 ```
 
-Run the `setup` script to initialize the gateway.
+Run the `post_install` script to initialize the gateway.
 
 ```sh
-./setup
+./post_install
 ```
 
-Afterward, reset the base containers.
+Afterward, reset the gateway containers.
 
 ```sh
 cd base-compose
-docker compose down
+docker compose down gateway-dapr
+docker compose down gateway
 docker compose up -d --build
 ```
 
