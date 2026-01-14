@@ -3,31 +3,49 @@
 > [!NOTE]
 > `cdim-server` は[CDIM をインストールする](../install/install.md)の設定ファイルで使用したものと同じ値を使用します。
 
+> [!NOTE]
+> 本章の手順におけるカレントディレクトリは [CDIM をインストールする](../install/install.md) で clone したインストーラーの installer となります。
+
 ## 1. gateway (Kong)
 
 ### 1.1. Public key の確認
 
+Keycloakにおける Public Key の確認方法は以下のとおりです。
+
 Keycloak にログインします。
+初期状態では、ユーザ名: admin, パスワード: admin でログイン可能です。
 
 ```sh
 http://cdim-server:8287/
-admin/admin
 ```
 
-Realm を「CDIM」に切り替えます。
+1. Realm を「CDIM」に切り替えます。
+2. 「Realm settings」をクリックします。
+3. 「Keys」タブをクリックします。
+4. 「RS256」の「Public key」をクリックします。
 
-「Realm settings」をクリックし、「Keys」タブをクリックします。
-「RS256」の「Public key」を確認してコピーしておきます。
-![fig 1-1 realm settings keys](img/key.png)
+![fig 1-1 realm settings keys](img/public_key_01.png)
+
+Public Key が表示されるので、内容をコピーしておきます。
+
+![fig 1-1 realm settings keys](img/public_key_02.png)
 
 ### 1.2. gateway の初期設定
 
-「1.1.」で確認してコピーした Public key を使用して、`set-up-tools/gateway/tools/` ディレクトリ配下に `public_key.pem` ファイルを作成します。
+コピーした Public key を使用して、`set-up-tools/gateway/tools/` ディレクトリ配下に `public_key.pem` ファイルを作成します。
 形式は以下のとおりです。
 
 ```txt:public_key.pem
 -----BEGIN PUBLIC KEY-----
 (ここにコピーした Public key を貼り付けます)
+-----END PUBLIC KEY-----
+```
+
+ファイルの作成例を記載します。
+
+```txt:public_key.pem
+-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A (中略) 79FWBtfKyuQTmnN2mp78N+gwp1LywIDAQAB
 -----END PUBLIC KEY-----
 ```
 
@@ -51,10 +69,10 @@ docker compose up -d --build
 ### 2.1. client 作成
 
 Keycloak にログインします。
+初期状態では、ユーザ名: admin, パスワード: admin でログイン可能です。
 
 ```sh
 http://cdim-server:8287/
-admin/admin
 ```
 
 Realmを「CDIM」に切り替えます。

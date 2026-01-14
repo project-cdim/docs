@@ -8,25 +8,36 @@ CDIMの概要を知りたい場合は[コンセプト](../../concepts/ja/README.
 
 ## 導入ステップ
 
-1. [エミュレーターをインストールする](emulator/emulator.md)  
+1. [環境を準備する](prepare/prepare.md)  
+CDIMの構築に必要な環境を準備します。
+2. [エミュレーターをインストールする](emulator/emulator.md)  
 CDIMと連携する環境をエミュレーターを使用して構築します。
-2. [CDIMをインストールする](install/install.md)  
+3. [CDIMをインストールする](install/install.md)  
 インストーラーを使用してCDIMをインストールします。
-3. [CDIMの初期設定を行う](setup/setup.md)  
+4. [CDIMの初期設定を行う](setup/setup.md)  
 CDIMを動作させる環境に合わせて初期設定します。
-4. [CDIMを使用する](use/use.md)   
+5. [CDIMを使用する](use/use.md)   
 CDIMの機能を使用して動作を確認します。
 
 ## 動作要件
 
 本ガイドの推奨要件は以下の表に記載のとおりです。
-なお、OSについてはAlma Linux 9を想定しています。
+
+### ハードウェア
 
 | 要件     | 推奨値        |
 | -------- | ------------- |
 | CPU      | x64 4コア以上 |
 | メモリ   | 8GB以上       |
 | ディスク | 64GB以上      |
+
+### ソフトウェア
+
+| 項目                 | ソフトウェア            |
+| -------------------- | ----------------------- |
+| OS                   | Alma Linux 9            |
+| コンテナ管理ツール   | Docker / Docker Compose |
+| バージョン管理ツール | git                     |
 
 ## ポートとプロトコル
 

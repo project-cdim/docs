@@ -21,17 +21,29 @@ $ ls /var/log/cdim
 ```
 またコンポーネントごとに、ログ出力ファイルが以下のように分かれています。
 
-|ログの種類|ログファイル名|
-|:--|:--|
-|証跡ログ|trail.log|
-|アプリケーションログ (ハードウェア制御) |app_hw_control.log|
-|アプリケーションログ (構成案反映) |app_layout_apply.log|
-|アプリケーションログ (移行手順生成) |app_migration_procedures.log|
-|アプリケーションログ (構成情報管理) |app_config_info.log|
+| ログの種類                                        | ログファイル名       | 出力先コンテナ名       |
+| :------------------------------------------------ | :------------------- | ---------------------- |
+| 証跡ログ(各コンポーネント共通)                    | trail.log            | -                      |
+| アプリケーションログ (ハードウェア制御)           | app_hw_control.log   | hw-control             |
+| アプリケーションログ (構成案反映)                 | app_layout_apply.log | layout-apply           |
+| アプリケーションログ (移行手順生成)               | app_migration_procedures.log | migration-procedure-generator |
+| アプリケーションログ (構成情報管理)               | app_config_info.log  | configuration-manager  |
+| アプリケーションログ (構成情報収集エクスポーター) | app_exporter.log     | configuration-exporter |
 
 ##### 3.1.2. ログの出力方法を変更する
 それぞれのコンポーネントの設定ファイルを変更してログ出力方法を変更します。
 それぞれの設定ファイルは以下のとおりです。
+
+> [!NOTE]
+> ファイルパスは [CDIM をインストールする](../../../getting-started/ja/install/install.md) で clone したインストーラーの installer を基準に記載しています。
+
+出力方法を変更した後は、そのコンポーネントを再起動する必要があります。
+[この手順](../appendix/troubleshooting/README.md#4-特定のコンポーネントを再起動したい場合)に従って再起動してください。
+
+> [!NOTE]
+> logの出力ディレクトリを変更後、そのコンポーネントが動かない場合はディレクトリを作成する必要があります。その場合はそれぞれのDockerfileの中にて、ログの出力ディレクトリを作成していますので、それもあわせて変更してください。
+
+###### 3.1.2.1. 構成情報、性能情報
 
 |コンポーネント名|設定ファイル名|ファイルパス|
 |:--|:--|:--|
@@ -39,31 +51,63 @@ $ ls /var/log/cdim
 |証跡ログ(性能情報収集エクスポーター)|main.go|performance-exporter-compose/performance-exporter/performance-exporter|
 |証跡ログ(構成情報収集エクスポーター)|main.go|configuration-exporter-compose/configuration-exporter/configuration-exporter|
 |証跡ログ(構成情報収集管理)|main.go|configuration-manager-compose/configuration-manager/configuration-manager|
-|ハードウェア制御|setting.py|hw-control-compose/hw-control/src/app/common|
-|構成案反映|layoutapply_config.yaml|layout-apply-compose/layout-apply/src/layoutapply/config|
-|移行手順生成|migrationprocedures_config.yaml|migration-procedure-generator-compose/migration-procedure-generator/src/migrationproceduregenerator/config|
 |性能情報収集|logger.go|performance-collector-compose/performance-collector/performance-collector/internal/service|
 |性能情報収集エクスポーター|logger.go|performance-exporter-compose/performance-exporter/performance-exporter/internal/service|
 |構成情報収集エクスポーター|controller_common.go|configuration-exporter-compose/configuration-exporter/configuration-exporter/controller|
 |構成情報収集管理|gi_cm_applog.go|configuration-manager-compose/configuration-manager/configuration-manager/common|
 
-ログ出力ファイルの設定項目は以下になります。
-設定ファイルがgo形式のものはコード内に以下の項目を書き込んでください。
-|設定項目|説明|
-|:--|:--|
-|tag|コンポーネントを表すタグ|
-|log_dir|ログ出力ディレクトリ|
-|log_file|ログファイル名|
-|logging_level|ロギングレベル。設定レベル以上のログが出力されます|
-|rotation_size|ログをローテーションする際のファイルサイズ(bytes)|
-|backup_files|ローテーションにより保持するバックアップファイル数|
-|stdout|true を指定すると標準出力にもログを出力します|
+ログ出力ファイルの設定項目は以下になります。  
+コード内に以下の項目を書き込んでください。
+| 設定項目      | 説明                                               |
+| :------------ | :------------------------------------------------- |
+| tag           | コンポーネントを表すタグ                           |
+| logging_level | ロギングレベル。設定レベル以上のログが出力されます |
+| log_dir       | ログ出力ディレクトリ                               |
+| log_file      | ログファイル名                                     |
+| rotation_size | ログをローテーションする際のファイルサイズ(bytes)  |
+| backup_files  | ローテーションにより保持するバックアップファイル数 |
+| stdout        |true を指定すると標準出力にもログを出力します |
 
-出力方法を変更した後は、そのコンポーネントを再起動する必要があります。
-[この手順](../appendix/troubleshooting/README.md#4-特定のコンポーネントを再起動したい場合)に従って再起動してください。
+構成情報管理のアプリケーションログを例に、ログ設定の変更方法を示します。
 
-> [!NOTE]
-> logの出力ディレクトリを変更後、そのコンポーネントが動かない場合はディレクトリを作成する必要があります。その場合はそれぞれのDockerfileの中にて、ログの出力ディレクトリを作成していますので、それもあわせて変更してください。
+**変更前**  
+初期状態では、tagのみが記載されています。
+```go
+var Log, _ = logger.New(logger_common.Option{
+    Tag: logger_common.TAG_APP_CONFIGMGR,
+})
+```
+**ロギングレベルを変更する**  
+```go
+var Log, _ = logger.New(logger_common.Option{
+    Tag: logger_common.TAG_APP_CONFIGMGR,
+    LoggingLevel: logger_common.DEBUG, // ロギングレベルの設定を追記する
+})
+```
+**ログファイル名を変更する**  
+```go
+var Log, _ = logger.New(logger_common.Option{
+    Tag: logger_common.TAG_APP_CONFIGMGR,
+    LogFile: "new.log", // ログファイル名の設定を追記する
+})
+```
+
+###### 3.1.2.2. 構成反映、HW 制御
+
+|コンポーネント名|設定ファイル名|ファイルパス|
+|:--|:--|:--|
+|ハードウェア制御|setting.py|hw-control-compose/hw-control/src/app/common|
+|構成案反映|layoutapply_config.yaml|layout-apply-compose/layout-apply/src/layoutapply/config|
+|移行手順生成|migrationprocedures_config.yaml|migration-procedure-generator-compose/migration-procedure-generator/src/migrationproceduregenerator/config|
+
+ログ出力ファイルの設定項目は以下になります。  
+yamlファイルを編集してください。
+| 設定項目                  | 説明                                          |
+| ------------------------- | --------------------------------------------- |
+| handlers.file.filename    | ログファイル名                                |
+| handlers.file.level       | ファイル出力ログレベル                        |
+| handlers.file.maxBytes    | ログローテーションファイルサイズ(単位：bytes) |
+| handlers.file.backupCount | ログファイルバックアップ数                    |
 
 #### 3.2. 情報収集の設定を変更する 
 各コンポーネントの設定ファイルを変更することで、収集のインターバルなどの変更が可能です。
@@ -172,6 +216,17 @@ $ curl -i -s -X PUT http://localhost:8080/cdim/api/v1/configs
    |DC Operator|cdim-operator|CDIMの全メニューの操作が可能。cdim-viewerの権限に加えて、cdim-manage-layout、cdim-manage-resourceをまとめた複合ロール|
    |DC Administrator|cdim-administrator|CDIMの全権限が操作可能。cdim-operatorの権限に加えて、cdim-manage-userの権限が付与された複合ロール|
    
+   - 機能ごとロール
+
+   |名前|説明|
+   |:--|:--|
+   |cdim-manage-resource| リソース管理 :<br>&nbsp; ・全画面の参照<br>&nbsp; ・リソース操作(電源ON/OFF・接続/切断) |
+   |cdim-manage-layout| レイアウト管理 |
+   |cdim-manage-user| ユーザ管理 |
+   |cdim-view-resource| リソース管理 :<br>&nbsp; ・全画面の参照 |
+   |cdim-view-layout| レイアウト管理(参照のみ) |
+   |cdim-view-user| ユーザ管理(参照のみ) |
+
    </details>
 
 - 権限を解除する  

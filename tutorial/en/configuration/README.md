@@ -20,16 +20,29 @@ $ ls /var/log/cdim
 ```
 Logs are organized by component into the following files:
 
-| Log Type | Log File Name |
-|:--|:--|
-| Audit Log | trail.log |
-| Application Log (Hardware Control) | app_hw_control.log |
-| Application Log (Layout Application) | app_layout_apply.log |
-| Application Log (Migration Procedure Generation) | app_migration_procedures.log |
-| Application Log (Configuration Information Management) | app_config_info.log |
+
+| Log Type                                               | Log File Name                | Container Name         |
+| :----------------------------------------------------- | :--------------------------- | :--------------------- |
+| Audit Log                                              | trail.log                    | -                      |
+| Application Log (Hardware Control)                     | app_hw_control.log           | hw-control             |
+| Application Log (Layout Application)                   | app_layout_apply.log         | layout-apply           |
+| Application Log (Migration Procedure Generation)       | app_migration_procedures.log | migration-procedure-generator |
+| Application Log (Configuration Information Management) | app_config_info.log          | configuration-manager |
+| Application Log (Configuration Exporter)               | app_exporter.log             | configuration-exporter |
 
 ##### 3.1.2. Change Log Output Methods
-To modify the log output settings, update the settings file corresponding to each component. The settings files are located as follows:
+To modify the log output settings, update the settings file corresponding to each component.
+The settings files are located as follows:
+
+> [!NOTE]
+> The file path is described based on the installer cloned in [Installing CDIM](../../../getting-started/en/install/install.md).
+
+After modifying the settings, restart the component using [this procedure](../appendix/troubleshooting/README.md#4-restart-a-specific-component).
+
+> [!NOTE]
+> If the component fails to run after changing the log output directory, you may need to create the directory beforehand. Adjust the Dockerfile accordingly to create the log output directory.
+
+###### 3.1.2.1. Configuration Information, Performance Information
 
 | Component Name | Settings File Name | File Path |
 |:--|:--|:--|
@@ -37,10 +50,6 @@ To modify the log output settings, update the settings file corresponding to eac
 | Audit Log (Performance Information Exporter) | main.go | performance-exporter-compose/performance-exporter/performance-exporter |
 | Audit Log (Configuration Information Exporter) | main.go | configuration-exporter-compose/configuration-exporter/configuration-exporter |
 | Audit Log (Configuration Information Management) | main.go | configuration-manager-compose/configuration-manager/configuration-manager |
-| Hardware Control | settings.py | hw-control-compose/hw-control/src/app/common |
-| Layout Application | layoutapply_config.yaml | layout-apply-compose/layout-apply/src/layoutapply/config |
-| Migration Procedure Generation | migrationprocedures_config.yaml | migration-procedure-generator-compose/migration-procedure-generator/src/migrationproceduregenerator/config |
-| Performance Information Collection | logger.go | performance-collector-compose/performance-collector/performance-collector/internal/service |
 | Performance Information Exporter | logger.go | performance-exporter-compose/performance-exporter/performance-exporter/internal/service |
 | Configuration Information Exporter | controller_common.go | configuration-exporter-compose/configuration-exporter/configuration-exporter/controller |
 | Configuration Information Management | gi_cm_applog.go | configuration-manager-compose/configuration-manager/configuration-manager/common |
@@ -56,10 +65,46 @@ The settings for log output files are as follows. For settings files in Go forma
 | backup_files | Number of backup files to retain through rotation |
 | stdout | If true, logs are also output to standard output |
 
-After modifying the settings, restart the component using [this procedure](../appendix/troubleshooting/README.md#4-restart-a-specific-component).
+Using Configuration Information Management as an example, Demonstrate how to change the log settings.
 
-> [!NOTE]
-> If the component fails to run after changing the log output directory, you may need to create the directory beforehand. Adjust the Dockerfile accordingly to create the log output directory.
+**Before**  
+In the initial state, only the tag is indicated.
+```go
+var Log, _ = logger.New(logger_common.Option{
+    Tag: logger_common.TAG_APP_CONFIGMGR,
+})
+```
+**Change Log Level**  
+```go
+var Log, _ = logger.New(logger_common.Option{
+    Tag: logger_common.TAG_APP_CONFIGMGR,
+    LoggingLevel: logger_common.DEBUG, // Append log level
+})
+```
+**Change Log File Name**  
+```go
+var Log, _ = logger.New(logger_common.Option{
+    Tag: logger_common.TAG_APP_CONFIGMGR,
+    LogFile: "new.log", // Append log file name
+})
+```
+
+###### 3.1.2.2. Layout Application, Hardware Control
+
+| Component Name | Settings File Name | File Path |
+|:--|:--|:--|
+| Hardware Control | settings.py | hw-control-compose/hw-control/src/app/common |
+| Layout Application | layoutapply_config.yaml | layout-apply-compose/layout-apply/src/layoutapply/config |
+| Migration Procedure Generation | migrationprocedures_config.yaml | migration-procedure-generator-compose/migration-procedure-generator/src/migrationproceduregenerator/config |
+
+The settings for log output files are as follows.
+Modify the YAML file.
+| Setting Item              | Description                                   |
+| :------------------------ | :-------------------------------------------- |
+| handlers.file.filename    | Log file name                                 |
+| handlers.file.level       | Log level                                     |
+| handlers.file.maxBytes    | Log file size to rotate (unit: bytes)         |
+| handlers.file.backupCount | Number of backup log file                     |
 
 #### 3.2. Change Information Collection Settings 
 Modify the settings file of each collection component to adjust the collection interval and other parameters.
@@ -154,11 +199,24 @@ $ curl -i -s -X PUT http://localhost:8080/cdim/api/v1/configs
    <summary> Details of CDIM Permissions </summary>
    Available when filtering by "filter by realm roles".
 
+   - User role
+  
    | Role | Name | Description |
    |:--|:--|:--|
    | Guest | cdim-viewer | Can view all menus in CDIM. Includes cdim-view-layout, cdim-view-resource, and cdim-view-user roles |
    | DC Operator | cdim-operator | Can operate all menus in CDIM. Includes cdim-viewer permissions with cdim-manage-layout and cdim-manage-resource roles |
    | DC Administrator | cdim-administrator | Full operational permissions in CDIM. Includes cdim-operator permissions with cdim-manage-user roles |
+   
+   - Role for function
+
+   |名前|説明|
+   |:--|:--|
+   |cdim-manage-resource| Resource management :<br>&nbsp; - View any pages<br>&nbsp; - Operate resource(Power control/Aggregation resource) |
+   |cdim-manage-layout| Layout management |
+   |cdim-manage-user| User management |
+   |cdim-view-resource| Resource management :<br>&nbsp; - View any pages |
+   |cdim-view-layout| Layout management(view only) |
+   |cdim-view-user| User management(view only) |
    
    </details>
 

@@ -2,9 +2,6 @@
 
 ## 1. 前提条件
 
-- Docker
-- Git
-
 ### 1.1. Dockerのproxy設定について
 
 > [!WARNING]
@@ -51,8 +48,32 @@ cd installer
 ```
 
 各コンポーネントのリポジトリが clone されていることを確認します。
+clone された各フォルダ(base-compose等)は削除せず環境に保持する必要があります。
+
+```text
+installer
+ ├ alert-manager-compose
+ ├ base-compose
+ ├ configuration-exporter-compose
+ ├ configuration-manager-compose
+ ├ hw-control-compose
+ ├ job-manager-compose
+ ├ layout-apply-compose
+ ├ mf-core
+ ├ mf-layout
+ ├ mf-resource
+ ├ mf-user
+ ├ migration-procedure-generator-compose
+ ├ performance-collector-compose
+ ├ performance-exporter-compose
+ ├ performance-manager-compose
+ └ set-up-tools
+```
 
 ## 3. 設定ファイルを修正する
+
+> [!NOTE]
+> 本章の手順におけるカレントディレクトリは前手順で clone したインストーラーの installer となります。
 
 ### 3.1. フロントエンド
 
@@ -73,9 +94,10 @@ cp .env.example .env
 #### 3.1.2. 設定ファイルの修正
 
 `.env` ファイルを自身の環境に合わせて修正します。
-通常は `cdim-server` を Docker がインストールされているサーバーのホスト名または IP アドレスに変更します。
 
 以下は変更箇所の抜粋です。
+通常 `cdim-server` は、はDockerがインストールされているサーバーのホスト名または IP アドレスを指定してください。
+また、ブラウザの接続先となるため、外部接続可能なホスト名または IP アドレスとする必要があります。
 
 ```sh: .env
 # Micro frontend URL settings
@@ -103,12 +125,6 @@ Docker がインストールされているサーバーの FQDN に置換する�
 
 ```sh
 sed -e "/^NEXT_PUBLIC/s/localhost/$(hostname -f)/g" .env.example > .env
-```
-
-リポジトリのルートディレクトリに戻ります。
-
-```sh
-cd ..
 ```
 
 ### 3.2. ジョブ管理

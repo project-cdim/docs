@@ -1,19 +1,6 @@
 # エミュレーターをインストールする
 
-## 1. 前提条件
-
-- Docker
-- Git
-
-## 2. Docker ネットワークを作成する
-
-CDIM とエミュレーターが利用する Docker ネットワークを作成します。
-
-```sh
-docker network create cdim-net
-```
-
-## 3. エミュレーターを構築する
+## 1. エミュレーターを構築する
 
 エミュレーターを取得します。
 
@@ -28,7 +15,7 @@ cd hw-emulator-reference-compose
 docker compose up -d --build
 ```
 
-## 4. エミュレーターの動作確認
+## 2. エミュレーターの動作確認
 
 以下のコマンドを実行します。
 

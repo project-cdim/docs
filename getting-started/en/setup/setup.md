@@ -3,30 +3,49 @@
 > [!NOTE]
 > Use the same value for `cdim-server` as used in the configuration file for [Installing CDIM](../install/install.md).
 
+> [!NOTE]
+> The current directory in the procedures of this chapter will be the `installer` of the cloned installer in [Install CDIM](../install/install.md).
+
 ## 1. Gateway (Kong) Setup
 
 ### 1.1. Confirm Public Key
 
+The method to verify the Public Key in Keycloak is as follows.
+
 Log in to Keycloak.
+In the initial state, log in with the username: admin and password: admin.
 
 ```sh
 http://cdim-server:8287/
-Username: admin
-Password: admin
 ```
 
-Switch to the "CDIM" realm.
+1. Switch to the "CDIM" realm.
+2. Click "Realm settings".
+3. Click the "Keys" tab.
+4. Click the "Public key" for "RS256".
 
-Click "Realm settings" and then click the "Keys" tab. Check and copy the "Public key" for "RS256".  
-![fig 1-1 Realm Settings Keys](img/key.png)
+![fig 1-1 realm settings keys](img/public_key_01.png)
+
+The Public Key will be displayed, so copy the contents.
+
+![fig 1-1 realm settings keys](img/public_key_02.png)
+
 
 ### 1.2. Setup Gateway with Public Key
 
-Using the copied Public Key from "1.1", create a `public_key.pem` file in the `set-up-tools/gateway/tools/` directory using the format shown below:
+Using the copied Public Key, create a `public_key.pem` file in the `set-up-tools/gateway/tools/` directory using the format shown below:
 
 ```txt:public_key.pem
 -----BEGIN PUBLIC KEY-----
 (Paste the copied Public key here)
+-----END PUBLIC KEY-----
+```
+
+An example of a created file is as follows.
+
+```txt:public_key.pem
+-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A (skip) 79FWBtfKyuQTmnN2mp78N+gwp1LywIDAQAB
 -----END PUBLIC KEY-----
 ```
 
@@ -50,11 +69,10 @@ docker compose up -d --build
 ### 2.1. Create Client in Keycloak
 
 Log in to Keycloak.
+In the initial state, log in with the username: admin and password: admin.
 
 ```sh
 http://cdim-server:8287/
-Username: admin
-Password: admin
 ```
 
 Click "Clients" and then click "Create client", then click on "Create client".  

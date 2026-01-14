@@ -1,19 +1,6 @@
 # Install the Emulator
 
-## 1. Prerequisites
-
-- Docker
-- Git
-
-## 2. Create a Docker Network
-
-Create a Docker network that will be used by CDIM and the emulator.
-
-```sh
-docker network create cdim-net
-```
-
-## 3. Build the Emulator
+## 1. Build the Emulator
 
 Retrieve the emulator.
 
@@ -28,7 +15,7 @@ cd hw-emulator-reference-compose
 docker compose up -d --build
 ```
 
-## 4. Verify Emulator Operation
+## 2. Verify Emulator Operation
 
 Execute the following command.
 
@@ -51,12 +38,6 @@ If you receive a response similar to the one below, the emulator is operating co
     "Members@odata.count": 1,
     "Name": "Processors Collection"
 }
-```
-
-Exit the container.
-
-```sh
-exit
 ```
 
 [Next step: Install CDIM](../install/install.md)

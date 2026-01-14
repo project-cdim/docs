@@ -2,11 +2,6 @@
 
 ## 1. Prerequisites
 
-Ensure you have the following installed:
-
-- Docker
-- Git
-
 ### 1.1. About Docker proxy settings
 
 > [!WARNING]  
@@ -53,10 +48,32 @@ cd installer
 ```
 
 Check to ensure that the repositories for each component are correctly cloned.
+Each cloned directories (such as base-compose) must be retained in the environment and not deleted.
+
+```text
+installer
+ ├ alert-manager-compose
+ ├ base-compose
+ ├ configuration-exporter-compose
+ ├ configuration-manager-compose
+ ├ hw-control-compose
+ ├ job-manager-compose
+ ├ layout-apply-compose
+ ├ mf-core
+ ├ mf-layout
+ ├ mf-resource
+ ├ mf-user
+ ├ migration-procedure-generator-compose
+ ├ performance-collector-compose
+ ├ performance-exporter-compose
+ ├ performance-manager-compose
+ └ set-up-tools
+```
 
 ## 3. Modify the Configuration Files
 
-Adjust configuration files to suit your installation environment.
+> [!NOTE]
+> In the procedures of this chapter, the current directory will be the `installer` of the installer that was cloned in the previous steps.
 
 ### 3.1. Frontend Configuration
 
@@ -76,9 +93,12 @@ cp .env.example .env
 
 #### 3.1.2. Edit Configuration File
 
-Open the `.env` file and update it according to your specific environment settings. Adjust the `cdim-server` address to point to your Docker server's hostname or IP address.
+Open the `.env` file and update it according to your specific environment settings.
 
 Here’s an example of what might be modified:
+Adjust the `cdim-server` address to point to your Docker server's hostname or IP address.
+It also needs to be a hostname or IP address that can be accessed externally,
+as it will be the connection destination for the browser.
 
 ```ini: .env
 # Micro frontend URL settings
@@ -106,12 +126,6 @@ If you want to replace it with the FQDN of the server where Docker is installed,
 
 ```sh
 sed -e "/^NEXT_PUBLIC/s/localhost/$(hostname -f)/g" .env.example > .env
-```
-
-Return to the repository root directory.
-
-```sh
-cd ..
 ```
 
 ### 3.2. Job Management Configuration
