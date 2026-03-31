@@ -9,6 +9,8 @@ If CDIM is not yet installed, please start with the installation by following th
 After installation or if already installed, start with the steps outlined below:
 
 1. [Check Hardware Configuration and Information](view/README.md)
-2. [Configuration Changes](layout/README.md)
+2. Configuration Changes
+   * [2.1 Configuration Changes by Manual Configuration Definition](layout-manual/README.md)
+   * [2.2. Configuration Changes Using Design Engine](layout-design/README.md)
 3. [Various Settings](configuration/README.md)
 4. [Appendix](appendix/README.md)

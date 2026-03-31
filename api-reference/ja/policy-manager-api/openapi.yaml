@@ -1,0 +1,1148 @@
+openapi: 3.0.3
+servers:
+  - url: http://(host address)/cdim/api/v1
+info:
+  title: 制約条件管理API
+  description: |-
+    管理対象となるComposable Disaggregated Infrastructureにおける設計機構の制約条件を管理するための機能群
+  version: 0.2.0
+tags:
+  - name: 制約条件管理
+paths:
+  /policies:
+    get:
+      tags:
+        - 制約条件管理
+      summary: 制約条件参照(一括取得)
+      description: |-
+        制約条件管理DBから指定した条件に一致する制約条件をすべて取得する
+        - 取得対象が存在しない場合は空のリストを返却する
+        - 構成案設計機能が本APIを使用し、制約条件を取得する
+          - デフォルトは全制約条件を取得する
+        - allが指定されている状態で、他の種別が指定されていた場合はバリデーションエラーとなる
+        - 制約種別が重複して指定された場合はバリデーションエラーとなる  
+        - subCategoryはpolicy内のhardwareConnectionsLimit, useThresholdのことを指す
+        - sortByおよびorderByに指定があった場合、sortByで指定された値を基準に、orderByに指定された順序で並び替えを行う
+          - sortByのみに指定があった場合、sortByで指定された値を基準に、降順に並び替えを行う
+          - orderByのみに指定があった場合、createdAtを基準にorderByで指定された値で並び替え行う
+        - sortByにcreatedAtまたはupdatedAtが指定され、orderByがascの場合は古い日付順になる
+          - descの場合は新しい日付順になる
+        - offsetに指定があり、sortBy、orderByに指定があった場合、sortBy、orderByの指定に従い並び替えを行ったデータの指定した行から取得を行う。
+        - deviceに指定する値は綴りがあっていれば単語の大文字/小文字の区別を無視する。
+          - ex.Cpu/cpu/CPU等、いずれでも指定可能。
+      parameters:
+        - name: category
+          in: query
+          description: |-
+            制約種別。未指定時には全制約種別を取得対象とする
+            - all: 全制約種別取得
+            - nodeConfigurationPolicy (ノード構成制約): ノード上のデバイス構成に関する制約
+            - systemOperationPolicy (システム運用制約): 構成案設計時に算出されるリソース使用率のしきい値に関する制約
+
+          required: false
+          schema:
+            $ref: "#/components/schemas/CategoryQuery"
+        - name: enabled
+          in: query
+          description: |-
+            有効無効状態。指定することでenabledを検索対象とする。<br>
+            未指定時にはすべての状態を取得対象とする
+            - all: 有効無効にかかわらずすべて制約条件を取得
+            - true: 有効化された制約条件のみ取得
+            - false: 無効化された制約条件のみ取得
+          required: false
+          schema:
+            $ref: "#/components/schemas/GetEnabled"
+
+        - name: subCategory
+          in: query
+          description: |-
+            サブカテゴリ。制約条件(policy)内の情報のサブカテゴリの検索を行うために使用する。<br>指定された場合は、制約条件内の「subCategory」を検索対象とする。<br>
+            未指定時には、subCategoryを検索条件としない
+          required: false
+          schema:
+            $ref: "#/components/schemas/SubCategory"
+
+        - name: device
+          in: query
+          description: |-
+            デバイス種別。制約条件(policy)内の情報のデバイス種別の検索を行うために使用する。<br>指定された場合は、制約条件内のデバイス種別を検索対象とする。<br>
+            未指定時には、デバイス種別を検索条件としない<br>
+            指定する値は綴りがあっていれば単語の大文字/小文字の区別を無視する。(Cpu/cpu/CPU等、いずれでも指定可能)
+          required: false
+          schema:
+            $ref: "#/components/schemas/Device"
+
+        - name: fields
+          in: query
+          description: |-
+            取得対象項目。取得する制約条件の項目を指定し、未指定時には、全項目が取得対象となる。<br>未指定時には、全項目が取得対象となる。<br>取得対象項目として指定しない項目はキーごとレスポンスボディから除外される。<br>
+            - policyID:制約条件ID
+            - category:制約種別
+            - title:タイトル
+            - policy:制約条件
+            - enabled:有効無効状態
+            - createdAt:登録日時
+            - updatedAt:更新日時
+          required: false
+          schema:
+            $ref: "#/components/schemas/Fields"
+
+        - name: sortBy
+          in: query
+          description: |-
+            ソート対象<br>並び替えの基準となる項目を指定し、未指定時にはcreatedAtを基準に並び替えを行う。<br>並び替え結果は、クエリの結果に依存する
+            - createdAt:登録日時
+            - updatedAt:更新日時
+          required: false
+          schema:
+            $ref: "#/components/schemas/SortBy"
+
+        - name: orderBy
+          in: query
+          description: |-
+            並び替え順序<br>未指定時には、降順で並び替えを行う<br>
+            sortByおよびorderByに指定があった場合、sortByで指定された値を基準に、orderByに指定された方法で並び替えを行う<br>
+            sortByのみに指定があった場合、sortByで指定された値を基準に、降順(desc)に並び替えを行う<br>
+            orderByのみに指定があった場合、createdAtをソート対象としorderByで指定された値で並び替え行う。
+            sortByにcreatedAtまたはupdatedAtが指定され、orderByがascの場合は古い日付順になる<br>
+            descの場合は新しい日付順になる
+            - asc:昇順
+            - desc:降順
+          required: false
+          schema:
+            $ref: "#/components/schemas/OrderBy"
+
+        - name: limit
+          in: query
+          description: |-
+            取得件数。<br>指定した件数分、制約条件を取得する。<br>
+            未指定の場合、20件の制約条件を取得する。<br>
+            制約条件の取得件数を1以上の整数値で指定する。<br>
+            データベースに登録されている制約条件の件数が、limitで指定した件数に満たない場合、登録されているすべての制約条件を取得する。<br>
+            2024年1Q時点で登録できる制約条件の数は制約種別2件(ノード構成制約、システム運用制約) × 10種類(デバイス種別：cpuなど）で計20件となる。そのため、デフォルト値を20とする。<br>
+
+          required: false
+          schema:
+            $ref: "#/components/schemas/Limit"
+
+        - name: offset
+          in: query
+          description: |-
+            取得開始行。<br>指定した行から制約条件を取得する。<br>
+            未指定時、あるいは0の場合は、先頭行から取得する<br>
+            データベースから取得する制約条件の取得行を0以上の整数値で指定する。<br>
+            データベースで登録されている制約条件の件数が、offsetで指定した行数に満たない場合、取得結果は空となる。<br>
+            sortBy、orderByに指定があった場合、sortBy、orderByの指定に従い並び替えを行ったデータの指定した行から取得を行う。
+          required: false
+          schema:
+            $ref: "#/components/schemas/Offset"
+      responses:
+        200:
+          description: |-
+            正常
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Policy"
+              examples:
+                全制約種別が取得対象でfieldsに指定がない場合:
+                  value:
+                    count: 2
+                    totalCount: 2
+                    policies:
+                      - policyID: "d8eceb14da"
+                        category: "nodeConfigurationPolicy"
+                        title: ノード構成制約に関する制約条件
+                        policy:
+                          {
+                            "hardwareConnectionsLimit":
+                              { "cpu": { "maxNum": 5, "minNum": 1 } },
+                          }
+                        enabled: true
+                        createdAt: "2023-05-10T00:00:00Z"
+                        updatedAt: "2023-05-10T00:00:00Z"
+                      - policyID: "abc10dfaa9"
+                        category: "systemOperationPolicy"
+                        title: 構成案設計時に算出されるリソース使用率のしきい値に関する制約
+                        policy:
+                          {
+                            "useThreshold":
+                              {
+                                "cpu":
+                                  {
+                                    "value": 80,
+                                    "unit": "percent",
+                                    "comparison": "lt",
+                                  },
+                              },
+                          }
+                        enabled: true
+                        createdAt: "2023-05-10T00:00:00Z"
+                        updatedAt: "2023-05-10T00:00:00Z"
+                全制約種別が取得対象でfieldsにpolicyとenabledの指定がある場合:
+                  value:
+                    count: 2
+                    totalCount: 2
+                    policies:
+                      - policy:
+                          {
+                            "hardwareConnectionsLimit":
+                              { "cpu": { "maxNum": 5, "minNum": 1 } },
+                          }
+                        enabled: true
+                      - policy:
+                          {
+                            "useThreshold":
+                              {
+                                "cpu":
+                                  {
+                                    "value": 80,
+                                    "unit": "percent",
+                                    "comparison": "lt",
+                                  },
+                              },
+                          }
+                        enabled: true
+                ノード構成制約が取得対象でfieldsに指定がない場合:
+                  value:
+                    count: 1
+                    totalCount: 1
+                    policies:
+                      - policyID: "d8eceb14da"
+                        category: "nodeConfigurationPolicy"
+                        title: ノード構成制約に関する制約条件
+                        policy:
+                          {
+                            "hardwareConnectionsLimit":
+                              { "cpu": { "maxNum": 5, "minNum": 1 } },
+                          }
+                        enabled: true
+                        createdAt: "2023-05-10T00:00:00Z"
+                        updatedAt: "2023-05-10T00:00:00Z"
+                ノード構成制約が取得対象でfieldsにpolicyIDとenabledの指定がある場合:
+                  value:
+                    count: 1
+                    totalCount: 1
+                    policies:
+                      - policyID: "d8eceb14da"
+                        enabled: true
+                システム運用制約が取得対象でfieldsに指定がない:
+                  value:
+                    count: 1
+                    totalCount: 1
+                    policies:
+                      - policyID: "abc10dfaa9"
+                        category: "systemOperationPolicy"
+                        title: 構成案設計時に算出されるリソース使用率のしきい値に関する制約
+                        policy:
+                          {
+                            "useThreshold":
+                              {
+                                "cpu":
+                                  {
+                                    "value": 80,
+                                    "unit": "percent",
+                                    "comparison": "lt",
+                                  },
+                              },
+                          }
+                        enabled: true
+                        createdAt: "2023-05-10T00:00:00Z"
+                        updatedAt: "2023-05-10T00:00:00Z"
+                システム運用制約が取得対象でfieldsにpolicyIDとcategoryとcreatedAtの指定がある場合:
+                  value:
+                    count: 1
+                    totalCount: 1
+                    policies:
+                      - policyID: "abc10dfaa9"
+                        category: "systemOperationPolicy"
+                        createdAt: "2023-05-10T00:00:00Z"
+                sortByにcreatedAtが指定された場合(createdAtを基準に昇順に並び替える):
+                  value:
+                    count: 2
+                    totalCount: 2
+                    policies:
+                      - policyID: "d8eceb14da"
+                        category: "nodeConfigurationPolicy"
+                        title: ノード構成制約に関する制約条件
+                        policy:
+                          {
+                            "hardwareConnectionsLimit":
+                              { "memory": { "maxNum": 10, "minNum": 4 } },
+                          }
+                        enabled: true
+                        createdAt: "2023-05-10T00:00:00Z"
+                        updatedAt: "2023-05-10T00:00:00Z"
+                      - policyID: "abc10dfaa9"
+                        category: "systemOperationPolicy"
+                        title: 構成案設計時に算出されるリソース使用率のしきい値に関する制約
+                        policy:
+                          {
+                            "useThreshold":
+                              {
+                                "dsp":
+                                  {
+                                    "value": 80,
+                                    "unit": "percent",
+                                    "comparison": "lt",
+                                  },
+                              },
+                          }
+                        enabled: true
+                        createdAt: "2023-05-20T00:00:00Z"
+                        updatedAt: "2023-05-26T00:00:00Z"
+                sortByにupdatedAt,orderByにdescが指定された場合(updatedAtを基準に降順に並び替える):
+                  value:
+                    count: 2
+                    totalCount: 2
+                    policies:
+                      - policyID: "abc10dfaa9"
+                        category: "systemOperationPolicy"
+                        title: 構成案設計時に算出されるリソース使用率のしきい値に関する制約
+                        policy:
+                          {
+                            "useThreshold":
+                              {
+                                "dsp":
+                                  {
+                                    "value": 80,
+                                    "unit": "percent",
+                                    "comparison": "lt",
+                                  },
+                              },
+                          }
+                        enabled: true
+                        createdAt: "2023-05-20T00:00:00Z"
+                        updatedAt: "2023-05-26T00:00:00Z"
+                      - policyID: "d8eceb14da"
+                        category: "nodeConfigurationPolicy"
+                        title: ノード構成制約に関する制約条件
+                        policy:
+                          {
+                            "hardwareConnectionsLimit":
+                              { "memory": { "maxNum": 10, "minNum": 4 } },
+                          }
+                        enabled: true
+                        createdAt: "2023-05-10T00:00:00Z"
+                        updatedAt: "2023-05-10T00:00:00Z"
+                limitに1,offsetに10が指定された場合:
+                  value:
+                    count: 1
+                    totalCount: 20
+                    policies:
+                      - policyID: "abc10dfaa9"
+                        category: "systemOperationPolicy"
+                        title: 構成案設計時に算出されるリソース使用率のしきい値に関する制約
+                        policy:
+                          {
+                            "useThreshold":
+                              {
+                                "cpu":
+                                  {
+                                    "value": 50,
+                                    "unit": "percent",
+                                    "comparison": "lt",
+                                  },
+                              },
+                          }
+                        enabled: true
+                        createdAt: "2024-06-20T00:00:00Z"
+                        updatedAt: "2024-06-26T00:00:00Z"
+
+        400:
+          description: |-
+            不正なリクエストボディ。
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+              example:
+                code: "E10001"
+                messeage: "'' is not one of ['all', 'nodeConfigurationPolicy', 'systemOperationPolicy']"
+        500:
+          description: |-
+            内部サーバーエラーが発生。
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      tags:
+        - 制約条件管理
+      summary: 制約条件追加
+      description: |
+        制約条件管理DBに制約条件を登録する。登録に成功した場合、制約条件に付与された制約条件IDを返す
+        -  指定された制約種別(category)と制約条件(policy)に矛盾が生じた場合はバリデーションエラーになる
+            - 指定された制約条件(policy)からsubCategoryのみを取得し、指定された制約種別(category)とsubCategoryが想定した組み合わせとなっているか確認する
+            - ex.制約種別(category)にノード構成制約(nodeConfigurationPolicy)が指定された場合、制約条件(policy)のsubCategoryがhardwareConnectionsLimitであるか確認し、異なる場合はバリデーションエラーとなる
+        - 指定されたpolicyのsubCategoryおよびデバイス種別がデータベースに登録済みの制約条件のsubCategoryおよびデバイス種別と同一の場合は重複エラーとなる
+            - subCategoryはpolicy内のhardwareConnectionsLimit, useThresholdのことを指す。
+        - enabledを指定することで、有効無効状態を指定して制約条件を登録することができる。
+        - 制約条件(policy)のdeviceに指定する値は綴りがあっていれば単語の大文字/小文字の区別を無視する。(Cpu/cpu/CPU等、いずれでも指定可能)
+            - deviceに指定された値はすべてローワーキャメルケースに変換してDBへ登録する
+      requestBody:
+        description: |-
+          制約条件管理DBに登録する制約種別(category)、タイトル(title)、制約条件(policy)、有効無効状態(enabled)を指定する
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/NodePolicyInsertRequest"
+                - $ref: "#/components/schemas/SystemPolicyInsertRequest"
+            examples:
+              nodeConfigurationPolicy:
+                value:
+                  category: "nodeConfigurationPolicy"
+                  title: ノード構成制約に関する制約条件
+                  policy:
+                    {
+                      "hardwareConnectionsLimit":
+                        { "cpu": { "maxNum": 5, "minNum": 1 } },
+                    }
+                  enabled: false
+              systemOperationPolicy:
+                value:
+                  category: "systemOperationPolicy"
+                  title: "構成案設計時に算出されるリソース使用率のしきい値に関する制約"
+                  policy:
+                    {
+                      "useThreshold":
+                        {
+                          "cpu":
+                            {
+                              "value": 80,
+                              "unit": "percent",
+                              "comparison": "lt",
+                            },
+                        },
+                    }
+                  enabled: true
+
+      responses:
+        201:
+          description: |-
+            正常
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PolicyIDResponse"
+        400:
+          description: |-
+            不正なリクエストボディ。
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+        500:
+          description: |-
+            内部サーバーエラーが発生。
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /policies/{policyID}:
+    get:
+      tags:
+        - 制約条件管理
+      summary: 制約条件参照(ID指定)
+      description: |-
+        制約条件管理DBから指定したIDの制約条件を取得する。
+      parameters:
+        - name: policyID
+          description: 制約条件ID。参照する制約条件のIDを指定する
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/PolicyID"
+      responses:
+        200:
+          description: |-
+            正常
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/NodePolicyGetRequest"
+                  - $ref: "#/components/schemas/SystemPolicyGetRequest"
+              examples:
+                ノード構成制約が取得対象の場合:
+                  value:
+                    policyID: "d8eceb14da"
+                    category: "nodeConfigurationPolicy"
+                    title: ノード構成制約に関する制約条件
+                    policy:
+                      {
+                        "hardwareConnectionsLimit":
+                          { "cpu": { "maxNum": 5, "minNum": 1 } },
+                      }
+                    enabled: true
+                    createdAt: "2023-05-10T00:00:00Z"
+                    updatedAt: "2023-05-10T00:00:00Z"
+                システム運用制約が取得対象の場合:
+                  value:
+                    policyID: "abc10dfaa9"
+                    category: "systemOperationPolicy"
+                    title: 構成案設計時に算出されるリソース使用率のしきい値に関する制約
+                    policy:
+                      {
+                        "useThreshold":
+                          {
+                            "cpu":
+                              {
+                                "value": 80,
+                                "unit": "percent",
+                                "comparison": "lt",
+                              },
+                          },
+                      }
+                    enabled: true
+                    createdAt: "2023-05-10T00:00:00Z"
+                    updatedAt: "2023-05-10T00:00:00Z"
+
+        404:
+          description: |-
+            指定された制約条件が存在しない。
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotExsistErrorResponse"
+        400:
+          description: |-
+            不正なリクエストボディ。
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+              example:
+                code: "E10001"
+                messeage: "'28ac2c8dez' does not match '^[0-9a-f]+$'"
+        500:
+          description: |-
+            内部サーバーエラーが発生。
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      tags:
+        - 制約条件管理
+      summary: 制約条件更新
+      description: |-
+        制約条件管理DBに格納されている制約条件を更新する。
+        - 任意パラメータがすべて空だった場合、バリデーションエラーになる
+        - 制約種別(category)と制約条件(policy)の両方が指定された場合、 制約種別(category)と制約条件(policy)に矛盾が生じた場合はバリデーションエラーになる
+          - 指定された制約条件(policy)からsubCategoryのみを取得し、指定された制約種別(category)とsubCategoryが想定した組み合わせとなっているか確認する
+          - ex.制約種別(category)にノード構成制約(nodeConfigurationPolicy)が指定された場合、制約条件(policy)のsubCategoryがhardwareConnectionsLimitであるか確認し、異なる場合はバリデーションエラーとなる
+        - 制約種別(category)もしくは制約条件(policy)のみに指定があった場合、DBに登録済みの制約種別(category)もしくは制約条件(policy)と矛盾が生じた場合はバリデーションエラーになる
+          - 指定されたまたはDBに登録済みの制約条件(policy)からsubCategoryのみを取得し、指定されたDBに登録済みの制約種別(category)とsubCategoryが想定した組み合わせとなっているか確認する
+          - ex.制約種別(category)にノード構成制約(nodeConfigurationPolicy)が指定された場合。DBに登録済みの制約条件(policy)のsubCategoryがhardwareConnectionsLimitであるか確認し、異なる場合はバリデーションエラーとなる
+        - 指定されたpolicyのsubCategoryおよびデバイス種別がデータベースに登録済みの制約条件のsubCategoryおよびデバイス種別と同一の場合は重複エラーとなる。
+          - subCategoryはpolicy内のhardwareConnectionsLimit, useThresholdのことを指す
+        - パラメータ「force」にtrueが指定された場合、有効状態の制約条件を更新することができる
+        - 制約条件(policy)のdeviceに指定する値は綴りがあっていれば単語の大文字/小文字の区別を無視する。(Cpu/cpu/CPU等、いずれでも指定可能)
+            - deviceに指定された値はすべてローワーキャメルケースに変換してDBへ登録する
+
+      parameters:
+        - name: policyID
+          description: 制約条件ID。更新したい制約条件のIDを指定する。
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/PolicyID"
+        - name: force
+          in: query
+          description: |-
+            強制更新フラグ。trueが指定された場合、有効状態の制約条件を更新することができる。
+             - true: 有効。有効状態の制約条件も更新する。
+             - false: 無効。有効状態の制約条件は更新しない。
+          required: false
+          schema:
+            $ref: "#/components/schemas/Force"
+      requestBody:
+        description: |-
+          更新する制約種別(category)、タイトル(title)、制約条件(policy)を指定する。
+          - リクエストボディに含まれない項目は更新しない
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/NodePolicyUpdateRequest"
+                - $ref: "#/components/schemas/SystemPolicyUpdateRequest"
+            examples:
+              nodeConfigurationPolicy:
+                value:
+                  category: "nodeConfigurationPolicy"
+                  title: ノード構成制約に関する制約条件
+                  policy:
+                    {
+                      "hardwareConnectionsLimit":
+                        { "cpu": { "maxNum": 5, "minNum": 1 } },
+                    }
+              systemOperationPolicy:
+                value:
+                  category: "systemOperationPolicy"
+                  title: 構成案設計時に算出されるリソース使用率のしきい値に関する制約
+                  policy:
+                    {
+                      "useThreshold":
+                        {
+                          "cpu":
+                            {
+                              "value": 80,
+                              "unit": "percent",
+                              "comparison": "lt",
+                            },
+                        },
+                    }
+
+      responses:
+        204:
+          description: |-
+            正常
+        400:
+          description: |-
+            不正なリクエストボディ。
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+              example:
+                code: "E10001"
+                messeage: "'28ac2c8dez' does not match '^[0-9a-f]+$'"
+        404:
+          description: |-
+            指定された制約条件が存在しない。
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotExsistErrorResponse"
+        500:
+          description: |-
+            内部サーバーエラーが発生。
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      tags:
+        - 制約条件管理
+      summary: 制約条件削除
+      description: |-
+        制約条件管理DBに格納されている制約条件を削除する。
+        - パラメータ「force」にtrueが指定された場合、有効状態の制約条件を削除することができる
+      parameters:
+        - name: policyID
+          description: 制約条件ID。削除する制約条件のIDを指定する。
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/PolicyID"
+        - name: force
+          in: query
+          description: |-
+            強制削除フラグ。trueが指定された場合、有効状態の制約条件を削除することができる。
+             - true: 有効。有効状態の制約条件も削除する。
+             - false: 無効。有効状態の制約条件は削除しない。
+          required: false
+          schema:
+            $ref: "#/components/schemas/Force"
+      responses:
+        204:
+          description: 正常
+        400:
+          description: |-
+            不正なリクエストボディ。
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+              example:
+                code: "E10001"
+                messeage: "'28ac2c8dez' does not match '^[0-9a-f]+$'"
+        404:
+          description: |-
+            指定された制約条件が存在しない。
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotExsistErrorResponse"
+        500:
+          description: |-
+            内部サーバーエラーが発生。
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /policies/change-enabled:
+    put:
+      tags:
+        - 制約条件管理
+      summary: 制約条件有効無効化
+      description: |-
+        制約条件管理DBに格納されている制約条件の有効・無効フラグを更新する。<br>
+        - 指定された制約条件IDに対してのみ更新を行う。
+        - パラメータ指定が両方とも空だった場合バリデーションエラーになる
+        - enableIDList内で制約条件IDが重複して指定された場合エラーとなる
+        - disableIDList内で制約条件IDが重複して指定された場合エラーとなる
+        - 管理者のみ利用可能とするよう権限管理が必要
+        - 管理者が一時的に制約条件をシステムの対象外(取得、更新されない)とするために使用する
+            - 特定の制約条件の有効化/無効化により、構成案設計の結果に与える影響を検証する場合など
+        - 本APIは複数レコードの同時更新が可能だが、1件でもエラーが発生した場合はすべての更新をロールバックする
+      requestBody:
+        description: |-
+          有効/無効にする制約条件のIDのリスト。指定することによって状態を有効/無効状態に変更する
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PolicyIDRequest"
+      responses:
+        201:
+          description: 正常
+        400:
+          description: |-
+            不正なリクエストボディ。
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+              example:
+                code: E10001
+                message: No parameters.Please specify at least one option
+        500:
+          description: |-
+            内部サーバーエラーが発生。
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /policies/export:
+    get:
+      tags:
+        - 制約条件管理
+      summary: 制約条件エクスポート
+      description: |-
+        制約条件管理DBからすべての制約条件を取得し、ファイルをダウンロードする
+        - 取得対象が存在しない場合は「exportedCount」キーの値が0及び「policies」キーの値が空のリストのファイルとなる
+        - yaml形式でファイルを出力する場合、ファイルの先頭にセパレータ(---)が追加される
+        - fileNameに空文字列が指定された場合バリデーションエラーとなる
+      parameters:
+        - name: format
+          in: query
+          required: true
+          description: |-
+            出力フォーマット。出力するファイルの形式を指定する
+          schema:
+            $ref: "#/components/schemas/Format"
+        - name: fileName
+          in: query
+          description: |-
+            出力ファイル名。制約条件の保存されるファイル名を指定する
+          required: false
+          schema:
+            $ref: "#/components/schemas/Name"
+      responses:
+        200:
+          description: |-
+            正常
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExportPolicy"
+              example:
+                exportedCount: 2
+                policies:
+                  - policyID: "d8eceb14da"
+                    category: "nodeConfigurationPolicy"
+                    title: ノード構成制約に関する制約条件
+                    policy:
+                      {
+                        "hardwareConnectionsLimit":
+                          { "cpu": { "maxNum": 5, "minNum": 1 } },
+                      }
+                    enabled: true
+                    createdAt: "2023-05-10T00:00:00Z"
+                    updatedAt: "2023-05-10T00:00:00Z"
+                  - policyID: "abc10dfaa9"
+                    category: "systemOperationPolicy"
+                    title: 構成案設計時に算出されるリソース使用率のしきい値に関する制約
+                    policy:
+                      {
+                        "useThreshold":
+                          {
+                            "cpu":
+                              {
+                                "value": 80,
+                                "unit": "percent",
+                                "comparison": "lt",
+                              },
+                          },
+                      }
+                    enabled: true
+                    createdAt: "2023-05-10T00:00:00Z"
+                    updatedAt: "2023-05-10T00:00:00Z"
+
+            application/yaml:
+              schema:
+                $ref: "#/components/schemas/ExportPolicy"
+              example:
+                exportedCount: 2
+                policies:
+                  - policyID: d8eceb14da
+                    category: nodeConfigurationPolicy
+                    title: ノード構成制約に関する制約条件
+                    policy:
+                      hardwareConnectionsLimit:
+                        cpu:
+                          maxNum: 5
+                          minNum: 1
+                    enabled: true
+                    createdAt: "2023-05-10T00:00:00Z"
+                    updatedAt: "2023-05-10T00:00:00Z"
+                  - policyID: abc10dfaa9
+                    category: systemOperationPolicy
+                    title: 構成案設計時に算出されるリソース使用率のしきい値に関する制約
+                    policy:
+                      useThreshold:
+                        cpu:
+                          value: 80
+                          unit: percent
+                          comparison: lt
+                    enabled: true
+                    createdAt: "2023-05-10T00:00:00Z"
+                    updatedAt: "2023-05-10T00:00:00Z"
+        400:
+          description: |-
+            不正なリクエストボディ。
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+              example:
+                code: "E10001"
+                messeage: "'csv' is not one of ['json','yaml']"
+
+        500:
+          description: |-
+            内部サーバーエラーが発生。
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /policies/import:
+    post:
+      tags:
+        - 制約条件管理
+      summary: 制約条件インポート
+      description: |-
+        制約条件エクスポートで出力されたファイルをアップロードし、ファイル内の制約条件を制約条件管理DBへ一括登録する
+        - 本APIは複数レコードを追加可能だが、1件でもエラーが発生した場合はすべての更新をロールバックする
+        - パラメータ「format」に指定されたフォーマットと「input」に指定されたファイルのフォーマットが違う場合エラーとなる
+        - パラメータ「input」に指定された制約条件内のデータが0件だった場合はバリデーションエラーとなる
+        - パラメータ「input」に指定された制約条件の制約種別(category)と制約条件(policy)に矛盾が生じた場合はバリデーションエラーとなる
+            - 制約条件(policy)からsubCategoryのみを取得し、制約種別(category)とsubCategoryが想定した組み合わせとなっているか確認する
+            - ex.制約種別(category)にノード構成制約(nodeConfigurationPolicy)が指定された場合、制約条件(policy)のsubCategoryがhardwareConnectionsLimitであるか確認し、異なる場合はバリデーションエラーとなる
+        - パラメータ「input」に指定された制約条件のsubCategoryおよびデバイス種別がデータベースに登録済みの制約条件のsubCategoryおよびデバイス種別と同一の場合、重複している制約条件の登録はスキップする
+            - ファイル内で同一のsubCategoryとデバイス種別が存在する場合、重複エラーとなる
+            - subCategoryはpolicy内のhardwareConnectionsLimit, useThresholdのことを指す
+        - 制約条件(policy)のdeviceに指定する値は綴りがあっていれば単語の大文字/小文字の区別を無視する。(Cpu/cpu/CPU等、いずれでも指定可能)
+            - deviceに指定された値はすべてローワーキャメルケースに変換してDBへ登録する
+
+      parameters:
+        - name: format
+          in: query
+          required: true
+          description: |-
+            入力フォーマット。入力するファイルの形式を指定する
+          schema:
+            $ref: "#/components/schemas/Format"
+      requestBody:
+        required: true
+        description: |-
+          入力ファイル。制約条件エクスポートで出力されたファイルを指定する
+        content:
+          multipart/form-data:
+            schema:
+              description: |-
+                入力ファイル。制約条件エクスポートで出力されたファイルを指定する
+              type: object
+              properties:
+                input:
+                  type: object
+                  format: binary
+                  example:
+                    exportedCount: 1
+                    policies:
+                      - policyID: "d8eceb14da"
+                        category: "nodeConfigurationPolicy"
+                        title: ノード構成制約に関する制約条件
+                        policy:
+                          {
+                            "hardwareConnectionsLimit":
+                              { "cpu": { "maxNum": 5, "minNum": 1 } },
+                          }
+                        enabled: true
+                        createdAt: "2023-05-10T00:00:00Z"
+                        updatedAt: "2023-05-10T00:00:00Z"
+
+      responses:
+        201:
+          description: |-
+            正常
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CompletedImportResults"
+              example:
+                summary:
+                  status: "completed"
+                  totalCount: 3
+                  completedCount: 2
+                details:
+                  - policyID: "d8eceb14da"
+                    message: "completed"
+                  - policyID: "1bd4ed8ace"
+                    message: "Skipped due to duplicate database and input data"
+                  - policyID: "d1b14e4dab"
+                    message: "policyID was reissued because of duplication 【再発行した制約条件ID】"
+
+        400:
+          description: |-
+            不正なリクエストボディまたは制約条件のインポートに失敗。statusとしてfailedと失敗した件数、policyIDおよびインポートに失敗した理由を返す。
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FailedImportResults"
+              examples:
+                バリデーションエラーが発生した場合:
+                  value:
+                    summary:
+                      status: "failed"
+                      totalCount: 3
+                      failedCount: 2
+                    details:
+                      - policyID: "d8eceb14da"
+                        message: "'unit' is a required property"
+                      - policyID: "1bd4ed8ace"
+                        message: "Your definition of policy is incorrect.Select one of ['hardwareConnectionsLimit' ,'useThreshold']"
+                フォーマットエラーが発生した場合:
+                  value:
+                    summary:
+                      status: "failed"
+                      totalCount: 0
+                      failedCount: 0
+                    details:
+                      - message: "File failed to load because specified format is different from file format"
+                パラメータエラーが発生した場合:
+                  value:
+                    code: "E10001"
+                    messeage: "'csv' is not one of ['json','yaml']"
+        500:
+          description: |-
+            内部サーバーエラーが発生。
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+components:
+  schemas:
+    NodeConfiguration:
+      $ref: "./openapi_schema.yaml#/components/schemas/NodeConfiguration"
+    SystemOperation:
+      $ref: "./openapi_schema.yaml#/components/schemas/SystemOperation"
+    CategoryQuery:
+      $ref: "./openapi_schema.yaml#/components/schemas/CategoryQuery"
+    PolicyID:
+      $ref: "./openapi_schema.yaml#/components/schemas/PolicyID"
+    PolicyIDRequest:
+      $ref: "./openapi_schema.yaml#/components/schemas/PolicyIDRequest"
+    PolicyIDResponse:
+      $ref: "./openapi_schema.yaml#/components/schemas/PolicyIDResponse"
+    Title:
+      $ref: "./openapi_schema.yaml#/components/schemas/Title"
+    Enabled:
+      $ref: "./openapi_schema.yaml#/components/schemas/Enabled"
+    GetEnabled:
+      $ref: "./openapi_schema.yaml#/components/schemas/GetEnabled"
+    SetEnabled:
+      $ref: "./openapi_schema.yaml#/components/schemas/SetEnabled"
+    NodePolicyJson:
+      $ref: "./openapi_schema.yaml#/components/schemas/NodePolicyJson"
+    SystemPolicyJson:
+      $ref: "./openapi_schema.yaml#/components/schemas/SystemPolicyJson"
+    PolicyIDList:
+      $ref: "./openapi_schema.yaml#/components/schemas/PolicyIDList"
+    NodePolicyUpdateRequest:
+      $ref: "./openapi_schema.yaml#/components/schemas/NodePolicyUpdateRequest"
+    SystemPolicyUpdateRequest:
+      $ref: "./openapi_schema.yaml#/components/schemas/SystemPolicyUpdateRequest"
+    NodePolicyGetRequest:
+      $ref: "./openapi_schema.yaml#/components/schemas/NodePolicyGetRequest"
+    SystemPolicyGetRequest:
+      $ref: "./openapi_schema.yaml#/components/schemas/SystemPolicyGetRequest"
+    NodePolicyInsertRequest:
+      $ref: "./openapi_schema.yaml#/components/schemas/NodePolicyInsertRequest"
+    SystemPolicyInsertRequest:
+      $ref: "./openapi_schema.yaml#/components/schemas/SystemPolicyInsertRequest"
+    Policy:
+      $ref: "./openapi_schema.yaml#/components/schemas/Policy"
+    CreatedAt:
+      $ref: "./openapi_schema.yaml#/components/schemas/CreatedAt"
+    UpdatedAt:
+      $ref: "./openapi_schema.yaml#/components/schemas/UpdatedAt"
+    ErrorResponse:
+      $ref: "./openapi_schema.yaml#/components/schemas/ErrorResponse"
+    ValidationErrorResponse:
+      $ref: "./openapi_schema.yaml#/components/schemas/ValidationErrorResponse"
+    NotExsistErrorResponse:
+      $ref: "./openapi_schema.yaml#/components/schemas/NotExsistErrorResponse"
+    Fields:
+      $ref: "./openapi_schema.yaml#/components/schemas/Fields"
+    SubCategory:
+      $ref: "./openapi_schema.yaml#/components/schemas/SubCategory"
+    Device:
+      $ref: "./openapi_schema.yaml#/components/schemas/Device"
+    Format:
+      $ref: "./openapi_schema.yaml#/components/schemas/Format"
+    Name:
+      $ref: "./openapi_schema.yaml#/components/schemas/Name"
+    Force:
+      $ref: "./openapi_schema.yaml#/components/schemas/Force"
+    ExportPolicy:
+      $ref: "./openapi_schema.yaml#/components/schemas/ExportPolicy"
+    CompletedImportResults:
+      $ref: "./openapi_schema.yaml#/components/schemas/CompletedImportResults"
+    FailedImportResults:
+      $ref: "./openapi_schema.yaml#/components/schemas/FailedImportResults"
+    SortBy:
+      $ref: "./openapi_schema.yaml#/components/schemas/SortBy"
+    OrderBy:
+      $ref: "./openapi_schema.yaml#/components/schemas/OrderBy"
+    Limit:
+      $ref: "./openapi_schema.yaml#/components/schemas/Limit"
+    Offset:
+      $ref: "./openapi_schema.yaml#/components/schemas/Offset"
+    X-Content-Type-Options:
+      $ref: "./openapi_schema.yaml#/components/schemas/X-Content-Type-Options"
+    Content-Type:
+      $ref: "./openapi_schema.yaml#/components/schemas/Content-Type"

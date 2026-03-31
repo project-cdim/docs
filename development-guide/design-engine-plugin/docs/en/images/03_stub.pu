@@ -1,0 +1,18 @@
+@startuml "03_stub"
+
+actor " " as consumer
+rectangle "Layout Design" as layout_design
+rectangle "Plugin" <<Sample>> as plugin
+rectangle "Design Engine" <<Sample>> as design_engine
+rectangle "Configuration Manager" <<Stub>> as configuration_manager
+rectangle "Policy Manager" <<Stub>> as policy_manager
+rectangle "Layout Apply" <<Stub>> as layout_apply
+
+consumer -> layout_design: REST API
+layout_design -> plugin: Invoke
+plugin -> design_engine: Invoke
+design_engine --> layout_apply: Communicate
+layout_design --> configuration_manager: Communicate
+layout_design --> policy_manager: Communicate
+
+@enduml

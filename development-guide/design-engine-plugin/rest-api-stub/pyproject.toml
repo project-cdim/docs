@@ -1,0 +1,60 @@
+[tool.pdm]
+distribution = true
+
+[project]
+name = "rest-api-stub"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "NEC corporation."},
+]
+dependencies = [
+    "uvicorn<1.0.0,>=0.30.6",
+    "fastapi<1.0.0,>=0.115.0",
+    "requests>=2.32.3",
+    ]
+requires-python = "<4.0,>=3.14"
+readme = "README.md"
+license = {text = "LICENSE"}
+
+[tool.pdm.dev-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "flake8",
+    "pytest-mock",
+    "autopep8",
+    "isort",
+    "pre-commit",
+    "pylint",
+    "black",
+    "pytest-httpserver",
+    "radon",
+    "httpx",
+    ]
+
+[tool.pdm.build]
+includes = []
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[tool.isort]
+profile = "black"
+line_length = 120
+
+[tool.black]
+line-length = 120
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "-v --cov --cov-branch tests --cov-report xml --capture=no --cov-report=term-missing --tb=line --cov-fail-under=100"
+filterwarnings = "ignore::DeprecationWarning"
+disable_test_id_escaping_and_forfeit_all_rights_to_community_support = "True"
+
+[tool.coverage.run]
+omit = [
+    "*/tests/*",
+    "*/__init__.py"
+]

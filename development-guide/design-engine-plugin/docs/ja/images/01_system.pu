@@ -1,0 +1,29 @@
+@startuml "01_system"
+
+actor " " as consumer
+rectangle "構成案設計機能" as layout_design_function {
+    rectangle "構成案設計" as layout_design
+    note left of layout_design
+        - 構成案設計要求API
+        - 構成案設計結果取得API
+        - 設計結果一覧取得API
+        - 構成案設計キャンセルAPI
+        - 構成案設計結果削除API
+    end note
+    rectangle "<color:red>プラグイン1</color>" as plugin_1
+    rectangle "<color:red>プラグイン2</color>" as plugin_2
+}
+rectangle "構成情報管理機能" as configuration_manager
+rectangle "制約条件管理機能" as policy_manager
+rectangle "設計機構1" as design_engine_1
+rectangle "設計機構2" as design_engine_2
+
+consumer --> layout_design: REST API
+layout_design --> configuration_manager: 構成情報取得要求
+layout_design --> policy_manager: 制約条件取得要求
+layout_design --> plugin_1: ロード・呼出
+plugin_1 --> design_engine_1: 実行
+layout_design --> plugin_2: ロード・呼出
+plugin_2 --> design_engine_2: 実行
+
+@enduml

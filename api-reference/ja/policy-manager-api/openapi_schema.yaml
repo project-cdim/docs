@@ -1,0 +1,529 @@
+components:
+  schemas:
+    NodeConfiguration:
+      description: |-
+        制約種別。
+        - nodeConfigurationPolicy (ノード構成制約): ノード上のデバイス構成に関する制約
+      type: string
+      enum:
+        - nodeConfigurationPolicy
+
+    SystemOperation:
+      description: |-
+        制約種別。
+        - systemOperationPolicy (システム運用制約):  構成案設計時に算出されるリソース使用率のしきい値に関する制約
+      type: string
+      enum:
+        - systemOperationPolicy
+
+    CategoryQuery:
+      description: |-
+        制約種別。
+        - nodeConfigurationPolicy (ノード構成制約): ノード上のデバイス構成に関する制約
+        - systemOperationPolicy (システム運用制約):  構成案設計時に算出されるリソース使用率のしきい値に関する制約
+      type: array
+      items:
+        type: string
+        enum:
+          - all
+          - nodeConfigurationPolicy
+          - systemOperationPolicy
+      default: all
+
+    PolicyID:
+      description: 制約条件ID。0123456789abcdefで構成された10桁のランダム文字列を制約条件IDとして利用する
+      type: string
+      minLength: 10
+      maxLength: 10
+      example: d8eceb14da
+    PolicyIDResponse:
+      type: object
+      properties:
+        policyID:
+          $ref: "#/components/schemas/PolicyID"
+
+    Title:
+      description: タイトル
+      type: string
+      minLength: 1
+      maxLength: 100
+      example: ノード構成制約またはシステム運用制約に関する制約条件
+    Enabled:
+      description: |-
+        有効無効状態(true: 有効、false: 無効)
+      type: boolean
+      enum:
+        - true
+        - false
+    GetEnabled:
+      description: |-
+        有効無効状態(all: 有効・無効状態の制約条件を取得、 true: 有効状態の制約条件を取得、false: 無効状態の制約条件を取得)
+      type: string
+      default: all
+      enum:
+        - "all"
+        - "true"
+        - "false"
+    SetEnabled:
+      description: |-
+        有効無効状態(true: 有効、false: 無効)
+      type: boolean
+      default: false
+      enum:
+        - true
+        - false
+    CreatedAt:
+      description: 登録日時
+      type: datetime
+    UpdatedAt:
+      description: 更新日時
+      type: datetime
+    NodePolicyJson:
+      type: object
+      description: |-
+        ノード構成制約の定義
+      properties:
+        hardwareConnectionsLimit:
+          type: object
+          description: |-
+            ハードウェア接続制限
+          properties:
+            <デバイス種別>:
+              type: object
+              description: |-
+                制約対象のデバイス種別<br>
+                現状想定しているデバイス種別は、cpu/memory/storage/gpu/fpga/accelerator/dsp/<br>virtualmedia/graphiccontroller/networkinterfaceである。<br>
+                デバイス種別「otherProcessor」は設計対象外のため指定された場合バリデーションエラーとなる。<br>
+                deviceに指定する値は綴りがあっていれば単語の大文字/小文字の区別を無視する。(Cpu/cpu/CPU等、いずれでも指定可能)
+              properties:
+                maxNum:
+                  type: integer
+                  description: |-
+                    ノードに接続する最大数<br>DC運用者があらかじめ設定する想定<br>
+                    ・該当デバイスを最大指定数まで接続可能とする<br>・minNum、maxNumの値は、minNum ≦ maxNumの関係であること
+                  minimum: 1
+                minNum:
+                  type: integer
+                  description: |-
+                    ノードに接続する最小数<br>DC運用者があらかじめ設定する想定<br>
+                    ・該当デバイスは指定数分の接続を必須とする<br>・minNum、maxNumの値は、minNum ≦ maxNumの関係であること
+                  minimum: 1
+    SystemPolicyJson:
+      type: object
+      description: |-
+        システム運用制約の定義
+      properties:
+        useThreshold:
+          type: object
+          description: |-
+            使用率のしきい値
+          properties:
+            <デバイス種別>:
+              type: object
+              description: |-
+                制約対象のデバイス種別<br>
+                現状想定しているデバイス種別は、cpu/memory/storage/gpu/fpga/accelerator/dsp/<br>virtualMedia/graphicController/networkInterfaceである。<br>
+                デバイス種別「otherProcessor」は設計対象外のため指定された場合バリデーションエラーとなる。<br>
+                deviceに指定する値は綴りがあっていれば単語の大文字/小文字の区別を無視する。(Cpu/cpu/CPU等、いずれでも指定可能)
+              properties:
+                value:
+                  type: integer
+                  description: |-
+                    しきい値
+                  minimum: 0
+                  maximum: 100
+                unit:
+                  type: string
+                  description: |-
+                    しきい値の単位
+                  enum:
+                    - "percent"
+                comparison:
+                  type: string
+                  description: |-
+                    ・しきい値に対する不等号<br>
+                    gt：しきい値より大きい、lt：しきい値より小さい、le：しきい値以下、ge：しきい値以上
+                  example: "gt"
+                  enum:
+                    - "gt"
+                    - "lt"
+                    - "ge"
+                    - "le"
+
+    SubCategory:
+      description: |-
+        サブカテゴリ。制約条件(policy)内の情報のサブカテゴリの検索を行うために使用する。<br>指定された場合は、制約条件内の「subCategory」を検索対象とする。<br>
+        未指定時には、subCategoryを検索条件としない
+      type: string
+      enum:
+        - hardwareConnectionsLimit
+        - useThreshold
+    Device:
+      description: |-
+        デバイス種別。制約条件(policy)内の情報のデバイス種別の検索を行うために使用する。<br>指定された場合は、制約条件内のデバイス種別を検索対象とする。<br>
+        未指定時には、デバイス種別を検索条件としない<br>
+        指定する値は綴りがあっていれば単語の大文字/小文字の区別を無視する。(Cpu/cpu/CPU等、いずれでも指定可能)
+      type: string
+      enum:
+        - cpu
+        - memory
+        - storage
+        - gpu
+        - fpga
+        - accelerator
+        - dsp
+        - virtualMedia
+        - graphicController
+        - networkInterface
+
+    Fields:
+      description: |-
+        取得対象項目。取得する制約条件の項目を指定し、未指定時には、全項目が取得対象となる。<br>未指定時には、全項目が取得対象となる。<br>取得対象項目として指定しない項目はキーごとレスポンスボディから除外される。<br>
+        - policyID:制約条件ID
+        - category:制約種別
+        - title:タイトル
+        - policy:制約条件
+        - enabled:有効無効状態
+        - createdAt:登録日時
+        - updatedAt:更新日時
+      type: array
+      items:
+        type: string
+        enum:
+          - policyID
+          - category
+          - title
+          - policy
+          - enabled
+          - createdAt
+          - updatedAt
+
+    PolicyIDList:
+      properties:
+        count:
+          type: integer
+          example: 1
+        result:
+          type: object
+          properties:
+            policyID:
+              $ref: "#/components/schemas/PolicyID"
+            title:
+              $ref: "#/components/schemas/Title"
+
+    NodePolicyUpdateRequest:
+      properties:
+        category:
+          $ref: "#/components/schemas/NodeConfiguration"
+        title:
+          $ref: "#/components/schemas/Title"
+        policy:
+          $ref: "#/components/schemas/NodePolicyJson"
+    SystemPolicyUpdateRequest:
+      properties:
+        category:
+          $ref: "#/components/schemas/SystemOperation"
+        title:
+          $ref: "#/components/schemas/Title"
+        policy:
+          $ref: "#/components/schemas/SystemPolicyJson"
+
+    PolicyIDRequest:
+      description: |-
+        有効化する/無効化する制約条件IDのリスト。\
+        enableIDListに有効化する制約条件IDのリスト、disableIDListに無効化する制約条件のIDのリストを記載する。
+      properties:
+        enableIDList:
+          description: 有効IDリスト。有効化する制約条件IDのリスト
+          type: array
+          items:
+            $ref: "#/components/schemas/PolicyID"
+        disableIDList:
+          description: 無効IDリスト。無効化する制約条件IDのリスト
+          type: array
+          items:
+            $ref: "#/components/schemas/PolicyID"
+
+    NodePolicyInsertRequest:
+      required:
+        - category
+        - title
+        - policy
+      properties:
+        category:
+          $ref: "#/components/schemas/NodeConfiguration"
+        title:
+          $ref: "#/components/schemas/Title"
+        policy:
+          $ref: "#/components/schemas/NodePolicyJson"
+        enabled:
+          $ref: "#/components/schemas/SetEnabled"
+    SystemPolicyInsertRequest:
+      required:
+        - category
+        - title
+        - policy
+      properties:
+        category:
+          $ref: "#/components/schemas/SystemOperation"
+        title:
+          $ref: "#/components/schemas/Title"
+        policy:
+          $ref: "#/components/schemas/SystemPolicyJson"
+        enabled:
+          $ref: "#/components/schemas/SetEnabled"
+
+    NodePolicyGetRequest:
+      properties:
+        policyID:
+          $ref: "#/components/schemas/PolicyID"
+        category:
+          $ref: "#/components/schemas/NodeConfiguration"
+        title:
+          $ref: "#/components/schemas/Title"
+        policy:
+          $ref: "#/components/schemas/NodePolicyJson"
+        enabled:
+          $ref: "#/components/schemas/Enabled"
+        createdAt:
+          $ref: "#/components/schemas/CreatedAt"
+        updatedAt:
+          $ref: "#/components/schemas/UpdatedAt"
+    SystemPolicyGetRequest:
+      properties:
+        policyID:
+          $ref: "#/components/schemas/PolicyID"
+        category:
+          $ref: "#/components/schemas/SystemOperation"
+        title:
+          $ref: "#/components/schemas/Title"
+        policy:
+          $ref: "#/components/schemas/SystemPolicyJson"
+        enabled:
+          $ref: "#/components/schemas/Enabled"
+        createdAt:
+          $ref: "#/components/schemas/CreatedAt"
+        updatedAt:
+          $ref: "#/components/schemas/UpdatedAt"
+
+    ExportPolicy:
+      properties:
+        exportedCount:
+          type: integer
+          example: 2
+          description: |-
+            エクスポートされた件数
+        policies:
+          type: array
+          items:
+            anyOf:
+              - $ref: "#/components/schemas/NodePolicyGetRequest"
+              - $ref: "#/components/schemas/SystemPolicyGetRequest"
+
+    CompletedImportResults:
+      properties:
+        summary:
+          type: object
+          properties:
+            status:
+              type: string
+              example: completed
+              description: インポート結果
+              enum:
+                - completed
+            totalCount:
+              type: integer
+              example: 1
+              description: レコード全件数
+            completedCount:
+              type: integer
+              example: 1
+              description: インポートに成功した件数
+        details:
+          type: array
+          items:
+            anyOf:
+              - properties:
+                  policyID:
+                    type: string
+                    example: d8eceb14da
+                    description: 入力した制約条件ID
+                  message:
+                    type: string
+                    example: completed
+                    description: 成功したかどうかを示すメッセージ
+            
+    FailedImportResults:
+      oneOf:
+        - properties:
+            ErrorSummaryResponse:
+              properties:
+                summary:
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      example: failed
+                      description: インポート結果
+                      enum:
+                        - failed
+                    totalCount:
+                      type: integer
+                      example: 1
+                      description: レコード全件数
+                    failedCount:
+                      type: integer
+                      example: 1
+                      description: インポートに失敗した件数
+                details:
+                  type: array
+                  items:
+                    anyOf:
+                      - properties:
+                          policyID:
+                            type: string
+                            example: d8eceb14da
+                            description: エラーが発生した箇所
+                          message:
+                            type: string
+                            example: バリデーションエラー
+                            description: インポートに失敗した理由
+            ErrorResponse:
+              properties:
+                code:
+                  type: string
+                  example: E10001
+                  description: エラー内容を表すエラーコード。
+                message:
+                  type: string
+                  example: "'csv' is not one of ['json','yaml']"
+                  description: エラー内容を表すエラーメッセージ。
+
+
+    Policy:
+      required:
+        - policyID
+        - category
+        - policy
+      properties:
+        count:
+          type: integer
+          example: 1
+          description: |-
+            取得したデータ件数
+        totalCount:
+          type: integer
+          example: 20
+          description: |-
+            条件に一致した制約条件の総数
+        policies:
+          type: array
+          items:
+            anyOf:
+              - $ref: "#/components/schemas/NodePolicyGetRequest"
+              - $ref: "#/components/schemas/SystemPolicyGetRequest"
+    Format:
+      description: |-
+        出力フォーマット。出力するファイルの形式を指定する
+      type: string
+      enum:
+        - json
+        - yaml
+
+    OrderBy:
+      description: |-
+        並び替え順序。<br>未指定時には、降順で並び替えを行う
+        - asc :昇順で並び替え
+        - desc:降順で並び替え
+      type: string
+      default: desc
+      enum:
+        - asc
+        - desc
+    SortBy:
+      description: |-
+        ソート対象。並び替えの基準となる項目を指定し、未指定時にはcreatedAtを基準に並び替えを行う。<br>並び替え結果は、クエリの結果に依存する
+        - createdAt:登録日時
+        - updatedAt:更新日時
+      type: string
+      default: createdAt
+      enum:
+        - createdAt
+        - updatedAt
+
+    Limit:
+      description: |-
+        取得件数。<br>指定された件数の制約条件を取得する
+      type: integer
+      default: 20
+
+    Offset:
+      description: |-
+        取得開始行。<br>指定された行数から制約条件を取得する
+      type: integer
+      default: 0
+
+    Name:
+      description: |-
+        出力ファイル名。制約条件の出力されるファイル名を指定する
+      type: string
+      default: export_<yyyyMMddhhmmss>.<format>
+
+    Force:
+      description: "強制更新/削除フラグ。trueが指定された場合、有効状態の制約条件を更新/削除することができる。(true: 有効、false: 無効)"
+      type: boolean
+      default: false
+
+    ErrorResponse:
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          example: E10002
+          description: エラー内容を表すエラーコード。
+        message:
+          type: string
+          example: Failed to load policymanager_config.yaml
+          description: エラー内容を表すエラーメッセージ。
+    ValidationErrorResponse:
+      description: |-
+        バリデーションチェックにエラーが発生した場合
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          description: エラー内容を表すエラーコード。
+          example: E10001
+        message:
+          type: string
+          example: "'50w' is not of type 'integer'"
+          description: エラー内容を表すエラーメッセージ。
+    NotExsistErrorResponse:
+      description: |-
+        指定された制約条件が存在しない
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          example: E10005
+          description: エラー内容を表すエラーコード。
+        message:
+          type: string
+          example: Specified '28ac2c8dea' is not found
+          description: エラー内容を表すエラーメッセージ。
+    X-Content-Type-Options:
+      description: Content-Typeにて指定されたMIMEタイプのスニッフィング抑止用ヘッダ
+      schema:
+        type: string
+        example: nosniff
+    Content-Type:
+      description: MIMEタイプや文字エンコードタイプの指定用ヘッダ
+      schema:
+        type: string
+        example: application/json; charset=utf-8

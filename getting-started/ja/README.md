@@ -46,12 +46,15 @@ CDIM が使用するポート番号とプロトコルを記載します。
 | プロトコル | 方向 | ポート範囲 | 目的 |
 | --- | --- | --- | --- |
 | TCP | Inbound | 3000,3003-3005 | フロントエンド |
-| TCP | Inbound | 3500,3503-3505,3507-3509,3512-3515,3517,50006 | DAPR 通信 |
+| TCP | Inbound | 3500-3505,3507-3509,3512-3515,3517,50006 | DAPR 通信 |
 | TCP | Inbound | 5000 | リファレンスハードウェアエミュレータ |
 | TCP | Inbound | 8000 | ハードウェア制御 |
+| TCP | Inbound | 8010 | 制約条件管理 |
+| TCP | Inbound | 8011 | 構成案設計 |
 | TCP | Inbound | 8012 | 移行手順生成 |
 | TCP | Inbound | 8013 | 構成案反映 |
 | TCP | Inbound | 8014 | Gateway(Kong) |
+| TCP | Inbound | 8020 | アラート管理UI |
 | TCP | Inbound | 8280 | 構成情報管理 |
 | TCP | Inbound | 8283 | 構成情報エクスポーター |
 | TCP | Inbound | 8284 | 性能情報収集 |

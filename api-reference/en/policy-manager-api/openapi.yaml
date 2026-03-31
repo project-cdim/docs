@@ -1,0 +1,1144 @@
+openapi: 3.0.3
+servers:
+  - url: http://(host address)/cdim/api/v1
+info:
+  title: Policy Manager API
+  description: |-
+    A set of functions to manage the constraints of the design engine in Composable Disaggregated Infrastructure under management.
+  version: 0.2.0
+tags:
+  - name: Policy Manager
+paths:
+  /policies:
+    get:
+      tags:
+        - Policy Manager
+      summary: Constraint Reference (Bulk Retrieval)
+      description: |-
+        Retrieve all constraints from Policy Manager DB that match the specified conditions.
+        - If no matching constraints are found, an empty list is returned.
+        - Layout Design function uses this API to retrieve constraints.
+          - By default, all constraints are retrieved.
+        - If 'all' is specified along with other types, a validation error occurs.
+        - If constraint types are specified multiple times, a validation error occurs.
+        - 'subCategory' refers to 'hardwareConnectionsLimit' and 'useThreshold' within the policy.
+        - If 'sortBy' and 'orderBy' are specified, the data is sorted based on the value specified in 'sortBy' and the order specified in 'orderBy'.
+          - If only 'sortBy' is specified, the data is sorted in descending order based on the value specified in 'sortBy'.
+          - If only 'orderBy' is specified, the data is sorted based on 'createdAt' in the order specified in 'orderBy'.
+        - If 'sortBy' is specified as 'createdAt' or 'updatedAt' and 'orderBy' is 'asc', the data is sorted in ascending order of dates.
+          - If 'desc', the data is sorted in descending order of dates.
+        - If 'offset' is specified along with 'sortBy' and 'orderBy', the data is sorted based on 'sortBy' and 'orderBy' and retrieved from the specified row.
+        - The value specified for 'device' is case-insensitive as long as the spelling matches.
+          - e.g., Cpu/cpu/CPU, etc., can be specified.
+      parameters:
+        - name: category
+          in: query
+          description: |-
+            Constraint type. If not specified, all constraint types are targeted.
+            - all: Retrieve all constraint types
+            - nodeConfigurationPolicy (Node Configuration Constraint): Constraints related to device configuration on nodes
+            - systemOperationPolicy (System Operation Constraint): Constraints related to resource usage thresholds calculated during Layout Design
+
+          required: false
+          schema:
+            $ref: "#/components/schemas/CategoryQuery"
+        - name: enabled
+          in: query
+          description: |-
+            Enabled/Disabled state. Specify to target 'enabled' in the search.<br>
+            If not specified, all states are targeted.
+            - all: Retrieve all constraints regardless of enabled/disabled state
+            - true: Retrieve only enabled constraints
+            - false: Retrieve only disabled constraints
+          required: false
+          schema:
+            $ref: "#/components/schemas/GetEnabled"
+
+        - name: subCategory
+          in: query
+          description: |-
+            Subcategory. Used to search for subcategories of information within constraints (policy).<br>When specified, 'subCategory' within constraints is targeted.<br>
+            If not specified, 'subCategory' is not used as a search condition.
+          required: false
+          schema:
+            $ref: "#/components/schemas/SubCategory"
+
+        - name: device
+          in: query
+          description: |-
+            Device type. Used to search for device types of information within constraints (policy).<br>When specified, the device type within constraints is targeted.<br>
+            If not specified, the device type is not used as a search condition.<br>
+            The value specified is case-insensitive as long as the spelling matches (e.g., Cpu/cpu/CPU, etc.).
+          required: false
+          schema:
+            $ref: "#/components/schemas/Device"
+
+        - name: fields
+          in: query
+          description: |-
+            Target fields. Specify the fields of constraints to retrieve. If not specified, all fields are targeted.<br>If not specified, all fields are targeted.<br>Fields not specified as target fields are excluded from the response body.<br>
+            - policyID: Constraint ID
+            - category: Constraint type
+            - title: Title
+            - policy: Constraint
+            - enabled: Enabled/Disabled state
+            - createdAt: Registration date
+            - updatedAt: Update date
+          required: false
+          schema:
+            $ref: "#/components/schemas/Fields"
+
+        - name: sortBy
+          in: query
+          description: |-
+            Sort target<br>Specify the field used as the basis for sorting. If not specified, sorting is based on 'createdAt'.<br>The sorting result depends on the query result.
+            - createdAt: Registration date
+            - updatedAt: Update date
+          required: false
+          schema:
+            $ref: "#/components/schemas/SortBy"
+
+        - name: orderBy
+          in: query
+          description: |-
+            Sorting order<br>If not specified, sorting is done in descending order.<br>
+            If 'sortBy' and 'orderBy' are specified, sorting is based on the value specified in 'sortBy' and the method specified in 'orderBy'.<br>
+            If only 'sortBy' is specified, sorting is done in descending order (desc) based on the value specified in 'sortBy'.<br>
+            If only 'orderBy' is specified, sorting is based on 'createdAt' and the value specified in 'orderBy'.
+            If 'sortBy' is specified as 'createdAt' or 'updatedAt' and 'orderBy' is 'asc', sorting is done in ascending order of dates.<br>
+            If 'desc', sorting is done in descending order of dates.
+            - asc: Ascending order
+            - desc: Descending order
+          required: false
+          schema:
+            $ref: "#/components/schemas/OrderBy"
+
+        - name: limit
+          in: query
+          description: |-
+            Number of items to retrieve.<br>Retrieve constraints for the specified number of items.<br>
+            If not specified, 20 constraints are retrieved.<br>
+            Specify the number of constraints to retrieve as an integer value of 1 or more.<br>
+            If the number of constraints registered in the database is less than the number specified in 'limit', all registered constraints are retrieved.<br>
+            As of Q1 2024, the number of constraints that can be registered is 20, calculated as 2 constraint types (Node Configuration Constraint, System Operation Constraint) * 10 types (device types: cpu, etc.). Therefore, default value is 20.<br>
+
+          required: false
+          schema:
+            $ref: "#/components/schemas/Limit"
+
+        - name: offset
+          in: query
+          description: |-
+            Retrieval start row.<br>Retrieve constraints starting from the specified row.<br>
+            If not specified or 0, retrieval starts from the first row.<br>
+            Specify the retrieval row of constraints from the database as an integer value of 0 or more.<br>
+            If the number of constraints registered in the database is less than the number of rows specified in 'offset', the retrieval result is empty.<br>
+            If 'sortBy' and 'orderBy' are specified, the data is sorted based on 'sortBy' and 'orderBy' and retrieved from the specified row.
+          required: false
+          schema:
+            $ref: "#/components/schemas/Offset"
+      responses:
+        200:
+          description: |-
+            Success
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Policy"
+              examples:
+                If all constraint types are the target for retrieval and no fields are specified:
+                  value:
+                    count: 2
+                    totalCount: 2
+                    policies:
+                      - policyID: "d8eceb14da"
+                        category: "nodeConfigurationPolicy"
+                        title: Node Configuration Constraint
+                        policy:
+                          {
+                            "hardwareConnectionsLimit":
+                              { "cpu": { "maxNum": 5, "minNum": 1 } },
+                          }
+                        enabled: true
+                        createdAt: "2023-05-10T00:00:00Z"
+                        updatedAt: "2023-05-10T00:00:00Z"
+                      - policyID: "abc10dfaa9"
+                        category: "systemOperationPolicy"
+                        title: Threshold for resource usage calculated during Layout Design
+                        policy:
+                          {
+                            "useThreshold":
+                              {
+                                "cpu":
+                                  {
+                                    "value": 80,
+                                    "unit": "percent",
+                                    "comparison": "lt",
+                                  },
+                              },
+                          }
+                        enabled: true
+                        createdAt: "2023-05-10T00:00:00Z"
+                        updatedAt: "2023-05-10T00:00:00Z"
+                If all constraint types are the target for retrieval and fields include policy and enabled:
+                  value:
+                    count: 2
+                    totalCount: 2
+                    policies:
+                      - policy:
+                          {
+                            "hardwareConnectionsLimit":
+                              { "cpu": { "maxNum": 5, "minNum": 1 } },
+                          }
+                        enabled: true
+                      - policy:
+                          {
+                            "useThreshold":
+                              {
+                                "cpu":
+                                  {
+                                    "value": 80,
+                                    "unit": "percent",
+                                    "comparison": "lt",
+                                  },
+                              },
+                          }
+                        enabled: true
+                If the target is Node Configuration Constraint and no fields are specified:
+                  value:
+                    count: 1
+                    totalCount: 1
+                    policies:
+                      - policyID: "d8eceb14da"
+                        category: "nodeConfigurationPolicy"
+                        title: Constraint conditions related to Node Configuration Constraint
+                        policy:
+                          {
+                            "hardwareConnectionsLimit":
+                              { "cpu": { "maxNum": 5, "minNum": 1 } },
+                          }
+                        enabled: true
+                        createdAt: "2023-05-10T00:00:00Z"
+                        updatedAt: "2023-05-10T00:00:00Z"
+                If the target is Node Configuration Constraint and fields include policyID and enabled:
+                  value:
+                    count: 1
+                    totalCount: 1
+                    policies:
+                      - policyID: "d8eceb14da"
+                        enabled: true
+                If the target is System Operation Constraint and no fields are specified:
+                  value:
+                    count: 1
+                    totalCount: 1
+                    policies:
+                      - policyID: "abc10dfaa9"
+                        category: "systemOperationPolicy"
+                        title: Threshold for resource usage calculated during Layout Design
+                        policy:
+                          {
+                            "useThreshold":
+                              {
+                                "cpu":
+                                  {
+                                    "value": 80,
+                                    "unit": "percent",
+                                    "comparison": "lt",
+                                  },
+                              },
+                          }
+                        enabled: true
+                        createdAt: "2023-05-10T00:00:00Z"
+                        updatedAt: "2023-05-10T00:00:00Z"
+                If the target is System Operation Constraint and fields include policyID, category, and createdAt:
+                  value:
+                    count: 1
+                    totalCount: 1
+                    policies:
+                      - policyID: "abc10dfaa9"
+                        category: "systemOperationPolicy"
+                        createdAt: "2023-05-10T00:00:00Z"
+                If sortBy is specified as createdAt (sort in ascending order based on createdAt):
+                  value:
+                    count: 2
+                    totalCount: 2
+                    policies:
+                      - policyID: "d8eceb14da"
+                        category: "nodeConfigurationPolicy"
+                        title: Constraint conditions related to Node Configuration Constraint
+                        policy:
+                          {
+                            "hardwareConnectionsLimit":
+                              { "memory": { "maxNum": 10, "minNum": 4 } },
+                          }
+                        enabled: true
+                        createdAt: "2023-05-10T00:00:00Z"
+                        updatedAt: "2023-05-10T00:00:00Z"
+                      - policyID: "abc10dfaa9"
+                        category: "systemOperationPolicy"
+                        title: Threshold for resource usage calculated during Layout Design
+                        policy:
+                          {
+                            "useThreshold":
+                              {
+                                "dsp":
+                                  {
+                                    "value": 80,
+                                    "unit": "percent",
+                                    "comparison": "lt",
+                                  },
+                              },
+                          }
+                        enabled: true
+                        createdAt: "2023-05-20T00:00:00Z"
+                        updatedAt: "2023-05-26T00:00:00Z"
+                If sortBy is specified as updatedAt and orderBy as desc (sort in descending order based on updatedAt):
+                  value:
+                    count: 2
+                    totalCount: 2
+                    policies:
+                      - policyID: "abc10dfaa9"
+                        category: "systemOperationPolicy"
+                        title: Threshold for resource usage calculated during Layout Design
+                        policy:
+                          {
+                            "useThreshold":
+                              {
+                                "dsp":
+                                  {
+                                    "value": 80,
+                                    "unit": "percent",
+                                    "comparison": "lt",
+                                  },
+                              },
+                          }
+                        enabled: true
+                        createdAt: "2023-05-20T00:00:00Z"
+                        updatedAt: "2023-05-26T00:00:00Z"
+                      - policyID: "d8eceb14da"
+                        category: "nodeConfigurationPolicy"
+                        title: Constraint conditions related to Node Configuration Constraint
+                        policy:
+                          {
+                            "hardwareConnectionsLimit":
+                              { "memory": { "maxNum": 10, "minNum": 4 } },
+                          }
+                        enabled: true
+                        createdAt: "2023-05-10T00:00:00Z"
+                        updatedAt: "2023-05-10T00:00:00Z"
+                If limit is specified as 1 and offset as 10:
+                  value:
+                    count: 1
+                    totalCount: 20
+                    policies:
+                      - policyID: "abc10dfaa9"
+                        category: "systemOperationPolicy"
+                        title: Threshold for resource usage calculated during Layout Design
+                        policy:
+                          {
+                            "useThreshold":
+                              {
+                                "cpu":
+                                  {
+                                    "value": 50,
+                                    "unit": "percent",
+                                    "comparison": "lt",
+                                  },
+                              },
+                          }
+                        enabled: true
+                        createdAt: "2024-06-20T00:00:00Z"
+                        updatedAt: "2024-06-26T00:00:00Z"
+
+        400:
+          description: |-
+            Invalid request body.
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+              example:
+                code: "E10001"
+                messeage: "'' is not one of ['all', 'nodeConfigurationPolicy', 'systemOperationPolicy']"
+        500:
+          description: |-
+            Internal server error.
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      tags:
+        - Policy Manager
+      summary: Constraint Addition
+      description: |
+        Register a constraint in Policy Manager DB. If successful, the constraint ID is returned.
+        - If the specified constraint type(category) and constraint(policy) are contradictory, a validation error occurs.
+            - Get the subCategory from the specified constraint(policy) and check if it matches the expected combination.
+            - e.g., if the constraint type(category) is Node Configuration Constraint(nodeConfigurationPolicy), check if the subCategory is hardwareConnectionsLimit.
+        - If the specified policy's subCategory and device type are already registered in the database, a duplicate error occurs.
+            - subCategory is hardwareConnectionsLimit, useThreshold.
+        - You can specify the enabled state to register the constraint.
+        - The value specified for the device in the constraint(policy) is case-insensitive as long as the spelling matches.
+            - device is converted to lowercase and stored in the database.
+      requestBody:
+        description: |-
+          Specify the constraint type(category), title(title), constraint(policy), and enabled state(enabled) to register.
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/NodePolicyInsertRequest"
+                - $ref: "#/components/schemas/SystemPolicyInsertRequest"
+            examples:
+              nodeConfigurationPolicy:
+                value:
+                  category: "nodeConfigurationPolicy"
+                  title: Constraint conditions related to Node Configuration Constraint
+                  policy:
+                    {
+                      "hardwareConnectionsLimit":
+                        { "cpu": { "maxNum": 5, "minNum": 1 } },
+                    }
+                  enabled: false
+              systemOperationPolicy:
+                value:
+                  category: "systemOperationPolicy"
+                  title: "Threshold for resource usage calculated during Layout Design"
+                  policy:
+                    {
+                      "useThreshold":
+                        {
+                          "cpu":
+                            {
+                              "value": 80,
+                              "unit": "percent",
+                              "comparison": "lt",
+                            },
+                        },
+                    }
+                  enabled: true
+
+      responses:
+        201:
+          description: |-
+            Success
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PolicyIDResponse"
+        400:
+          description: |-
+            Invalid request body.
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+        500:
+          description: |-
+            Internal server error.
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /policies/{policyID}:
+    get:
+      tags:
+        - Policy Manager
+      summary: Constraint Reference (ID Specified)
+      description: |-
+        Retrieve a specific constraint from Policy Manager DB.
+      parameters:
+        - name: policyID
+          description: Constraint ID. Specify the ID of the constraint to retrieve.
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/PolicyID"
+      responses:
+        200:
+          description: |-
+            Success
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/NodePolicyGetRequest"
+                  - $ref: "#/components/schemas/SystemPolicyGetRequest"
+              examples:
+                If the node configuration constraint is the target for retrieval:
+                  value:
+                    policyID: "d8eceb14da"
+                    category: "nodeConfigurationPolicy"
+                    title: Constraint conditions related to Node Configuration Constraint
+                    policy:
+                      {
+                        "hardwareConnectionsLimit":
+                          { "cpu": { "maxNum": 5, "minNum": 1 } },
+                      }
+                    enabled: true
+                    createdAt: "2023-05-10T00:00:00Z"
+                    updatedAt: "2023-05-10T00:00:00Z"
+                If the system operation constraint is the target for retrieval:
+                  value:
+                    policyID: "abc10dfaa9"
+                    category: "systemOperationPolicy"
+                    title: Threshold for resource usage calculated during Layout Design
+                    policy:
+                      {
+                        "useThreshold":
+                          {
+                            "cpu":
+                              {
+                                "value": 80,
+                                "unit": "percent",
+                                "comparison": "lt",
+                              },
+                          },
+                      }
+                    enabled: true
+                    createdAt: "2023-05-10T00:00:00Z"
+                    updatedAt: "2023-05-10T00:00:00Z"
+
+        404:
+          description: |-
+            The specified constraint does not exist.
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotExsistErrorResponse"
+        400:
+          description: |-
+            Invalid request body.
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+              example:
+                code: "E10001"
+                messeage: "'28ac2c8dez' does not match '^[0-9a-f]+$'"
+        500:
+          description: |-
+            Internal server error.
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      tags:
+        - Policy Manager
+      summary: Constraint Update
+      description: |-
+        Update an existing constraint in Policy Manager DB.
+        - If all parameters are empty, a validation error occurs.
+        - If both constraint type(category) and constraint(policy) are specified, and they are contradictory, a validation error occurs.
+          - Get the subCategory from the specified constraint(policy) and check if it matches the expected combination.
+          - e.g., if the constraint type(category) is Node Configuration Constraint(nodeConfigurationPolicy), check if the subCategory is hardwareConnectionsLimit.
+        - If only constraint type(category) or constraint(policy) is specified, and it contradicts the existing constraint in the database, a validation error occurs.
+          - Get the subCategory from the specified constraint(policy) and check if it matches the expected combination.
+          - e.g., if the constraint type(category) is Node Configuration Constraint(nodeConfigurationPolicy), check if the subCategory is hardwareConnectionsLimit.
+        - If the specified policy's subCategory and device type are already registered in the database, a duplicate error occurs.
+          - subCategory is hardwareConnectionsLimit, useThreshold.
+        - The 'force' parameter is true, you can update the enabled state of the constraint.
+        - The value specified for the device in the constraint(policy) is case-insensitive as long as the spelling matches.
+            - device is converted to lowercase and stored in the database.
+
+      parameters:
+        - name: policyID
+          description: Constraint ID. Specify the ID of the constraint to update.
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/PolicyID"
+        - name: force
+          in: query
+          description: |-
+            Force flag. If true, you can update the enabled state of the constraint.
+             - true: Update the enabled state of the constraint.
+             - false: Do not update the enabled state of the constraint.
+          required: false
+          schema:
+            $ref: "#/components/schemas/Force"
+      requestBody:
+        description: |-
+          Specify the constraint type(category), title(title), constraint(policy), and enabled state(enabled) to update.
+          - Parameters not included in the request body are not updated.
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/NodePolicyUpdateRequest"
+                - $ref: "#/components/schemas/SystemPolicyUpdateRequest"
+            examples:
+              nodeConfigurationPolicy:
+                value:
+                  category: "nodeConfigurationPolicy"
+                  title: Constraint conditions related to Node Configuration Constraint
+                  policy:
+                    {
+                      "hardwareConnectionsLimit":
+                        { "cpu": { "maxNum": 5, "minNum": 1 } },
+                    }
+              systemOperationPolicy:
+                value:
+                  category: "systemOperationPolicy"
+                  title: Threshold for resource usage calculated during Layout Design
+                  policy:
+                    {
+                      "useThreshold":
+                        {
+                          "cpu":
+                            {
+                              "value": 80,
+                              "unit": "percent",
+                              "comparison": "lt",
+                            },
+                        },
+                    }
+
+      responses:
+        204:
+          description: |-
+            Success
+        400:
+          description: |-
+            Invalid request body.
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+              example:
+                code: "E10001"
+                messeage: "'28ac2c8dez' does not match '^[0-9a-f]+$'"
+        404:
+          description: |-
+            The specified constraint does not exist.
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotExsistErrorResponse"
+        500:
+          description: |-
+            Internal server error.
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      tags:
+        - Policy Manager
+      summary: Constraint Deletion
+      description: |-
+        Delete a constraint from Policy Manager DB.
+        - If the 'force' parameter is true, you can delete the enabled constraint.
+      parameters:
+        - name: policyID
+          description: Constraint ID. Specify the ID of the constraint to delete.
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/PolicyID"
+        - name: force
+          in: query
+          description: |-
+            Force flag. If true, you can delete the enabled constraint.
+             - true: Delete the enabled constraint.
+             - false: Do not delete the enabled constraint.
+          required: false
+          schema:
+            $ref: "#/components/schemas/Force"
+      responses:
+        204:
+          description: Success
+        400:
+          description: |-
+            Invalid request body.
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+              example:
+                code: "E10001"
+                messeage: "'28ac2c8dez' does not match '^[0-9a-f]+$'"
+        404:
+          description: |-
+            The specified constraint does not exist.
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotExsistErrorResponse"
+        500:
+          description: |-
+            Internal server error.
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /policies/change-enabled:
+    put:
+      tags:
+        - Policy Manager
+      summary: Constraint Enable/Disable
+      description: |-
+        Update the enabled/disabled state of a constraint in Policy Manager DB.
+        - Only the specified constraint ID is updated.
+        - If both parameters are empty, a validation error occurs.
+        - If the constraint ID is not found, an error occurs.
+        - API is designed for multiple records to be updated simultaneously, but if an error occurs in one record, all updates are rolled back.
+      requestBody:
+        description: |-
+          A list of constraint IDs to enable/disable. Specify to change the state.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PolicyIDRequest"
+      responses:
+        201:
+          description: Success
+        400:
+          description: |-
+            Invalid request body.
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+              example:
+                code: E10001
+                message: No parameters.Please specify at least one option
+        500:
+          description: |-
+            Internal server error.
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /policies/export:
+    get:
+      tags:
+        - Policy Manager
+      summary: Constraint Export
+      description: |-
+        Retrieve all constraints from Policy Manager DB and export them to a file.
+        - If no constraints exist, the 'exportedCount' key is 0 and the 'policies' key is an empty list.
+        - If the file is in yaml format, a separator(---) is added at the beginning.
+        - If an empty string is specified for fileName, a validation error occurs.
+      parameters:
+        - name: format
+          in: query
+          required: true
+          description: |-
+            Output format. Specify the format of the output file.
+          schema:
+            $ref: "#/components/schemas/Format"
+        - name: fileName
+          in: query
+          description: |-
+            Output file name. Specify the name of the file to save the constraints.
+          required: false
+          schema:
+            $ref: "#/components/schemas/Name"
+      responses:
+        200:
+          description: |-
+            Success
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExportPolicy"
+              example:
+                exportedCount: 2
+                policies:
+                  - policyID: "d8eceb14da"
+                    category: "nodeConfigurationPolicy"
+                    title: Constraint conditions related to Node Configuration Constraint
+                    policy:
+                      {
+                        "hardwareConnectionsLimit":
+                          { "cpu": { "maxNum": 5, "minNum": 1 } },
+                      }
+                    enabled: true
+                    createdAt: "2023-05-10T00:00:00Z"
+                    updatedAt: "2023-05-10T00:00:00Z"
+                  - policyID: "abc10dfaa9"
+                    category: "systemOperationPolicy"
+                    title: Threshold for resource usage calculated during Layout Design
+                    policy:
+                      {
+                        "useThreshold":
+                          {
+                            "cpu":
+                              {
+                                "value": 80,
+                                "unit": "percent",
+                                "comparison": "lt",
+                              },
+                          },
+                      }
+                    enabled: true
+                    createdAt: "2023-05-10T00:00:00Z"
+                    updatedAt: "2023-05-10T00:00:00Z"
+
+            application/yaml:
+              schema:
+                $ref: "#/components/schemas/ExportPolicy"
+              example:
+                exportedCount: 2
+                policies:
+                  - policyID: d8eceb14da
+                    category: nodeConfigurationPolicy
+                    title: Constraint conditions related to Node Configuration Constraint
+                    policy:
+                      hardwareConnectionsLimit:
+                        cpu:
+                          maxNum: 5
+                          minNum: 1
+                    enabled: true
+                    createdAt: "2023-05-10T00:00:00Z"
+                    updatedAt: "2023-05-10T00:00:00Z"
+                  - policyID: abc10dfaa9
+                    category: systemOperationPolicy
+                    title: Threshold for resource usage calculated during Layout Design
+                    policy:
+                      useThreshold:
+                        cpu:
+                          value: 80
+                          unit: percent
+                          comparison: lt
+                    enabled: true
+                    createdAt: "2023-05-10T00:00:00Z"
+                    updatedAt: "2023-05-10T00:00:00Z"
+        400:
+          description: |-
+            Invalid request body.
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+              example:
+                code: "E10001"
+                messeage: "'csv' is not one of ['json','yaml']"
+
+        500:
+          description: |-
+            Internal server error.
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /policies/import:
+    post:
+      tags:
+        - Policy Manager
+      summary: Constraint Import
+      description: |-
+        Import constraints from an exported file to Policy Manager DB.
+        - This API can add multiple records, but if an error occurs in one record, all updates are rolled back.
+        - If the specified format and the input file format are different, an error occurs.
+        - If the input file contains 0 records, a validation error occurs.
+        - If the constraint type(category) and constraint(policy) are contradictory, a validation error occurs.
+            - Get the subCategory from the specified constraint(policy) and check if it matches the expected combination.
+            - e.g., if the constraint type(category) is Node Configuration Constraint(nodeConfigurationPolicy), check if the subCategory is hardwareConnectionsLimit.
+        - If the subCategory and device type in the input file are already registered in the database, the duplicate constraint is skipped.
+            - If the same subCategory and device type exist in the file, a duplicate error occurs.
+            - subCategory is hardwareConnectionsLimit, useThreshold.
+        - The value specified for the device in the constraint(policy) is case-insensitive as long as the spelling matches.
+            - device is converted to lowercase and stored in the database.
+
+      parameters:
+        - name: format
+          in: query
+          required: true
+          description: |-
+            Input format. Specify the format of the input file.
+          schema:
+            $ref: "#/components/schemas/Format"
+      requestBody:
+        required: true
+        description: |-
+          Input file. Specify the file to import.
+        content:
+          multipart/form-data:
+            schema:
+              description: |-
+                Input file. Specify the file to import.
+              type: object
+              properties:
+                input:
+                  type: object
+                  format: binary
+                  example:
+                    exportedCount: 1
+                    policies:
+                      - policyID: "d8eceb14da"
+                        category: "nodeConfigurationPolicy"
+                        title: Constraint conditions related to Node Configuration Constraint
+                        policy:
+                          {
+                            "hardwareConnectionsLimit":
+                              { "cpu": { "maxNum": 5, "minNum": 1 } },
+                          }
+                        enabled: true
+                        createdAt: "2023-05-10T00:00:00Z"
+                        updatedAt: "2023-05-10T00:00:00Z"
+
+      responses:
+        201:
+          description: |-
+            Success
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CompletedImportResults"
+              example:
+                summary:
+                  status: "completed"
+                  totalCount: 3
+                  completedCount: 2
+                details:
+                  - policyID: "d8eceb14da"
+                    message: "completed"
+                  - policyID: "1bd4ed8ace"
+                    message: "Skipped due to duplicate database and input data"
+                  - policyID: "d1b14e4dab"
+                    message: "policyID was reissued because of duplication {Reissued constraint condition ID}"
+
+        400:
+          description: |-
+            Invalid request body or constraint import failed. Returns the status as failed and the number of failed items, policyID, and the reason for the import failure.
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FailedImportResults"
+              examples:
+                Validation error:
+                  value:
+                    summary:
+                      status: "failed"
+                      totalCount: 3
+                      failedCount: 2
+                    details:
+                      - policyID: "d8eceb14da"
+                        message: "'unit' is a required property"
+                      - policyID: "1bd4ed8ace"
+                        message: "Your definition of policy is incorrect.Select one of ['hardwareConnectionsLimit' ,'useThreshold']"
+                Format error:
+                  value:
+                    summary:
+                      status: "failed"
+                      totalCount: 0
+                      failedCount: 0
+                    details:
+                      - message: "File failed to load because specified format is different from file format"
+                Parameter error:
+                  value:
+                    code: "E10001"
+                    messeage: "'csv' is not one of ['json','yaml']"
+        500:
+          description: |-
+            Internal server error.
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+components:
+  schemas:
+    NodeConfiguration:
+      $ref: "./openapi_schema.yaml#/components/schemas/NodeConfiguration"
+    SystemOperation:
+      $ref: "./openapi_schema.yaml#/components/schemas/SystemOperation"
+    CategoryQuery:
+      $ref: "./openapi_schema.yaml#/components/schemas/CategoryQuery"
+    PolicyID:
+      $ref: "./openapi_schema.yaml#/components/schemas/PolicyID"
+    PolicyIDRequest:
+      $ref: "./openapi_schema.yaml#/components/schemas/PolicyIDRequest"
+    PolicyIDResponse:
+      $ref: "./openapi_schema.yaml#/components/schemas/PolicyIDResponse"
+    Title:
+      $ref: "./openapi_schema.yaml#/components/schemas/Title"
+    Enabled:
+      $ref: "./openapi_schema.yaml#/components/schemas/Enabled"
+    GetEnabled:
+      $ref: "./openapi_schema.yaml#/components/schemas/GetEnabled"
+    SetEnabled:
+      $ref: "./openapi_schema.yaml#/components/schemas/SetEnabled"
+    NodePolicyJson:
+      $ref: "./openapi_schema.yaml#/components/schemas/NodePolicyJson"
+    SystemPolicyJson:
+      $ref: "./openapi_schema.yaml#/components/schemas/SystemPolicyJson"
+    PolicyIDList:
+      $ref: "./openapi_schema.yaml#/components/schemas/PolicyIDList"
+    NodePolicyUpdateRequest:
+      $ref: "./openapi_schema.yaml#/components/schemas/NodePolicyUpdateRequest"
+    SystemPolicyUpdateRequest:
+      $ref: "./openapi_schema.yaml#/components/schemas/SystemPolicyUpdateRequest"
+    NodePolicyGetRequest:
+      $ref: "./openapi_schema.yaml#/components/schemas/NodePolicyGetRequest"
+    SystemPolicyGetRequest:
+      $ref: "./openapi_schema.yaml#/components/schemas/SystemPolicyGetRequest"
+    NodePolicyInsertRequest:
+      $ref: "./openapi_schema.yaml#/components/schemas/NodePolicyInsertRequest"
+    SystemPolicyInsertRequest:
+      $ref: "./openapi_schema.yaml#/components/schemas/SystemPolicyInsertRequest"
+    Policy:
+      $ref: "./openapi_schema.yaml#/components/schemas/Policy"
+    CreatedAt:
+      $ref: "./openapi_schema.yaml#/components/schemas/CreatedAt"
+    UpdatedAt:
+      $ref: "./openapi_schema.yaml#/components/schemas/UpdatedAt"
+    ErrorResponse:
+      $ref: "./openapi_schema.yaml#/components/schemas/ErrorResponse"
+    ValidationErrorResponse:
+      $ref: "./openapi_schema.yaml#/components/schemas/ValidationErrorResponse"
+    NotExsistErrorResponse:
+      $ref: "./openapi_schema.yaml#/components/schemas/NotExsistErrorResponse"
+    Fields:
+      $ref: "./openapi_schema.yaml#/components/schemas/Fields"
+    SubCategory:
+      $ref: "./openapi_schema.yaml#/components/schemas/SubCategory"
+    Device:
+      $ref: "./openapi_schema.yaml#/components/schemas/Device"
+    Format:
+      $ref: "./openapi_schema.yaml#/components/schemas/Format"
+    Name:
+      $ref: "./openapi_schema.yaml#/components/schemas/Name"
+    Force:
+      $ref: "./openapi_schema.yaml#/components/schemas/Force"
+    ExportPolicy:
+      $ref: "./openapi_schema.yaml#/components/schemas/ExportPolicy"
+    CompletedImportResults:
+      $ref: "./openapi_schema.yaml#/components/schemas/CompletedImportResults"
+    FailedImportResults:
+      $ref: "./openapi_schema.yaml#/components/schemas/FailedImportResults"
+    SortBy:
+      $ref: "./openapi_schema.yaml#/components/schemas/SortBy"
+    OrderBy:
+      $ref: "./openapi_schema.yaml#/components/schemas/OrderBy"
+    Limit:
+      $ref: "./openapi_schema.yaml#/components/schemas/Limit"
+    Offset:
+      $ref: "./openapi_schema.yaml#/components/schemas/Offset"
+    X-Content-Type-Options:
+      $ref: "./openapi_schema.yaml#/components/schemas/X-Content-Type-Options"
+    Content-Type:
+      $ref: "./openapi_schema.yaml#/components/schemas/Content-Type"

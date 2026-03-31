@@ -1,0 +1,39 @@
+{
+  "count": 2,
+  "totalCount": 2,
+  "policies": [
+    {
+      "policyID": "d8eceb14da",
+      "category": "nodeConfigurationPolicy",
+      "title": "ノード構成制約に関する制約条件",
+      "policy": {
+        "hardwareConnectionsLimit": {
+          "cpu": {
+            "maxNum": 5,
+            "minNum": 1
+          }
+        }
+      },
+      "enabled": true,
+      "createdAt": "2023-05-10T00:00:00Z",
+      "updatedAt": "2023-05-10T00:00:00Z"
+    },
+    {
+      "policyID": "abc10dfaa9",
+      "category": "systemOperationPolicy",
+      "title": "構成案設計時に算出されるリソース使用率のしきい値に関する制約",
+      "policy": {
+        "useThreshold": {
+          "cpu": {
+            "value": 80,
+            "unit": "percent",
+            "comparison": "lt"
+          }
+        }
+      },
+      "enabled": true,
+      "createdAt": "2023-05-10T00:00:00Z",
+      "updatedAt": "2023-05-10T00:00:00Z"
+    }
+  ]
+}

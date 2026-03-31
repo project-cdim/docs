@@ -19,7 +19,7 @@
 $ docker exec -it <コンテナ名> /bin/sh
 $ ls /var/log/cdim
 ```
-またコンポーネントごとに、ログ出力ファイルが以下のように分かれています。
+またコンポーネントごとに、ログ出力ファイルが以下のように分かれています。  
 
 | ログの種類                                        | ログファイル名       | 出力先コンテナ名       |
 | :------------------------------------------------ | :------------------- | ---------------------- |
@@ -27,8 +27,11 @@ $ ls /var/log/cdim
 | アプリケーションログ (ハードウェア制御)           | app_hw_control.log   | hw-control             |
 | アプリケーションログ (構成案反映)                 | app_layout_apply.log | layout-apply           |
 | アプリケーションログ (移行手順生成)               | app_migration_procedures.log | migration-procedure-generator |
+| アプリケーションログ (構成案設計)                 | app_layout_design.log | layout-design |
+| アプリケーションログ (制約条件管理)               | app_policy.log | policy-manager |
 | アプリケーションログ (構成情報管理)               | app_config_info.log  | configuration-manager  |
 | アプリケーションログ (構成情報収集エクスポーター) | app_exporter.log     | configuration-exporter |
+| アプリケーションログ（サンプル設計機構） | sample_design_engine.log | layout-design |
 
 ##### 3.1.2. ログの出力方法を変更する
 それぞれのコンポーネントの設定ファイルを変更してログ出力方法を変更します。
@@ -50,11 +53,11 @@ $ ls /var/log/cdim
 |証跡ログ(性能情報収集)|main.go|performance-collector-compose/performance-collector/performance-collector|
 |証跡ログ(性能情報収集エクスポーター)|main.go|performance-exporter-compose/performance-exporter/performance-exporter|
 |証跡ログ(構成情報収集エクスポーター)|main.go|configuration-exporter-compose/configuration-exporter/configuration-exporter|
-|証跡ログ(構成情報収集管理)|main.go|configuration-manager-compose/configuration-manager/configuration-manager|
+|証跡ログ(構成情報収集管理)|middleware.go|configuration-manager-compose/configuration-manager/configuration-manager/server|
 |性能情報収集|logger.go|performance-collector-compose/performance-collector/performance-collector/internal/service|
 |性能情報収集エクスポーター|logger.go|performance-exporter-compose/performance-exporter/performance-exporter/internal/service|
 |構成情報収集エクスポーター|controller_common.go|configuration-exporter-compose/configuration-exporter/configuration-exporter/controller|
-|構成情報収集管理|gi_cm_applog.go|configuration-manager-compose/configuration-manager/configuration-manager/common|
+|構成情報収集管理|cm_applog.go|configuration-manager-compose/configuration-manager/configuration-manager/common|
 
 ログ出力ファイルの設定項目は以下になります。  
 コード内に以下の項目を書き込んでください。
@@ -96,9 +99,12 @@ var Log, _ = logger.New(logger_common.Option{
 
 |コンポーネント名|設定ファイル名|ファイルパス|
 |:--|:--|:--|
-|ハードウェア制御|setting.py|hw-control-compose/hw-control/src/app/common|
-|構成案反映|layoutapply_config.yaml|layout-apply-compose/layout-apply/src/layoutapply/config|
+|ハードウェア制御|logging_config.yaml|hw-control-compose/configs/hw-control|
+|構成案反映|layoutapply_config.yaml|layout-apply-compose/layout-apply/config|
 |移行手順生成|migrationprocedures_config.yaml|migration-procedure-generator-compose/migration-procedure-generator/src/migrationproceduregenerator/config|
+|構成案設計|layoutdesign_log_config.yaml|layout-design-compose/layout-design/config|
+|制約条件管理|policymanager_log_config.yaml|policy-manager-compose/policy-manager/config|
+|サンプル設計機構|config_sample_design_engine.yaml|layout-design-compose/layout-design/plugins/sample_design_engine|
 
 ログ出力ファイルの設定項目は以下になります。  
 yamlファイルを編集してください。
@@ -141,10 +147,11 @@ global:
     scrape_interval: 180s      # 性能情報のタイムアウト値(s)
 ```
 
-性能情報収集については、情報収集を再実行する必要があります。
+性能情報収集の設定を即座に反映させるには、性能情報収集の再実行が必要です。  
+なお、下記の再実行を行わない場合でも、ジョブ管理にて構成情報収集ジョブが実行・更新されるタイミングで、性能情報収集設定は反映されます。
 ```sh
 $ docker exec -it performance-collector /bin/sh
-$ curl -i -s -X PUT http://localhost:8080/cdim/api/v1/configs
+$ curl -i -s -X POST http://localhost:8080/cdim/api/v1/configs
 ```
 
 #### 3.3. 利用者の認証方法,権限を変更する

@@ -21,15 +21,18 @@ The targets are as follows.
 
 | compose recipes                       | docker services               |
 | ------------------------------------- | ----------------------------- |
+| alert-manager-compose                 | alert-web                     |
 | base-compose                          | message-broker-setting        |
 | configuration-exporter-compose        | configuration-exporter        |
 | configuration-manager-compose         | configuration-manager         |
 | hw-control-compose                    | hw-control                    |
 | job-manager-compose                   | job-manager-setup             |
 | layout-apply-compose                  | layout-apply                  |
+| layout-design-compose                 | layout-design                 |
 | migration-procedure-generator-compose | migration-procedure-generator |
 | performance-collector-compose         | performance-collector         |
 | performance-exporter-compose          | performance-exporter          |
+| policy-manager-compose                | policy-manager                |
 | set-up-tools                          | gateway-set-up-tools          |
 
 ## 2. Retrieve the Installer
@@ -59,6 +62,8 @@ installer
  ├ hw-control-compose
  ├ job-manager-compose
  ├ layout-apply-compose
+ ├ layout-design-compose
+ ├ mf-alert
  ├ mf-core
  ├ mf-layout
  ├ mf-resource
@@ -67,22 +72,23 @@ installer
  ├ performance-collector-compose
  ├ performance-exporter-compose
  ├ performance-manager-compose
+ ├ policy-manager-compose
  └ set-up-tools
 ```
 
-## 3. Modify the Configuration Files
+## 3. Create the Configuration Files
 
 > [!NOTE]
 > In the procedures of this chapter, the current directory will be the `installer` of the installer that was cloned in the previous steps.
 
-### 3.1. Frontend Configuration
+## 3.1. Base
 
 #### 3.1.1. Create Configuration File
 
-Navigate to the `mf-core` directory:
+Navigate to the base-compose component.
 
 ```sh
-cd mf-core
+cd base-compose
 ```
 
 Create a new `.env` configuration file by copying the sample provided:
@@ -100,12 +106,43 @@ Adjust the `cdim-server` address to point to your Docker server's hostname or IP
 It also needs to be a hostname or IP address that can be accessed externally,
 as it will be the connection destination for the browser.
 
+```sh: .env
+# Redirect URL of Keycloak
+IAM_HOSTNAME = 'http://cdim-server:8287'
+```
+
+### 3.2. Frontend Configuration
+
+#### 3.2.1. Create Configuration File
+
+Navigate to the `mf-core` directory:
+
+```sh
+cd mf-core
+```
+
+Create a new `.env` configuration file by copying the sample provided:
+
+```sh
+cp .env.example .env
+```
+
+#### 3.2.2. Edit Configuration File
+
+Open the `.env` file and update it according to your specific environment settings.
+
+Here’s an example of what might be modified:
+Adjust the `cdim-server` address to point to your Docker server's hostname or IP address.
+It also needs to be a hostname or IP address that can be accessed externally,
+as it will be the connection destination for the browser.
+
 ```ini: .env
 # Micro frontend URL settings
 NEXT_PUBLIC_URL_CORE      = 'http://cdim-server:3000'
 NEXT_PUBLIC_URL_RESOURCE  = 'http://cdim-server:3003'
 NEXT_PUBLIC_URL_LAYOUT    = 'http://cdim-server:3004'
 NEXT_PUBLIC_URL_USER      = 'http://cdim-server:3005'
+NEXT_PUBLIC_URL_ALERTA_WEBUI = 'http://cdim-server:8020'
 
 # URL of the authentication server
 NEXT_PUBLIC_URL_IDP        = 'http://cdim-server:8287'
@@ -120,6 +157,8 @@ NEXT_PUBLIC_URL_BE_POLICY_MANAGER = 'http://cdim-server:8014/cdim/api/v1/policy-
 NEXT_PUBLIC_URL_BE_CONFIGURATION_MANAGER = 'http://cdim-server:8014/cdim/api/v1/configuration-manager'
 # API endpoint for performance information management backend (VictoriaMetrics)
 NEXT_PUBLIC_URL_BE_PERFORMANCE_MANAGER = 'http://cdim-server:8014/cdim/api/v1/performance-manager'
+# API endpoint of the Alert web backend
+NEXT_PUBLIC_URL_BE_ALERTA_WEB = 'http://cdim-server:8014/cdim/api/v1/alert-web'
 ```
 
 If you want to replace it with the FQDN of the server where Docker is installed, you can change it with the following command.
@@ -128,7 +167,7 @@ If you want to replace it with the FQDN of the server where Docker is installed,
 sed -e "/^NEXT_PUBLIC/s/localhost/$(hostname -f)/g" .env.example > .env
 ```
 
-### 3.2. Job Management Configuration
+### 3.3. Job Management Configuration
 
 Adjust backend settings if necessary. You may need to modify hardware information retrieval intervals to match your operational environment.
 
@@ -167,7 +206,7 @@ Here is an example of adjusting it to 5 minutes.
 After configurations are set, use the `install` script to build and initialize the containers:
 
 ```sh
-./install --up
+./install -b -u
 ```
 
 This will start the CDIM environment. Verify that all services are running correctly before proceeding.

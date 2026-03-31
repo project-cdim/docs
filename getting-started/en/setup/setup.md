@@ -19,17 +19,19 @@ In the initial state, log in with the username: admin and password: admin.
 http://cdim-server:8287/
 ```
 
-1. Switch to the "CDIM" realm.
-2. Click "Realm settings".
-3. Click the "Keys" tab.
-4. Click the "Public key" for "RS256".
+Switch to the "CDIM" realm.
 
-![fig 1-1 realm settings keys](img/public_key_01.png)
+![fig 1-1 realm settings keys](img/select_realm1.png)
+
+1. Click "Realm settings".
+2. Click the "Keys" tab.
+3. Click the "Public key" for "RS256".
+
+![fig 1-2 realm settings keys](img/public_key_01.png)
 
 The Public Key will be displayed, so copy the contents.
 
-![fig 1-1 realm settings keys](img/public_key_02.png)
-
+![fig 1-3 realm settings keys](img/public_key_02.png)
 
 ### 1.2. Setup Gateway with Public Key
 
@@ -80,13 +82,13 @@ Click "Clients" and then click "Create client", then click on "Create client".
 
 In "General settings", configure as follows and click "Next".
 
-| Item | Value |
-|---|---|
-| Client type | OpenID Connect |
-| Client ID | cdim-client |
-| Name | (leave blank) |
-| Description | (leave blank) |
-| Always display in UI | Off |
+| Item                 | Value          |
+| -------------------- | -------------- |
+| Client type          | OpenID Connect |
+| Client ID            | cdim-client    |
+| Name                 | (leave blank)  |
+| Description          | (leave blank)  |
+| Always display in UI | Off            |
 
 ![fig 2-2 Clients Create Client](img/add_client2.png)
 
@@ -96,13 +98,13 @@ In "Capability config", only enable "Standard flow" under "Authentication flow" 
 
 Specify the following in "Login settings":
 
-| Item | Value |
-|------|------|
-| Root URL | <http://cdim-server:3000/> |
-| Home URL | <http://cdim-server:3000/> |
-| Valid redirect URIs | <http://cdim-server:3000/*> |
+| Item                            | Value                       |
+| ------------------------------- | --------------------------- |
+| Root URL                        | <http://cdim-server:3000/>  |
+| Home URL                        | <http://cdim-server:3000/>  |
+| Valid redirect URIs             | <http://cdim-server:3000/*> |
 | Valid post logout redirect URIs | <http://cdim-server:3000/*> |
-| Web origins | * |
+| Web origins                     | *                           |
 
 ![fig 2-4 Clients Create Client](img/add_client4.png)
 
@@ -134,10 +136,8 @@ Click the "Save password".
 #### 2.2.3. Assign Roles
 
 Click the "Role mapping" tab and then click the "Assign role".
-![fig 2-6 Users Add User](img/add_user6.png)
-
 Switch the filter condition to "Filter by realm roles".
-![fig 2-7 Users Add User](img/add_user7.png)
+![fig 2-6 Users Add User](img/add_user6.png)
 
 Check the role to be assigned in the list. Here, check "cdim-administrator", which represents administrator privileges. Click the "Assign".  
 ![fig 2-8 Users Add user](img/add_user8.png)

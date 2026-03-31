@@ -55,22 +55,22 @@ components:
         targetCPUID:
           type: string
           description: |-
-            操作対象のCPUデバイスID。\
-            ※ "connect"、"disconnect"の時は接続/切断したいデバイスの接続先CPUデバイスIDを示す。\
+            操作対象のCPUデバイスID。<br>
+            ※ "connect"、"disconnect"の時は接続/切断したいデバイスの接続先CPUデバイスIDを示す。<br>
             ※ 操作種別がデバイスの起動／停止の場合は指定しない。
           example: 12345678-1234-1234-1234-123456789012
         targetDeviceID:
           type: string
           description: |-
-            操作対象のデバイスID。\
-            ※ "connect"、"disconnect"時に必要なパラメータ。CPUと接続/切断したいデバイスのIDを指定する。\
+            操作対象のデバイスID。<br>
+            ※ "connect"、"disconnect"時に必要なパラメータ。CPUと接続/切断したいデバイスのIDを指定する。<br>
             ※ "boot"、"shutdown"の時は電源を起動/停止したいCPUデバイスのIDを指す。
           example: 12345678-1234-1234-1234-123456789012
         dependencies:
           type: array
           description: |-
-            依存関係のある移行操作のoperationIDを格納するリスト。\
-            ※ 格納されたoperationIDの移行操作がすべて終了した際に、本移行操作が実行可能であることを表している。\
+            依存関係のある移行操作のoperationIDを格納するリスト。<br>
+            ※ 格納されたoperationIDの移行操作がすべて終了した際に、本移行操作が実行可能であることを表している。<br>
             ※ IDが格納されていないオブジェクトの操作については、移行手順の最初の動作となる。
           items:
             type: integer
@@ -86,7 +86,7 @@ components:
         }
     ApplyResult:
       description: |-
-        移行手順の実行結果の詳細リスト
+        移行手順の実行結果の詳細
       type: object
       required:
         - operationID
@@ -104,26 +104,25 @@ components:
         uri:
           type: string
           description: |-
-            送信したリクエストのURI<br>※値が存在しない、statusがSKIPPEDもしくはCANCELEDの場合、当データは存在しない
+            送信したリクエストのURI<br>※値が存在しない、statusがSKIPPEDかCANCELEDの場合、当データは存在しない
           example: http://<host>/cdim/api/v1/connect
         method:
           type: string
           description: |-
-            送信したリクエストのメソッド<br>※値が存在しない、statusがSKIPPEDもしくはCANCELEDの場合、当データは存在しない
+            送信したリクエストのメソッド<br>※値が存在しない、statusがSKIPPEDかCANCELEDの場合、当データは存在しない
           example: PUT
         queryParameter:
           type: string
           description: |-
-            送信したリクエストのクエリパラメータ<br>※値が存在しない、statusがSKIPPEDもしくはCANCELEDの場合、当データは存在しない
+            送信したリクエストのクエリパラメータ<br>※値が存在しない、statusがSKIPPEDかCANCELEDの場合、当データは存在しない
           example:
             {
-              "hostCpuId": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
-              "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+              "timeOut": 30,
             }
         requestBody:
           type: object
           description: |-
-            送信したリクエストのリクエストボディ<br>※値が存在しない、statusがSKIPPEDもしくはCANCELEDの場合、当データは存在しない
+            送信したリクエストのリクエストボディ<br>※値が存在しない、statusがSKIPPEDかCANCELEDの場合、当データは存在しない
           properties:
             action:
               type: string
@@ -137,7 +136,7 @@ components:
               description: |-
                 デバイスに対する操作<br>
                 ※ resetを指定できるのはCPUに対してのみ
-            deviceID:
+            destinationDeviceID:
               type: string
               example: 895DFB43-68CD-41D6-8996-EAC8D1EA1E3F
               description: |-
@@ -145,20 +144,20 @@ components:
                 ※ actionがOn/Offの場合、当データは存在しない
         startedAt:
           type: datetime
-          description: 手順開始日時。該当operationIDの移行手順を開始した時間<br>※statusがSKIPPEDもしくはCANCELEDの場合、当データは存在しない
+          description: 手順開始日時。該当operationIDの移行手順を開始した時間<br>※statusがSKIPPEDかCANCELEDの場合、当データは存在しない
         endedAt:
           type: datetime
-          description: 手順完了日時。該当operationIDの移行手順を完了した時間<br>※statusがSKIPPEDもしくはCANCELEDの場合、当データは存在しない
+          description: 手順完了日時。該当operationIDの移行手順を完了した時間<br>※statusがSKIPPEDかCANCELEDの場合、当データは存在しない
 
         statusCode:
           type: integer
           description: |-
-            返却されたレスポンスのHTTPステータスコード<br>※値が存在しない、statusがSKIPPEDもしくはCANCELEDの場合、当データは存在しない
+            返却されたレスポンスのHTTPステータスコード<br>※値が存在しない、statusがSKIPPEDかCANCELEDの場合、当データは存在しない
           example: 200
         responseBody:
           type: object
           description: |-
-            返却されたレスポンスのレスポンスボディ<br>※値が存在しない、statusがSKIPPEDもしくはCANCELEDの場合、当データは存在しない
+            返却されたレスポンスのレスポンスボディ<br>※値が存在しない、statusがSKIPPEDかCANCELEDの場合、当データは存在しない
           properties:
             code:
               type: string
@@ -169,7 +168,7 @@ components:
         isOSBoot:
           type: object
           description: |-
-            ハードウェア制御機能のOS起動確認APIリクエストの詳細情報 <br>※操作種別：電源ONの場合にのみ存在。値が存在しない、statusがSKIPPEDもしくはCANCELEDの場合、当データは存在しない
+            ハードウェア制御機能のOS起動確認APIリクエストの詳細情報 <br>※操作種別：電源ONの場合にのみ存在。値が存在しない、statusがSKIPPEDかCANCELEDの場合、当データは存在しない
           properties:
             uri:
               type: string
@@ -181,7 +180,7 @@ components:
               type: string
               description: 送信したOS起動確認APIリクエストのメソッド
             statusCode:
-              type: int
+              type: integer
               description: 送信したOS起動確認APIのレスポンスのHTTPステータスコード
             responseBody:
               type: object
@@ -189,7 +188,7 @@ components:
         getInformation:
           type: object
           description: |-
-            ハードウェア制御機能のデバイス情報取得APIリクエストの詳細情報<br>※操作種別：電源OFFで対象デバイスがCPUの場合にのみ存在。値が存在しない、statusがSKIPPEDもしくはCANCELEDの場合、当データは存在しない
+            ハードウェア制御機能のデバイス情報取得APIリクエストの詳細情報<br>※操作種別：電源OFFで対象デバイスがCPUの場合にのみ存在。値が存在しない、statusがSKIPPEDかCANCELEDの場合、当データは存在しない
           properties:
             responseBody:
               type: object
@@ -209,40 +208,39 @@ components:
         uri:
           type: string
           description: |-
-            送信したリクエストのURI<br>※値が存在しない、statusがSKIPPEDもしくはCANCELEDの場合、当データは存在しない
+            送信したリクエストのURI<br>※値が存在しない、statusがSKIPPEDかCANCELEDの場合、当データは存在しない
           example: http://cdim/api/v1/connect/{hostCpuId,targetDeviceID}
         method:
           type: string
           description: |-
-            送信したリクエストのメソッド<br>※値が存在しない、statusがSKIPPEDもしくはCANCELEDの場合、当データは存在しない
+            送信したリクエストのメソッド<br>※値が存在しない、statusがSKIPPEDかCANCELEDの場合、当データは存在しない
           example: PUT
         queryParameter:
           type: string
           description: |-
-            送信したリクエストのクエリパラメータ<br>※値が存在しない、statusがSKIPPEDもしくはCANCELEDの場合、当データは存在しない
+            送信したリクエストのクエリパラメータ<br>※値が存在しない、statusがSKIPPEDかCANCELEDの場合、当データは存在しない
           example:
             {
-              "hostCpuId": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
-              "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+              "timeOut": 30,
             }
         requestBody:
           type: string
           description: |-
-            送信したリクエストのリクエストボディ<br>※値が存在しない、statusがSKIPPEDもしくはCANCELEDの場合、当データは存在しない
+            送信したリクエストのリクエストボディ<br>※値が存在しない、statusがSKIPPEDかCANCELEDの場合、当データは存在しない
           example:
             {
-              "hostCpuId": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
-              "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+              "action": "connect",
+              "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
             }
         statusCode:
           type: integer
           description: |-
-            返却されたレスポンスのHTTPステータスコード<br>※値が存在しない、statusがSKIPPEDもしくはCANCELEDの場合、当データは存在しない
+            返却されたレスポンスのHTTPステータスコード<br>※値が存在しない、statusがSKIPPEDかCANCELEDの場合、当データは存在しない
           example: 500
         responseBody:
           type: object
           description: |-
-            返却されたレスポンスのレスポンスボディ<br>※値が存在しない、statusがSKIPPEDもしくはCANCELEDの場合、当データは存在しない
+            返却されたレスポンスのレスポンスボディ<br>※値が存在しない、statusがSKIPPEDかCANCELEDの場合、当データは存在しない
           properties:
             code:
               type: string
@@ -252,10 +250,10 @@ components:
               example: Invalid parameters.
         startedAt:
           type: datetime
-          description: 手順開始日時。該当operationIDの移行手順を開始した時間<br>※statusがSKIPPEDもしくはCANCELEDの場合、当データは存在しない
+          description: 手順開始日時。該当operationIDの移行手順を開始した時間<br>※statusがSKIPPEDかCANCELEDの場合、当データは存在しない
         endedAt:
           type: datetime
-          description: 手順完了日時。該当operationIDの移行手順を完了した時間<br>※statusがSKIPPEDもしくはCANCELEDの場合、当データは存在しない
+          description: 手順完了日時。該当operationIDの移行手順を完了した時間<br>※statusがSKIPPEDかCANCELEDの場合、当データは存在しない
     ApplyResponse:
       description: 構成案反映要求のレスポンスボディ
       type: object
@@ -378,7 +376,7 @@ components:
           example: E40001
         message:
           type: string
-          example: Value is not one of ['procedures', 'applyResult', 'rollbackProcedures', 'rollbackResult', 'resumekProcedures']
+          example: Value is not one of ['procedures', 'applyResult', 'rollbackProcedures', 'rollbackResult', 'resumeProcedures']
           description: エラー内容を表すエラーメッセージ。
     ConflictErrorResponse:
       description: |-
@@ -435,7 +433,11 @@ components:
         procedures:
           $ref: "#/components/schemas/ProcedureList"
         applyResult:
-          $ref: "#/components/schemas/ApplyResult"
+          type: array
+          description: |-
+            移行手順の実行結果の詳細リスト
+          items:
+            $ref: "#/components/schemas/ApplyResult"
         rollbackProcedures:
           $ref: "#/components/schemas/RollbackProcedureList"
         startedAt:
@@ -456,9 +458,11 @@ components:
           description: |-
             ロールバック状態情報<br>"COMPLETED"：ロールバック完了、"IN_PROGRESS"：ロールバック中、SUSPENDED"：ロールバック中断、"FAILED"：ロールバック失敗<br>※statusがCOMPLETEDもしくはFAILEDの場合、また該当IDの反映がロールバック実行のオプション無しでキャンセルされていた場合、当データは存在しない
         rollbackResult:
-          type: object
+          type: array
           description: |-
             該当IDの構成案反映がキャンセルされた後のロールバック実行の結果。<br>データの形式は反映結果(applyResult)と同様<br>※statusがCOMPLETEDもしくはFAILEDの場合、また該当IDの反映がロールバック実行のオプション無しでキャンセルされていた場合、当データは存在しない
+          items:
+            $ref: "#/components/schemas/ApplyResult"
         rollbackStartedAt:
           type: datetime
           description: ロールバック開始日時。該当IDの構成案反映のロールバックを開始した時間
@@ -468,9 +472,11 @@ components:
         resumeProcedures:
           $ref: "#/components/schemas/ResumeProcedureList"
         resumeResult:
-          type: object
+          type: array
           description: |-
             該当IDの構成案反映が再開された後の結果またはロールバック時中断データを再開した後の結果。<br>データの形式は反映結果(applyResult)と同様<br>※中断・再開が繰り返し発生した場合は最新の結果が格納される
+          items:
+            $ref: "#/components/schemas/ApplyResult"
         suspendedAt:
           type: datetime
           description: 中断日時。該当IDの構成案反映を中断した時間またはロールバック時中断した時間。<br>※中断・再開が繰り返し発生した場合は最新の結果が格納される
@@ -526,7 +532,7 @@ components:
         rollbackStatus:
           type: string
           example: |-
-            "IN_PROGRESS", "COMPLETED", SUSPENDED", "FAILED"
+            "IN_PROGRESS", "COMPLETED", "SUSPENDED", "FAILED"
           description: ロールバック状態情報を表すメッセージ。
 
     DesiredLayout:
@@ -572,18 +578,33 @@ components:
           type: object
           description: |-
             nodesに格納されるデバイス情報のオブジェクト<br>
-            ※deviceのデータを作成する場合、cpuは必須とする
+            ※deviceのデータを作成する場合、cpuは必須とする<br>
+            ※gpuキーの場合のみ配列型となり、その他のデバイス種別(cpu/memory/storage/networkInterface等)はオブジェクト型となる
           properties:
             <デバイス種別>:
               type: object
               description: |-
-                デバイス種別の例: cpu/memory/storage/networkInterface/gpu etc...<br>
+                デバイス種別の例: cpu/memory/storage/networkInterface etc...<br>
+                ※gpuの場合のみ配列型となる (gpuのスキーマ参照) <br>
                 ※大文字/小文字の区別なく指定可能とする(CPUの場合cpu/CPUのほかに/Cpu/cPu/CpU...などといった表記を許容する)
               required:
                 - deviceIDs
               properties:
                 deviceIDs:
                   $ref: "#/components/schemas/DeviceIDList"
+            gpu:
+              type: array
+              description: |-
+                GPU (配列型) <br>
+                ※gpuの場合のみ配列型となる<br>
+                ※大文字/小文字の区別なく指定可能とする(gpu/GPUのほかに/Gpu/gPu/GpU...などといった表記を許容する)
+              items:
+                type: object
+                required:
+                  - deviceID
+                properties:
+                  deviceID:
+                    $ref: "#/components/schemas/DeviceID"
     DeviceIDList:
       description: 該当デバイスのデバイスID一覧
       type: array
@@ -593,3 +614,13 @@ components:
       description: デバイスID
       type: string
       example: "2CA6D4DF-2739-45BA-ACA4-6ABE93E81E15"
+    X-Content-Type-Options:
+      description: Content-Typeにて指定されたMIMEタイプのスニッフィング抑止用ヘッダ
+      schema:
+        type: string
+        example: nosniff
+    Content-Type:
+      description: MIMEタイプや文字エンコードタイプの指定用ヘッダ
+      schema:
+        type: string
+        example: application/json; charset=utf-8

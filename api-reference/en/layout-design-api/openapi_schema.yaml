@@ -1,0 +1,581 @@
+components:
+  schemas:
+    RequestBody:
+      type: object
+      properties:
+        resourceGroupIDs:
+          type: array
+          items:
+            type: string
+            description: |
+              Specifies the resource group IDs to use for the design. \
+              If omitted, all resource groups are used for the design.
+            example: 00000000-0000-7000-8000-000000000000
+        requestID:
+          type: string
+          description: |
+            ID for identifying the request.
+            Used by service management to associate this request with the design result.
+          example: d96533a2-6fb8-498d-9778-4d93141d92b7
+        noCondition:
+          type: boolean
+          description: |
+            Boolean value controlling whether to skip creating migration conditions. \
+            If false, migration conditions are created. If true, migration conditions are not created.
+          default: false
+        partialDesign:
+          type: boolean
+          description: |
+            Boolean value indicating whether this is an entire design or a partial design.\
+            If true, this is a partial design in which only the specified services are design targets, and the design is performed for nodes included in the target service list.\
+            If false, this is an entire design in which all services are design targets, and the design is performed for all nodes.\
+            Note: The default is true to avoid accidentally targeting all nodes.
+          default: true
+        serviceSetRequestResources:
+          type: array
+          description: |
+            Resource types and performance requirements for each service set (service set request resources)
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                description: Individual service set request resource ID
+                example: 8a82d035-19e6-4fde-a130-4702cad4ba36
+              serviceSetID:
+                type: string
+                description: Service set ID
+                example: 801d1675-eb03-4447-958c-e3042513f0ce
+              serviceSetName:
+                type: string
+                description: Service set name
+                example: Sample ServiceSet
+              serviceRequestResources:
+                type: array
+                description: Resource types and performance requirements for each service in the service set (service request resources)
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: Individual service request resource ID
+                      example: 2551de1d-224c-4a4c-a191-807a17936a21
+                    serviceID:
+                      type: string
+                      description: Service ID
+                      example: ef27cc23-788d-42cd-9f1a-d44e0d2eee89
+                    serviceName:
+                      type: string
+                      description: Service name
+                      example: apache2.service
+                    shareService:
+                      type: boolean
+                      description: |-
+                        Whether this service can share a node with other services (true: shared, false: exclusive)
+                    resource:
+                      type: object
+                      properties:
+                        operatingSystem:
+                          type: string
+                          description: Operating system
+                          example: Ubuntu 20.04.6 LTS
+                        instances:
+                          type: array
+                          description: Resource types and performance requirements per instance
+                          items:
+                            type: object
+                            properties:
+                              serviceInstanceID:
+                                type: string
+                                description: Instance ID when a running instance exists
+                                example: 9b6e3a97-2859-4f94-88b7-bd473d8c7a64
+                              requestInstanceID:
+                                type: string
+                                description: ID identifying the instance for which to set resource types and performance requirements
+                                example: 7ad272e4-3223-4161-b0e9-80b588c7242d
+                              redundant:
+                                type: boolean
+                                description: |-
+                                  Whether this is a standby instance (true: standby, false: normal)
+                              changed:
+                                type: boolean
+                                description: Flag indicating whether the instance specification has changed. Set to true if this instance's resources have changed since the previous request. Also specify true for initial deployment. Not specified for entire design.
+                              cpu:
+                                type: object
+                                properties:
+                                  architecture:
+                                    type: string
+                                    description: Processor architecture (x86, ARM, etc.)
+                                    example: x86
+                                  coreNumber:
+                                    type: number
+                                    description: Number of processor cores
+                                    example: 4
+                                  operatingSpeedMHz:
+                                    type: number
+                                    description: Processor frequency (MHz)
+                                    example: 3200
+                              memory:
+                                type: object
+                                properties:
+                                  size:
+                                    type: number
+                                    description: Memory size (MB)
+                                    example: 4096
+                                  operatingSpeedMHz:
+                                    type: number
+                                    description: Memory operating speed (MHz)
+                                    example: 3200
+                              storage:
+                                type: object
+                                properties:
+                                  size:
+                                    type: number
+                                    description: Storage size (GB)
+                                    example: 4096
+                                  capableSpeedGbs:
+                                    type: number
+                                    description: Communication speed with the storage controller (Gbit/s)
+                                    example: 3200
+                              gpu:
+                                type: array
+                                items:
+                                  type: object
+                                  properties:
+                                    architecture:
+                                      type: string
+                                      description: GPU architecture
+                                      example: x86
+                                    coreNumber:
+                                      type: number
+                                      description: Number of GPU cores
+                                      example: 8
+                                    operatingSpeedMHz:
+                                      type: number
+                                      description: GPU frequency (MHz)
+                                      example: 1500
+                                    memorySize:
+                                      type: number
+                                      description: GPU memory size (MB)
+                                      example: 4096
+                                    deviceCount:
+                                      type: number
+                                      description: Required number of GPU devices
+                                      example: 2
+                              networkInterface:
+                                type: object
+                                properties:
+                                  bitRate:
+                                    type: number
+                                    description: Network interface bit rate (Mbit/s)
+                                    example: 10000
+        services:
+          type: array
+          description: |
+            List of all services.\
+            Includes all information in the target service list for partial design.\
+            If the same service is included in multiple service sets, specify the service for each service set.
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                description: Service ID
+                example: ef27cc23-788d-42cd-9f1a-d44e0d2eee89
+              name:
+                type: string
+                description: Service name
+                example: apache2.service
+              description:
+                type: string
+                description: Description
+                example: Web Server(apache2)
+              owner:
+                type: string
+                description: Owner
+                example: Corporation
+              instances:
+                type: array
+                description: List of instances running the service
+                items:
+                  type: object
+                  properties:
+                    serviceInstanceID:
+                      type: string
+                      description: Instance ID
+                      example: 9b6e3a97-2859-4f94-88b7-bd473d8c7a64
+                    requestInstanceID:
+                      type: string
+                      description: Instance ID specified in service request resources
+                      example: 7ad272e4-3223-4161-b0e9-80b588c7242d
+                    status:
+                      type: string
+                      description: Instance status
+                      enum:
+                        - READY
+                        - DEPLOYING
+                        - RUNNING
+                        - STOPPED
+                    nodeID:
+                      type: string
+                      description: Node ID where the instance is running
+                      example: 0621c7fd-5312-4b64-81ba-e5e8d14c46b9
+        targetServices:
+          type: array
+          description: |
+            List of target services for partial design.\
+            Valid only when partialDesign=true.\
+            All information of this parameter is included in the all-services list.\
+            If the same service is included in multiple service sets, specify the service for each service set.
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                description: Service ID
+                example: ef27cc23-788d-42cd-9f1a-d44e0d2eee89
+              name:
+                type: string
+                description: Service name
+                example: apache2.service
+              description:
+                type: string
+                description: Description
+                example: Web Server(apache2)
+              owner:
+                type: string
+                description: Owner
+                example: Corporation
+              instances:
+                type: array
+                description: |
+                  List of instances running the service.\
+                  Specify instances that are targets for update/delete.\
+                  Also specify instances that co-locate on the same node as the update/delete target instances.
+                items:
+                  type: object
+                  properties:
+                    serviceInstanceID:
+                      type: string
+                      description: Instance ID
+                      example: 9b6e3a97-2859-4f94-88b7-bd473d8c7a64
+                    requestInstanceID:
+                      type: string
+                      description: Instance ID specified in service request resources
+                      example: 7ad272e4-3223-4161-b0e9-80b588c7242d
+                    status:
+                      type: string
+                      description: Instance status
+                      enum:
+                        - READY
+                        - DEPLOYING
+                        - RUNNING
+                        - STOPPED
+                    nodeID:
+                      type: string
+                      description: Node ID where the instance is running
+                      example: 0621c7fd-5312-4b64-81ba-e5e8d14c46b9
+
+    Design:
+      type: object
+      properties:
+        nodes:
+          type: array
+          description: List of nodes on which services will run
+          items:
+            type: object
+            properties:
+              spec:
+                type: number
+                description: Numeric value indicating node performance
+                example: 0
+              averageEnergyWatts:
+                type: number
+                description: Sum of averageEnergyWatts of devices installed on the node
+                example: 0
+              constructTime:
+                type: number
+                description: Time to construct the node (seconds)
+                example: 0
+              destructTime:
+                type: number
+                description: Time to destruct the node (seconds)
+                example: 0
+              services:
+                type: array
+                description: List of services to run on the target node
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: ID for identifying the service
+                      example: ef27cc23-788d-42cd-9f1a-d44e0d2eee89
+                    requestInstanceID:
+                      type: string
+                      description: ID identifying the instance for which to set resource amounts
+                      example: 7ad272e4-3223-4161-b0e9-80b588c7242d
+              device:
+                type: object
+                properties:
+                  cpu:
+                    type: object
+                    properties:
+                      deviceIDs:
+                        type: array
+                        items:
+                          type: string
+                          description: CPU device ID
+                          example: b9a1e642-da2e-403a-88f5-fa0eca0d9c52
+                  memory:
+                    type: object
+                    properties:
+                      deviceIDs:
+                        type: array
+                        items:
+                          type: string
+                          description: Memory device ID
+                          example: 54fd3675-8ad1-42d7-8d61-067dea3f446a
+                  storage:
+                    type: object
+                    properties:
+                      deviceIDs:
+                        type: array
+                        items:
+                          type: string
+                          description: Storage device ID
+                          example: f843ae2c-4157-4469-9635-300fb04fdb7b
+                  gpu:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        deviceID:
+                          type: string
+                          description: GPU device ID
+                          example: 0ca6a442-784d-47c7-ba0c-c4077953da48
+                        requests:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              requestInstanceID:
+                                type: string
+                                description: ID identifying the instance for which to set resource amounts
+                                example: 7ad272e4-3223-4161-b0e9-80b588c7242d
+                              index:
+                                type: number
+                                description: GPU index within the instance
+                                example: 0
+                  networkInterface:
+                    type: object
+                    properties:
+                      deviceIDs:
+                        type: array
+                        items:
+                          type: string
+                          description: Network interface device ID
+                          example: bfac0e5a-f1b7-42eb-bc69-2e28b5c9f9f8
+
+    CompletedDesignDatas:
+      properties:
+        count:
+          type: integer
+          description: Number of retrieved items
+          example: 1
+        totalCount:
+          type: integer
+          description: Total number of design results stored in the design engine
+          example: 1000
+        designs:
+          type: array
+          description: Design result list data
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                description: Design ID for identifying the design
+                example: 67bd83e91b2bf7984df8aed3
+              status:
+                type: string
+                description: Status (if status is IN_PROGRESS, FAILED, or CANCELED, design and conditions are empty objects and procedures is an empty list)
+                enum:
+                  - COMPLETED
+                  - IN_PROGRESS
+                  - FAILED
+                  - CANCELING
+                  - CANCELED
+              requestID:
+                type: string
+                description: Request ID for identifying the request
+                example: d96533a2-6fb8-498d-9778-4d93141d92b7
+              startedAt:
+                type: string
+                description: Design request time (RFC3339-UTC format)
+                example: 2023-05-10T00:00:00Z
+              endedAt:
+                type: string
+                description: Design end time (RFC3339-UTC format. Returns the time when status transitioned to COMPLETED / FAILED / CANCELED; returns an empty string for IN_PROGRESS / CANCELING)
+                example: 2023-05-10T00:00:00Z
+              design:
+                $ref: "#/components/schemas/Design"
+              conditions:
+                $ref: "#/components/schemas/Conditions"
+              procedures:
+                $ref: "#/components/schemas/Procedures"
+
+    CompletedDesignData:
+      properties:
+        status:
+          type: string
+          description: Status (if status is IN_PROGRESS, FAILED, or CANCELED, design and conditions are empty objects and procedures is an empty list)
+          enum:
+            - COMPLETED
+            - IN_PROGRESS
+            - FAILED
+            - CANCELING
+            - CANCELED
+        requestID:
+          type: string
+          description: Request ID for identifying the request
+        startedAt:
+          type: string
+          description: Design request time (RFC3339-UTC format)
+        endedAt:
+          type: string
+          description: Design end time (RFC3339-UTC format. Returns the time when status transitioned to COMPLETED / FAILED / CANCELED; returns an empty string for IN_PROGRESS / CANCELING)
+        design:
+          $ref: "#/components/schemas/Design"
+        conditions:
+          $ref: "#/components/schemas/Conditions"
+        procedures:
+          $ref: "#/components/schemas/Procedures"
+        designID:
+          type: string
+          description: Design ID for identifying the design
+
+    FailedDesignData:
+      properties:
+        status:
+          type: string
+          description: Status (if status is IN_PROGRESS, FAILED, or CANCELED, design and conditions are empty objects and procedures is an empty list)
+          enum:
+            - FAILED
+            - COMPLETED
+            - IN_PROGRESS
+            - CANCELING
+            - CANCELED
+        requestID:
+          type: string
+          description: ID for identifying the request
+        startedAt:
+          type: string
+          description: Design request time (RFC3339-UTC format)
+        endedAt:
+          type: string
+          description: Design end time (RFC3339-UTC format. Returns the time when status transitioned to COMPLETED / FAILED / CANCELED; returns an empty string for IN_PROGRESS / CANCELING)
+        cause:
+          type: string
+          description: Failure reason (key exists only when design status is FAILED)
+        design:
+          type: object
+        conditions:
+          type: object
+        procedures:
+          type: array
+        designID:
+          type: string
+          description: ID for identifying the design
+
+    Conditions:
+      type: object
+      properties:
+        toleranceCriteria:
+          type: object
+          properties:
+            cpu:
+              type: array
+              description: Each item represents "the sum of the devices specified in device is less than or equal to limit" (tolerance criteria)
+              items:
+                type: object
+                properties:
+                  deviceIDs:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      [
+                        "b9a1e642-da2e-403a-88f5-fa0eca0d9c52",
+                        "e56a1a1c-0556-42ca-8cbb-7c6dc86561eb",
+                      ]
+                  limit:
+                    type: object
+                    properties:
+                      averageUseRate:
+                        type: number
+                        example: 284.0
+                      weights:
+                        type: array
+                        description: Weights for calculating CPU usage rate considering the number of CPU cores
+                        items:
+                          type: number
+                        example: [1.25, 0.8]
+            memory:
+              type: array
+              description: Each item represents "the sum of the devices specified in device is less than or equal to limit" (tolerance criteria)
+              items:
+                type: object
+                properties:
+                  deviceIDs:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      [
+                        "54fd3675-8ad1-42d7-8d61-067dea3f446a",
+                        "e63fbe90-1b8f-44bd-9f66-ca3a9ce159b2",
+                      ]
+                  limit:
+                    type: object
+                    properties:
+                      averageUseBytes:
+                        type: number
+                        example: 284.0
+        energyCriteria:
+          type: number
+          description: |-
+            Upper limit of total system power consumption (energy criteria) [unit: W]
+          example: 5284
+
+    Procedures:
+      type: array
+      items:
+        type: object
+        properties:
+          operationID:
+            type: integer
+            description: Migration procedure operation ID
+            example: 1
+          operation:
+            type: string
+            description: Migration operation type
+            example: "shutdown"
+          targetCPUID:
+            type: string
+            description: Target CPU device ID
+            example: "0621c7fd-5312-4b64-81ba-e5e8d14c46b9"
+          targetDeviceID:
+            type: string
+            description: Target device ID
+            example: "1b66b60f-5250-4aa6-8cc3-55e5806ea492"
+          targetRequestInstanceID:
+            type: string
+            description: Request instance ID of the target instance
+            example: "ef27cc23-788d-42cd-9f1a-d44e0d2eee89"
+          dependencies:
+            type: array
+            description: List of operationIDs of migration operations that this operation depends on
+            items:
+              type: integer
+              example: 2

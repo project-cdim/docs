@@ -1,0 +1,29 @@
+@startuml "01_system"
+
+actor " " as consumer
+rectangle "Layout Design Service" as layout_design_function {
+    rectangle "Layout Design" as layout_design
+    note left of layout_design
+        - Layout Design Request API
+        - Get Layout Design Result API
+        - List Design Results API
+        - Cancel Layout Design API
+        - Delete Layout Design Result API
+    end note
+    rectangle "<color:red>Plugin 1</color>" as plugin_1
+    rectangle "<color:red>Plugin 2</color>" as plugin_2
+}
+rectangle "Configuration Manager" as configuration_manager
+rectangle "Policy Manager" as policy_manager
+rectangle "Design Engine 1" as design_engine_1
+rectangle "Design Engine 2" as design_engine_2
+
+consumer --> layout_design: REST API
+layout_design --> configuration_manager: Get configuration info
+layout_design --> policy_manager: Get policies
+layout_design --> plugin_1: Load & invoke
+plugin_1 --> design_engine_1: Execute
+layout_design --> plugin_2: Load & invoke
+plugin_2 --> design_engine_2: Execute
+
+@enduml

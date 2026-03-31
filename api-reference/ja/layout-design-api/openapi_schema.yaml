@@ -1,0 +1,578 @@
+components:
+  schemas:
+    RequestBody:
+      type: object
+      properties:
+        resourceGroupIDs:
+          type: array
+          items:
+            type: string
+            description: |
+              設計に利用するリソースグループIDを指定する。 \
+              指定がない場合すべてのリソースグループが設計に利用される。
+            example: 00000000-0000-7000-8000-000000000000
+        requestID:
+          type: string
+          description: |
+            要求を識別するためのID。
+            サービス管理で本リクエストと設計結果を紐づけるために利用する。
+          example: d96533a2-6fb8-498d-9778-4d93141d92b7
+        noCondition:
+          type: boolean
+          description: |
+            移行条件の作成をスキップするかを制御する真偽値。 \
+            falseの場合は移行条件を作成する。true の場合は移行条件を作成しない。
+          default: false
+        partialDesign:
+          type: boolean
+          description: |
+            全体設計か部分設計かを示す真偽値。\
+            true の場合は指定されたサービスだけが設計対象となる部分設計となり、部分設計対象サービス一覧に含まれているノードを対象に設計を行う。\
+            false の場合はすべてのサービスが設計対象となる全体設計となり、すべてのノードを対象に設計を行う。\
+            ※ 誤って全ノードを設計対象とするような事態を避けるため、デフォルトはtrue とする。
+          default: true
+        serviceSetRequestResources:
+          type: array
+          description: |
+            各サービスセットが必要とするリソース量 (サービスセット要求リソース)
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                description: 個々のサービスセット要求リソースID
+                example: 8a82d035-19e6-4fde-a130-4702cad4ba36
+              serviceSetID:
+                type: string
+                description: サービスセットID
+                example: 801d1675-eb03-4447-958c-e3042513f0ce
+              serviceSetName:
+                type: string
+                description: サービスセット名
+                example: Sample ServiceSet
+              serviceRequestResources:
+                type: array
+                description: サービスセットに含まれるサービスが必要とするリソース量 (サービス要求リソース)
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: 個々のサービス要求リソースID
+                      example: 2551de1d-224c-4a4c-a191-807a17936a21
+                    serviceID:
+                      type: string
+                      description: サービスID
+                      example: ef27cc23-788d-42cd-9f1a-d44e0d2eee89
+                    serviceName:
+                      type: string
+                      description: サービス名
+                      example: apache2.service
+                    shareService:
+                      type: boolean
+                      description: 当該サービスが他サービスとノードを共有することができるか (true：共有、false：専有)
+                    resource:
+                      type: object
+                      properties:
+                        operatingSystem:
+                          type: string
+                          description: 使用OS
+                          example: Ubuntu 20.04.6 LTS
+                        instances:
+                          type: array
+                          description: インスタンス毎のリソース量
+                          items:
+                            type: object
+                            properties:
+                              serviceInstanceID:
+                                type: string
+                                description: 既存サービスがある場合のインスタンスID
+                                example: 9b6e3a97-2859-4f94-88b7-bd473d8c7a64
+                              requestInstanceID:
+                                type: string
+                                description: ソース量を設定するインスタンスを識別するID
+                                example: 7ad272e4-3223-4161-b0e9-80b588c7242d
+                              redundant:
+                                type: boolean
+                                description: 予備インスタンスであるか (true:予備インスタンス、false:通常インスタンス)
+                              changed:
+                                type: boolean
+                                description: インスタンスの指定に変更があるかを判定するフラグ。本インスタンスのリソースが前回要求時から変更がある場合trueにする。初期構築時もtrueを指定する。全体設計の場合は指定されない。
+                              cpu:
+                                type: object
+                                properties:
+                                  architecture:
+                                    type: string
+                                    description: プロセッサのアーキテクチャ(x86、ARM等)
+                                    example: x86
+                                  coreNumber:
+                                    type: number
+                                    description: プロセッサのコア数
+                                    example: 4
+                                  operatingSpeedMHz:
+                                    type: number
+                                    description: プロセッサの周波数 (MHz)
+                                    example: 3200
+                              memory:
+                                type: object
+                                properties:
+                                  size:
+                                    type: number
+                                    description: メモリサイズ (MB)
+                                    example: 4096
+                                  operatingSpeedMHz:
+                                    type: number
+                                    description: メモリの動作速度 (MHz)
+                                    example: 3200
+                              storage:
+                                type: object
+                                properties:
+                                  size:
+                                    type: number
+                                    description: ストレージサイズ (GB)
+                                    example: 4096
+                                  capableSpeedGbs:
+                                    type: number
+                                    description: ストレージコントローラーと通信できる速度 (Gbit/s)
+                                    example: 3200
+                              gpu:
+                                type: array
+                                items:
+                                  type: object
+                                  properties:
+                                    architecture:
+                                      type: string
+                                      description: GPUのアーキテクチャ
+                                      example: x86
+                                    coreNumber:
+                                      type: number
+                                      description: GPUのコア数
+                                      example: 8
+                                    operatingSpeedMHz:
+                                      type: number
+                                      description: GPUの動作速度 (MHz)
+                                      example: 1500
+                                    memorySize:
+                                      type: number
+                                      description: GPUのメモリサイズ (MB)
+                                      example: 4096
+                                    deviceCount:
+                                      type: number
+                                      description: 必要なGPUデバイス数
+                                      example: 2
+                              networkInterface:
+                                type: object
+                                properties:
+                                  bitRate:
+                                    type: number
+                                    description: ネットワークインタフェースの通信速度 (Mbit/秒)
+                                    example: 10000
+        services:
+          type: array
+          description: |
+            全サービス一覧。\
+            部分設計対象サービス一覧の情報をすべて含む。\
+            複数のサービスセットに同一サービスが含まれる場合、サービスセットごとにサービスを指定する。
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                description: サービスID
+                example: ef27cc23-788d-42cd-9f1a-d44e0d2eee89
+              name:
+                type: string
+                description: サービス名
+                example: apache2.service
+              description:
+                type: string
+                description: 説明
+                example: Web Server(apache2)
+              owner:
+                type: string
+                description: 所有者
+                example: Corporation
+              instances:
+                type: array
+                description: サービスを実行するインスタンスの一覧
+                items:
+                  type: object
+                  properties:
+                    serviceInstanceID:
+                      type: string
+                      description: インスタンスID
+                      example: 9b6e3a97-2859-4f94-88b7-bd473d8c7a64
+                    requestInstanceID:
+                      type: string
+                      description: サービス要求リソースで指定したインスタンスのID
+                      example: 7ad272e4-3223-4161-b0e9-80b588c7242d
+                    status:
+                      type: string
+                      description: インスタンスの状態
+                      enum:
+                        - READY
+                        - DEPLOYING
+                        - RUNNING
+                        - STOPPED
+                    nodeID:
+                      type: string
+                      description: インスタンスが実行されるノードのノードID
+                      example: 0621c7fd-5312-4b64-81ba-e5e8d14c46b9
+        targetServices:
+          type: array
+          description: |
+            部分設計対象サービス一覧。\
+            部分設計(partialDesign=true)となる場合のみ有効。\
+            本パラメータの情報はすべて全サービス一覧に含まれる。\
+            複数のサービスセットに同一サービスが含まれる場合、サービスセットごとにサービスを指定する。
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                description: サービスID
+                example: ef27cc23-788d-42cd-9f1a-d44e0d2eee89
+              name:
+                type: string
+                description: サービス名
+                example: apache2.service
+              description:
+                type: string
+                description: 説明
+                example: Web Server(apache2)
+              owner:
+                type: string
+                description: 所有者
+                example: Corporation
+              instances:
+                type: array
+                description: |
+                  サービスを実行するインスタンスの一覧。\
+                  更新/削除対象のインスタンスを指定する。\
+                  また、更新/削除対象のインスタンスと同一ノードに相乗りするインスタンスも指定する。
+                items:
+                  type: object
+                  properties:
+                    serviceInstanceID:
+                      type: string
+                      description: インスタンスID
+                      example: 9b6e3a97-2859-4f94-88b7-bd473d8c7a64
+                    requestInstanceID:
+                      type: string
+                      description: サービス要求リソースで指定したインスタンスのID
+                      example: 7ad272e4-3223-4161-b0e9-80b588c7242d
+                    status:
+                      type: string
+                      description: インスタンスの状態
+                      enum:
+                        - READY
+                        - DEPLOYING
+                        - RUNNING
+                        - STOPPED
+                    nodeID:
+                      type: string
+                      description: インスタンスが実行されるノードのノードID
+                      example: 0621c7fd-5312-4b64-81ba-e5e8d14c46b9
+
+    Design:
+      type: object
+      properties:
+        nodes:
+          type: array
+          description: サービスを稼働させるノードのリスト
+          items:
+            type: object
+            properties:
+              spec:
+                type: number
+                description: ノードの性能を示す数値
+                example: 0
+              averageEnergyWatts:
+                type: number
+                description: ノードの搭載デバイスのaverageEnergyWattsの合計値
+                example: 0
+              constructTime:
+                type: number
+                description: ノードの構築にかかる時間 (秒)
+                example: 0
+              destructTime:
+                type: number
+                description: ノードの解体にかかる時間 (秒)
+                example: 0
+              services:
+                type: array
+                description: 対象ノードで稼働させるサービスのリスト
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: サービスを識別するためのID
+                      example: ef27cc23-788d-42cd-9f1a-d44e0d2eee89
+                    requestInstanceID:
+                      type: string
+                      description: ソース量を設定するインスタンスを識別するID
+                      example: 7ad272e4-3223-4161-b0e9-80b588c7242d
+              device:
+                type: object
+                properties:
+                  cpu:
+                    type: object
+                    properties:
+                      deviceIDs:
+                        type: array
+                        items:
+                          type: string
+                          description: CPUのデバイスID
+                          example: b9a1e642-da2e-403a-88f5-fa0eca0d9c52
+                  memory:
+                    type: object
+                    properties:
+                      deviceIDs:
+                        type: array
+                        items:
+                          type: string
+                          description: メモリのデバイスID
+                          example: 54fd3675-8ad1-42d7-8d61-067dea3f446a
+                  storage:
+                    type: object
+                    properties:
+                      deviceIDs:
+                        type: array
+                        items:
+                          type: string
+                          description: ストレージのデバイスID
+                          example: f843ae2c-4157-4469-9635-300fb04fdb7b
+                  gpu:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        deviceID:
+                          type: string
+                          description: GPUのデバイスID
+                          example: 0ca6a442-784d-47c7-ba0c-c4077953da48
+                        requests:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              requestInstanceID:
+                                type: string
+                                description: ソース量を設定するインスタンスを識別するID
+                                example: 7ad272e4-3223-4161-b0e9-80b588c7242d
+                              index:
+                                type: number
+                                description: インスタンス内でのGPUのインデックス
+                                example: 0
+                  networkInterface:
+                    type: object
+                    properties:
+                      deviceIDs:
+                        type: array
+                        items:
+                          type: string
+                          description: ネットワークインタフェースのデバイスID
+                          example: bfac0e5a-f1b7-42eb-bc69-2e28b5c9f9f8
+
+    CompletedDesignDatas:
+      properties:
+        count:
+          type: integer
+          description: 取得件数
+          example: 1
+        totalCount:
+          type: integer
+          description: 設計機構に保存されている設計結果の総数
+          example: 1000
+        designs:
+          type: array
+          description: 設計結果一覧データ
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                description: 設計を識別するためのID
+                example: 67bd83e91b2bf7984df8aed3
+              status:
+                type: string
+                description: ステータス(ステータスがIN_PROGRESS,FAILED,CANCELEDの場合、design, conditionsは空のオブジェクトを、proceduresは空のリストを返却)
+                enum:
+                  - COMPLETED
+                  - IN_PROGRESS
+                  - FAILED
+                  - CANCELING
+                  - CANCELED
+              requestID:
+                type: string
+                description: 要求を識別するためのID
+                example: d96533a2-6fb8-498d-9778-4d93141d92b7
+              startedAt:
+                type: string
+                description: 設計要求日時(RFC3339-UTCフォーマット)
+                example: 2023-05-10T00:00:00Z
+              endedAt:
+                type: string
+                description: 設計終了日時(RFC3339-UTCフォーマット、statusがCOMPLETED / FAILED / CANCELEDに遷移した時刻を返却、IN_PROGRESS / CANCELINGの場合は空文字を返却)
+                example: 2023-05-10T00:00:00Z
+              design:
+                $ref: "#/components/schemas/Design"
+              conditions:
+                $ref: "#/components/schemas/Conditions"
+              procedures:
+                $ref: "#/components/schemas/Procedures"
+
+    CompletedDesignData:
+      properties:
+        status:
+          type: string
+          description: ステータス(ステータスがIN_PROGRESS,FAILED,CANCELEDの場合、design, conditionsは空のオブジェクトを、proceduresは空のリストを返却)
+          enum:
+            - COMPLETED
+            - IN_PROGRESS
+            - FAILED
+            - CANCELING
+            - CANCELED
+        requestID:
+          type: string
+          description: 要求を識別するためのID
+        startedAt:
+          type: string
+          description: 設計要求日時(RFC3339-UTCフォーマット)
+        endedAt:
+          type: string
+          description: 設計終了日時(RFC3339-UTCフォーマット、statusがCOMPLETED / FAILED / CANCELEDに遷移した時刻を返却、IN_PROGRESS / CANCELINGの場合は空文字を返却)
+        design:
+          $ref: "#/components/schemas/Design"
+        conditions:
+          $ref: "#/components/schemas/Conditions"
+        procedures:
+          $ref: "#/components/schemas/Procedures"
+        designID:
+          type: string
+          description: 設計を識別するためのID
+
+    FailedDesignData:
+      properties:
+        status:
+          type: string
+          description: ステータス(ステータスがIN_PROGRESS,FAILED,CANCELEDの場合、design, conditionsは空のオブジェクトを、proceduresは空のリストを返却)
+          enum:
+            - FAILED
+            - COMPLETED
+            - IN_PROGRESS
+            - CANCELING
+            - CANCELED
+        requestID:
+          type: string
+          description: 要求を識別するためのID
+        startedAt:
+          type: string
+          description: 設計要求日時(RFC3339-UTCフォーマット)
+        endedAt:
+          type: string
+          description: 設計終了日時(RFC3339-UTCフォーマット、statusがCOMPLETED / FAILED / CANCELEDに遷移した時刻を返却、IN_PROGRESS / CANCELINGの場合は空文字を返却)
+        cause:
+          type: string
+          description: 失敗理由(設計状態がFAILEDの場合のみキーが存在)
+        design:
+          type: object
+        conditions:
+          type: object
+        procedures:
+          type: array
+        designID:
+          type: string
+          description: 設計を識別するためのID
+
+    Conditions:
+      type: object
+      properties:
+        toleranceCriteria:
+          type: object
+          properties:
+            cpu:
+              type: array
+              description: 各アイテムはそれぞれ「deviceに指定されたデバイスの合計値がlimit以下」を表す (許容負荷条件)
+              items:
+                type: object
+                properties:
+                  deviceIDs:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      [
+                        "b9a1e642-da2e-403a-88f5-fa0eca0d9c52",
+                        "e56a1a1c-0556-42ca-8cbb-7c6dc86561eb",
+                      ]
+                  limit:
+                    type: object
+                    properties:
+                      averageUseRate:
+                        type: number
+                        example: 284.0
+                      weights:
+                        type: array
+                        description: CPUのコア数を考慮したCPU使用率を算出するための重み
+                        items:
+                          type: number
+                        example: [1.25, 0.8]
+            memory:
+              type: array
+              description: 各アイテムはそれぞれ「deviceに指定されたデバイスの合計値がlimit以下」を表す (許容負荷条件)
+              items:
+                type: object
+                properties:
+                  deviceIDs:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      [
+                        "54fd3675-8ad1-42d7-8d61-067dea3f446a",
+                        "e63fbe90-1b8f-44bd-9f66-ca3a9ce159b2",
+                      ]
+                  limit:
+                    type: object
+                    properties:
+                      averageUseBytes:
+                        type: number
+                        example: 284.0
+        energyCriteria:
+          type: number
+          description: システム全体の消費電力の上限値 (消費電力条件) [単位：W]
+          example: 5284
+
+    Procedures:
+      type: array
+      items:
+        type: object
+        properties:
+          operationID:
+            type: integer
+            description: 移行手順操作のID
+            example: 1
+          operation:
+            type: string
+            description: 移行操作の種別
+            example: "shutdown"
+          targetCPUID:
+            type: string
+            description: 操作対象のCPUデバイスID
+            example: "0621c7fd-5312-4b64-81ba-e5e8d14c46b9"
+          targetDeviceID:
+            type: string
+            description: 操作対象のデバイスID
+            example: "1b66b60f-5250-4aa6-8cc3-55e5806ea492"
+          targetRequestInstanceID:
+            type: string
+            description: 操作対象インスタンスの要求インスタンスID
+            example: "ef27cc23-788d-42cd-9f1a-d44e0d2eee89"
+          dependencies:
+            type: array
+            description: 依存関係のある移行操作のoperationIDリスト
+            items:
+              type: integer
+              example: 2

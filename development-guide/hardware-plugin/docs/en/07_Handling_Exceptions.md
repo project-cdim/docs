@@ -205,20 +205,20 @@ The following exception classes are defined:
   * Default Error Message: `"Your request is not supported for the specified target device."`
 
 * `FMConnectFailureHWControlError`
-  * Raise this exception in the Fabric Manager when a connection between the specified Host CPU and device fails.
+  * Raise this exception in the Fabric Manager when a connection between the specified USP and DSP fails.
   * Base class：`ControlObjectHWControlError`
   * Target Plugin: FM
   * Error Code: `"EF004BAS001"`
   * HTTP Status Code: `500`
-  * Default Error Message: `"The Fabric Manager failed to establish a connection between the specified Host CPU and target device."`
+  * Default Error Message: `"The Fabric Manager failed to establish a connection between the specified source device and the destination device."`
 
 * `FMDisconnectFailureHWControlError`
-  * Raise this exception in the Fabric Manager when disconnection between the specified Host CPU and device fails.
+  * Raise this exception in the Fabric Manager when disconnection between the specified USP and DSP fails.
   * Base class：`ControlObjectHWControlError`
   * Target Plugin: FM
   * Error Code: `"EF004BAS002"`
   * HTTP Status Code: `500`
-  * Default Error Message: `"The Fabric Manager failed to disconnect a connection between the specified Host CPU and the target device."`
+  * Default Error Message: `"The Fabric Manager failed to disconnect a connection between the specified source device and the destination device."`
 
 * `PowerOnFailureHWControlError`
   * Raise this exception when the OOB Controller fails to power on the specified device.

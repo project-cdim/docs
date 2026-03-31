@@ -1,0 +1,28 @@
+{
+  "procedures": [
+    {
+      "operationID": 1,
+      "operation": "disconnect",
+      "targetCPUID": "2CA6D4DF-2739-45BA-ACA4-6ABE93E81E15",
+      "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+      "dependencies": []
+    },
+    {
+      "operationID": 2,
+      "operation": "connect",
+      "targetCPUID": "2CA6D4DF-2739-45BA-ACA4-6ABE93E81E15",
+      "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+      "dependencies": [
+        1
+      ]
+    },
+    {
+      "operationID": 3,
+      "operation": "boot",
+      "targetDeviceID": "2CA6D4DF-2739-45BA-ACA4-6ABE93E81E15",
+      "dependencies": [
+        2
+      ]
+    }
+  ]
+}

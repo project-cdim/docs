@@ -1,0 +1,75 @@
+{
+    "requestID": "463e79c1-d138-4748-9018-5c1435a50d87",
+    "noCondition": false,
+    "partialDesign": false,
+    "resourceGroupIDs": [
+        "625d8951-50fb-41b3-a824-6c98438c4c52"
+    ],
+    "serviceSetRequestResources": [
+        {
+            "id": "6ea26bd4-ece0-4a9a-b042-3fa04361526e",
+            "serviceSetID": "bbb02921-ee54-4b26-97d2-0fec1d987b12",
+            "serviceSetName": "Web app chat services",
+            "serviceRequestResources": [
+                {
+                    "id": "cbc896de-1df2-4aed-b71d-4aff38206ca3",
+                    "serviceID": "a58ee3a7-62a0-46f3-ba80-f7080eaa0d1c",
+                    "serviceName": "LLM agent",
+                    "shareService": false,
+                    "resource": {
+                        "operatingSystem": "Redhat Enterprise 9.0",
+                        "instances": [
+                            {
+                                "requestInstanceID": "1d40d2a9-979f-4956-aee7-30587de64fe9",
+                                "serviceInstanceID": "5b4ea1a2-4130-4de8-9045-bc92709df778",
+                                "redundant": false,
+                                "changed": true,
+                                "cpu": {
+                                    "architecture": "x86",
+                                    "coreNumber": 4,
+                                    "operatingSpeedMHz": 3000
+                                },
+                                "memory": {
+                                    "size": 8000,
+                                    "operatingSpeedMHz": 3200
+                                },
+                                "storage": {
+                                    "size": 250,
+                                    "capableSpeedGbs": 12
+                                },
+                                "gpu": [
+                                    {
+                                        "architecture": "x86",
+                                        "coreNumber": 2,
+                                        "operatingSpeedMHz": 2400,
+                                        "memorySize": 16000,
+                                        "deviceCount": 1
+                                    }
+                                ],
+                                "networkInterface": {
+                                    "bitRate": 9600
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    ],
+    "services": [
+        {
+            "id": "a58ee3a7-62a0-46f3-ba80-f7080eaa0d1c",
+            "name": "LLM agent",
+            "description": "LLM inference service for natural language tasks.",
+            "owner": "NEC Corp.",
+            "instances": [
+                {
+                    "serviceInstanceID": "5b4ea1a2-4130-4de8-9045-bc92709df778",
+                    "requestInstanceID": "1d40d2a9-979f-4956-aee7-30587de64fe9",
+                    "status": "RUNNING",
+                    "nodeID": "b477ea1c-db3d-48b3-9725-b0ce6e25ef01"
+                }
+            ]
+        }
+    ]
+}

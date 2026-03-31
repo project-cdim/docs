@@ -1,0 +1,112 @@
+{
+  "count": 1,
+  "nodes": [
+    {
+      "id": "b477ea1c-db3d-48b3-9725-b0ce6e25ef01",
+      "resources": [
+        {
+          "annotation": {
+            "available": true
+          },
+          "detected": true,
+          "device": {
+            "deviceID": "2eb602dc-e4c2-4064-b272-e409ad5c9b42",
+            "status": {
+              "health": "Disabled",
+              "state": "Enabled"
+            },
+            "type": "networkInterface"
+          },
+          "resourceGroupIDs": [
+            "00000000-0000-7000-8000-000000000000"
+          ]
+        },
+        {
+          "annotation": {
+            "available": true
+          },
+          "detected": true,
+          "device": {
+            "deviceID": "4ca84d71-22da-4faf-94d8-5e159397115b",
+            "status": {
+              "health": "OK",
+              "state": "InTest"
+            },
+            "type": "memory"
+          },
+          "resourceGroupIDs": [
+            "00000000-0000-7000-8000-000000000000"
+          ]
+        },
+        {
+          "annotation": {
+            "available": true
+          },
+          "detected": true,
+          "device": {
+            "deviceID": "7c6f9db2-5d35-4310-90f6-7e004ad2f35a",
+            "status": {
+              "health": "OK",
+              "state": "Starting"
+            },
+            "type": "memory"
+          },
+          "resourceGroupIDs": [
+            "00000000-0000-7000-8000-000000000000"
+          ]
+        },
+        {
+          "annotation": {
+            "available": true
+          },
+          "detected": true,
+          "device": {
+            "deviceID": "b477ea1c-db3d-48b3-9725-b0ce6e25efc2",
+            "status": {
+              "health": "OK",
+              "state": "Disabled"
+            },
+            "type": "CPU"
+          },
+          "resourceGroupIDs": [
+            "00000000-0000-7000-8000-000000000000"
+          ]
+        },
+        {
+          "annotation": {
+            "available": true
+          },
+          "detected": true,
+          "device": {
+            "deviceID": "e56a1a1c-0556-42ca-8cbb-7c6dc86561eb",
+            "status": {
+              "health": "Critical",
+              "state": "Enabled"
+            },
+            "type": "storage"
+          },
+          "resourceGroupIDs": [
+            "00000000-0000-7000-8000-000000000000"
+          ]
+        },
+        {
+          "annotation": {
+            "available": true
+          },
+          "detected": true,
+          "device": {
+            "deviceID": "e63fbe90-1b8f-44bd-9f66-ca3a9ce159b2",
+            "status": {
+              "health": "Warning",
+              "state": "Enabled"
+            },
+            "type": "GPU"
+          },
+          "resourceGroupIDs": [
+            "00000000-0000-7000-8000-000000000000"
+          ]
+        }
+      ]
+    }
+  ]
+}

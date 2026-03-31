@@ -112,5 +112,5 @@ $ docker image rm $( docker image ls -q )
 $ docker volume rm $( docker volume ls -q )
 コンテナを立ち上げる
 $ cd ~/cdim
-$ ./install --up
+$ ./install -b -u
 ```

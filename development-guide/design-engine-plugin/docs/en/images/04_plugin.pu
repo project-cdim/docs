@@ -1,0 +1,13 @@
+@startuml
+
+abstract class BaseDesignEnginePlugin {
+    {abstract} design_engine: string
+    {abstract} request_params: list
+    {abstract} request_design(args: dict) : dict
+    {abstract} get_design(design_id: str) : dict
+    {abstract} get_all_design(fields: list[str], limit: int, offset: int, sort_by: str, order_by: str, status: list[str]) : dict
+    {abstract} cancel_design(design_id: str) : dict
+    {abstract} delete_design(design_id: str)
+}
+
+@enduml

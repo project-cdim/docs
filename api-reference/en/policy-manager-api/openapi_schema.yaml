@@ -1,0 +1,528 @@
+components:
+  schemas:
+    NodeConfiguration:
+      description: |-
+        Constraint type.
+        - nodeConfigurationPolicy: Constraints related to device configuration on nodes
+      type: string
+      enum:
+        - nodeConfigurationPolicy
+
+    SystemOperation:
+      description: |-
+        Constraint type.
+        - systemOperationPolicy: Constraints related to resource usage thresholds calculated during Layout Design
+      type: string
+      enum:
+        - systemOperationPolicy
+
+    CategoryQuery:
+      description: |-
+        Constraint type.
+        - nodeConfigurationPolicy: Constraints related to device configuration on nodes
+        - systemOperationPolicy: Constraints related to resource usage thresholds calculated during Layout Design
+      type: array
+      items:
+        type: string
+        enum:
+          - all
+          - nodeConfigurationPolicy
+          - systemOperationPolicy
+      default: all
+
+    PolicyID:
+      description: Constraint ID. A 10-character random string consisting of 0123456789abcdef is used as the constraint ID.
+      type: string
+      minLength: 10
+      maxLength: 10
+      example: d8eceb14da
+    PolicyIDResponse:
+      type: object
+      properties:
+        policyID:
+          $ref: "#/components/schemas/PolicyID"
+
+    Title:
+      description: Title
+      type: string
+      minLength: 1
+      maxLength: 100
+      example: Constraints related to Node Configuration or System Operation
+    Enabled:
+      description: |-
+        Enabled/Disabled state (true: Enabled, false: Disabled)
+      type: boolean
+      enum:
+        - true
+        - false
+    GetEnabled:
+      description: |-
+        Enabled/Disabled state (all: Retrieve both enabled and disabled constraints, true: Retrieve enabled constraints, false: Retrieve disabled constraints)
+      type: string
+      default: all
+      enum:
+        - "all"
+        - "true"
+        - "false"
+    SetEnabled:
+      description: |-
+        Enabled/Disabled state (true: Enabled, false: Disabled)
+      type: boolean
+      default: false
+      enum:
+        - true
+        - false
+    CreatedAt:
+      description: Registration date and time
+      type: datetime
+    UpdatedAt:
+      description: Update date and time
+      type: datetime
+    NodePolicyJson:
+      type: object
+      description: |-
+        Definition of Node Configuration Constraints
+      properties:
+        hardwareConnectionsLimit:
+          type: object
+          description: |-
+            Hardware connection limits
+          properties:
+            <Device Type>:
+              type: object
+              description: |-
+                Target device type for constraints.<br>
+                Currently assumed device types are cpu/memory/storage/gpu/fpga/accelerator/dsp/<br>virtualmedia/graphiccontroller/networkinterface.<br>
+                The device type "otherProcessor" is not included in the design scope, and specifying it will result in a validation error.<br>
+                Values specified for the device are case-insensitive as long as the spelling matches (e.g., Cpu/cpu/CPU are all acceptable).
+              properties:
+                maxNum:
+                  type: integer
+                  description: |-
+                    Maximum number of connections to the node.<br>Assumed to be pre-configured by the DC operator.<br>
+                    - The device can be connected up to the specified maximum number.<br>- The values of minNum and maxNum must satisfy the relationship minNum <= maxNum.
+                  minimum: 1
+                minNum:
+                  type: integer
+                  description: |-
+                    Minimum number of connections to the node.<br>Assumed to be pre-configured by the DC operator.<br>
+                    - The device must be connected at least the specified number of times.<br>- The values of minNum and maxNum must satisfy the relationship minNum <= maxNum.
+                  minimum: 1
+    SystemPolicyJson:
+      type: object
+      description: |-
+        Definition of System Operation Constraints
+      properties:
+        useThreshold:
+          type: object
+          description: |-
+            Usage thresholds
+          properties:
+            <Device Type>:
+              type: object
+              description: |-
+                Target device type for constraints.<br>
+                Currently assumed device types are cpu/memory/storage/gpu/fpga/accelerator/dsp/<br>virtualMedia/graphicController/networkInterface.<br>
+                The device type "otherProcessor" is not included in the design scope, and specifying it will result in a validation error.<br>
+                Values specified for the device are case-insensitive as long as the spelling matches (e.g., Cpu/cpu/CPU are all acceptable).
+              properties:
+                value:
+                  type: integer
+                  description: |-
+                    Threshold value
+                  minimum: 0
+                  maximum: 100
+                unit:
+                  type: string
+                  description: |-
+                    Unit of the threshold value
+                  enum:
+                    - "percent"
+                comparison:
+                  type: string
+                  description: |-
+                    Inequality for the threshold value<br>
+                    gt: Greater than the threshold, lt: Less than the threshold, le: Less than or equal to the threshold, ge: Greater than or equal to the threshold
+                  example: "gt"
+                  enum:
+                    - "gt"
+                    - "lt"
+                    - "ge"
+                    - "le"
+
+    SubCategory:
+      description: |-
+        Subcategory. Used to search for subcategories of information within constraints (policy).<br>If specified, the "subCategory" within the constraints will be the search target.<br>
+        If not specified, "subCategory" will not be used as a search condition.
+      type: string
+      enum:
+        - hardwareConnectionsLimit
+        - useThreshold
+    Device:
+      description: |-
+        Device type. Used to search for device types within constraints (policy).<br>If specified, the device type within the constraints will be the search target.<br>
+        If not specified, the device type will not be used as a search condition.<br>
+        Values specified are case-insensitive as long as the spelling matches (e.g., Cpu/cpu/CPU are all acceptable).
+      type: string
+      enum:
+        - cpu
+        - memory
+        - storage
+        - gpu
+        - fpga
+        - accelerator
+        - dsp
+        - virtualMedia
+        - graphicController
+        - networkInterface
+
+    Fields:
+      description: |-
+        Target fields for retrieval. Specifies the fields of constraints to be retrieved. If not specified, all fields will be retrieved.<br>If not specified, all fields will be retrieved.<br>Fields not specified as target fields will be excluded from the response body.<br>
+        - policyID: Constraint ID
+        - category: Constraint type
+        - title: Title
+        - policy: Constraint
+        - enabled: Enabled/Disabled state
+        - createdAt: Registration date and time
+        - updatedAt: Update date and time
+      type: array
+      items:
+        type: string
+        enum:
+          - policyID
+          - category
+          - title
+          - policy
+          - enabled
+          - createdAt
+          - updatedAt
+
+    PolicyIDList:
+      properties:
+        count:
+          type: integer
+          example: 1
+        result:
+          type: object
+          properties:
+            policyID:
+              $ref: "#/components/schemas/PolicyID"
+            title:
+              $ref: "#/components/schemas/Title"
+
+    NodePolicyUpdateRequest:
+      properties:
+        category:
+          $ref: "#/components/schemas/NodeConfiguration"
+        title:
+          $ref: "#/components/schemas/Title"
+        policy:
+          $ref: "#/components/schemas/NodePolicyJson"
+    SystemPolicyUpdateRequest:
+      properties:
+        category:
+          $ref: "#/components/schemas/SystemOperation"
+        title:
+          $ref: "#/components/schemas/Title"
+        policy:
+          $ref: "#/components/schemas/SystemPolicyJson"
+
+    PolicyIDRequest:
+      description: |-
+        List of constraint IDs to enable/disable.
+        enableIDList contains the list of constraint IDs to enable, and disableIDList contains the list of constraint IDs to disable.
+      properties:
+        enableIDList:
+          description: List of IDs to enable. Contains the list of constraint IDs to enable.
+          type: array
+          items:
+            $ref: "#/components/schemas/PolicyID"
+        disableIDList:
+          description: List of IDs to disable. Contains the list of constraint IDs to disable.
+          type: array
+          items:
+            $ref: "#/components/schemas/PolicyID"
+
+    NodePolicyInsertRequest:
+      required:
+        - category
+        - title
+        - policy
+      properties:
+        category:
+          $ref: "#/components/schemas/NodeConfiguration"
+        title:
+          $ref: "#/components/schemas/Title"
+        policy:
+          $ref: "#/components/schemas/NodePolicyJson"
+        enabled:
+          $ref: "#/components/schemas/SetEnabled"
+    SystemPolicyInsertRequest:
+      required:
+        - category
+        - title
+        - policy
+      properties:
+        category:
+          $ref: "#/components/schemas/SystemOperation"
+        title:
+          $ref: "#/components/schemas/Title"
+        policy:
+          $ref: "#/components/schemas/SystemPolicyJson"
+        enabled:
+          $ref: "#/components/schemas/SetEnabled"
+
+    NodePolicyGetRequest:
+      properties:
+        policyID:
+          $ref: "#/components/schemas/PolicyID"
+        category:
+          $ref: "#/components/schemas/NodeConfiguration"
+        title:
+          $ref: "#/components/schemas/Title"
+        policy:
+          $ref: "#/components/schemas/NodePolicyJson"
+        enabled:
+          $ref: "#/components/schemas/Enabled"
+        createdAt:
+          $ref: "#/components/schemas/CreatedAt"
+        updatedAt:
+          $ref: "#/components/schemas/UpdatedAt"
+    SystemPolicyGetRequest:
+      properties:
+        policyID:
+          $ref: "#/components/schemas/PolicyID"
+        category:
+          $ref: "#/components/schemas/SystemOperation"
+        title:
+          $ref: "#/components/schemas/Title"
+        policy:
+          $ref: "#/components/schemas/SystemPolicyJson"
+        enabled:
+          $ref: "#/components/schemas/Enabled"
+        createdAt:
+          $ref: "#/components/schemas/CreatedAt"
+        updatedAt:
+          $ref: "#/components/schemas/UpdatedAt"
+
+    ExportPolicy:
+      properties:
+        exportedCount:
+          type: integer
+          example: 2
+          description: |-
+            Number of exported items
+        policies:
+          type: array
+          items:
+            anyOf:
+              - $ref: "#/components/schemas/NodePolicyGetRequest"
+              - $ref: "#/components/schemas/SystemPolicyGetRequest"
+
+    CompletedImportResults:
+      properties:
+        summary:
+          type: object
+          properties:
+            status:
+              type: string
+              example: completed
+              description: Import result
+              enum:
+                - completed
+            totalCount:
+              type: integer
+              example: 1
+              description: Total number of records
+            completedCount:
+              type: integer
+              example: 1
+              description: Number of successfully imported items
+        details:
+          type: array
+          items:
+            anyOf:
+              - properties:
+                  policyID:
+                    type: string
+                    example: d8eceb14da
+                    description: Input constraint ID
+                  message:
+                    type: string
+                    example: completed
+                    description: Message indicating success
+            
+    FailedImportResults:
+      oneOf:
+        - properties:
+            ErrorSummaryResponse:
+              properties:
+                summary:
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      example: failed
+                      description: Import result
+                      enum:
+                        - failed
+                    totalCount:
+                      type: integer
+                      example: 1
+                      description: Total number of records
+                    failedCount:
+                      type: integer
+                      example: 1
+                      description: Number of failed imports
+                details:
+                  type: array
+                  items:
+                    anyOf:
+                      - properties:
+                          policyID:
+                            type: string
+                            example: d8eceb14da
+                            description: Location of the error
+                          message:
+                            type: string
+                            example: Validation error
+                            description: Reason for import failure
+            ErrorResponse:
+              properties:
+                code:
+                  type: string
+                  example: E10001
+                  description: Error code representing the error content.
+                message:
+                  type: string
+                  example: "'csv' is not one of ['json','yaml']"
+                  description: Error message representing the error content.
+
+    Policy:
+      required:
+        - policyID
+        - category
+        - policy
+      properties:
+        count:
+          type: integer
+          example: 1
+          description: |-
+            Number of retrieved data items
+        totalCount:
+          type: integer
+          example: 20
+          description: |-
+            Total number of constraints matching the conditions
+        policies:
+          type: array
+          items:
+            anyOf:
+              - $ref: "#/components/schemas/NodePolicyGetRequest"
+              - $ref: "#/components/schemas/SystemPolicyGetRequest"
+    Format:
+      description: |-
+        Output format. Specifies the format of the output file.
+      type: string
+      enum:
+        - json
+        - yaml
+
+    OrderBy:
+      description: |-
+        Sort order.<br>If not specified, sorting is done in descending order.
+        - asc: Sort in ascending order
+        - desc: Sort in descending order
+      type: string
+      default: desc
+      enum:
+        - asc
+        - desc
+    SortBy:
+      description: |-
+        Sort target. Specifies the field used as the basis for sorting. If not specified, sorting is done based on createdAt.<br>The sorting result depends on the query result.
+        - createdAt: Registration date and time
+        - updatedAt: Update date and time
+      type: string
+      default: createdAt
+      enum:
+        - createdAt
+        - updatedAt
+
+    Limit:
+      description: |-
+        Number of items to retrieve.<br>Retrieves the specified number of constraints.
+      type: integer
+      default: 20
+
+    Offset:
+      description: |-
+        Starting row for retrieval.<br>Retrieves constraints starting from the specified row.
+      type: integer
+      default: 0
+
+    Name:
+      description: |-
+        Output file name. Specifies the file name of the exported constraints.
+      type: string
+      default: export_<yyyyMMddhhmmss>.<format>
+
+    Force:
+      description: "Force update/delete flag. If true is specified, constraints in the enabled state can be updated/deleted. (true: enabled, false: disabled)"
+      type: boolean
+      default: false
+
+    ErrorResponse:
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          example: E10002
+          description: Error code representing the error content.
+        message:
+          type: string
+          example: Failed to load policymanager_config.yaml
+          description: Error message representing the error content.
+    ValidationErrorResponse:
+      description: |-
+        Occurs when a validation error is encountered.
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          description: Error code representing the error content.
+          example: E10001
+        message:
+          type: string
+          example: "'50w' is not of type 'integer'"
+          description: Error message representing the error content.
+    NotExsistErrorResponse:
+      description: |-
+        The specified constraint does not exist.
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          example: E10005
+          description: Error code representing the error content.
+        message:
+          type: string
+          example: Specified '28ac2c8dea' is not found
+          description: Error message representing the error content.
+    X-Content-Type-Options:
+      description: Header to prevent MIME type sniffing specified in Content-Type
+      schema:
+        type: string
+        example: nosniff
+    Content-Type:
+      description: Header for specifying MIME type and character encoding type
+      schema:
+        type: string
+        example: application/json; charset=utf-8

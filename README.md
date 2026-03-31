@@ -27,8 +27,11 @@
 ## Development
 
 * Hardware Plugin Development Guide
-  * [English][Plugin-Dev-Guide]
-  * [Japanese][Plugin-Dev-Guide-ja]
+  * [English][HW-Plugin-Dev-Guide]
+  * [Japanese][HW-Plugin-Dev-Guide-ja]
+* Design Engine Plugin Development Guide
+  * [English][Design-Plugin-Dev-Guide]
+  * [Japanese][Design-Plugin-Dev-Guide-ja]
 
 [Concepts]: concepts/en/README.md
 [Concepts-ja]: concepts/ja/README.md
@@ -40,5 +43,7 @@
 [Tutorial-ja]: tutorial/ja/README.md
 [API-Reference]: api-reference/en/README.md
 [API-Reference-ja]: api-reference/ja/README.md
-[Plugin-Dev-Guide]: development-guide/hardware-plugin/README.md
-[Plugin-Dev-Guide-ja]: development-guide/hardware-plugin/README-ja.md
+[HW-Plugin-Dev-Guide]: development-guide/hardware-plugin/README.md
+[HW-Plugin-Dev-Guide-ja]: development-guide/hardware-plugin/README-ja.md
+[Design-Plugin-Dev-Guide]: development-guide/design-engine-plugin/README.md
+[Design-Plugin-Dev-Guide-ja]: development-guide/design-engine-plugin/README-ja.md

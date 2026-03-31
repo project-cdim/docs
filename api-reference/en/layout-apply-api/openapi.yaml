@@ -5,12 +5,12 @@ info:
   title: Layout Apply API
   description: |-
     A suite of functions for making layout applies to the managed Composable Disaggregated Infrastructure
-  version: 0.1.0 # Matches the version of the revision history
+  version: 0.2.0 # Matches the version of the revision history
 tags:
   - name: Layout Apply
     description: |-
       A suite of functions to apply a layout
-  - name: Migration Procedure Genaration
+  - name: Migration Procedure Generation
     description: |-
       A suite of functions to generate migration procedures
 paths:
@@ -28,7 +28,6 @@ paths:
         | SUSPENDED | - | Due to an error, there is a suspended layout apply request, resulting in abnormal termination as it cannot be executed |
         | CANCELED | IN_PROGRESS | There is a rollback execution in progress that results in abnormal termination due to double initiation for the layout apply request |
         | CANCELED | SUSPENDED | Due to an error, the rollback is in a suspended state, resulting in abnormal termination as it cannot be executed |
-
         ※For details on status and rollbackStatus, refer to Layout Apply Status Reference (ID specified)<br>
         ※Regarding rollback, refer to Layout Apply Cancel
       tags:
@@ -65,6 +64,11 @@ paths:
       responses:
         202:
           description: Normal
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -75,6 +79,11 @@ paths:
                     example: 636ddde1ba
         400:
           description: Invalid request body.
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -83,6 +92,11 @@ paths:
           description: |-
             Error occurred during exclusive control of layout apply
             Or, there is data with the reflection status "SUSPENDED" or rollback status "SUSPENDED"
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -92,13 +106,18 @@ paths:
                   value:
                     code: E40010
                     message: Already running. Cannot start multiple instances.
-                ? Data with the reflection status "SUSPENDED" or rollback status "SUSPENDED" exists:
+                ? Data with the reflection status "SUSPENDED" or rollback status "SUSPENDED" exists
                 : value:
                     code: E40027
                     message: Suspended data exist. Please resume layoutapply. applyID:[123456789a]
         500:
           description: |-
             Internal server error or an error occurred from another component.
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -120,26 +139,29 @@ paths:
 
         If offset is specified and sortBy and orderBy are also specified, retrieval is performed starting from the specified line of the data sorted according to the specifications of sortBy and orderBy.<br>
 
-        For keys output in responses for each status, refer to the table below. Also, for details on status, refer to Layout Apply Status Reference (ID specified)<br>
+        For keys returned in responses for each status, refer to the table below. Also, for details on status, refer to Layout Apply Status Reference (ID specified)<br>
+
+        <b>[Legend]</b>  
+        <b>○: Returned / ×: Not returned / △: Conditionally returned</b><br>
         | Item | status IN_PROGRESS |status CANCELING |status COMPLETED |status FAILED | status SUSPENDED | status CANCELED |  
         | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
-        | applyID                               | Output | Output | Output | Output | Output | Output |
-        | status                                | Output | Output | Output | Output | Output | Output |
-        | procedures<br>(field selectable)         | Not output | Not output  | Output | Output | Output | Output |
-        | applyResult<br>(field selectable)        | Not output | Not output | Output | Output | Output | Output |
-        | rollbackProcedures<br>(field selectable) | Not output | Not output | Not output | Not output | Not output | Output |
-        | startedAt                             | Output | Output | Output | Output | Output | Output |
-        | endedAt                               | Not output | Not output | Output | Output | Not output | Output<br>(Not output if rollbackStatus is SUSPENDED) |
-        | canceledAt                            | Not output | Output | Not output | Output<br>(Only if there was an error after the cancel request) | Not output | Output |
-        | executeRollback                       | Not output | Output  | Not output | Output<br>(Only if there was an error after the cancel request) | Not output | Output |
-        | rollbackStatus                        | Not output | Not output | Not output | Not output | Not output | Output<br>(Only when executeRollback is true) |
-        | rollbackResult<br>(field selectable)     | Not output | Not output | Not output | Not output | Not output | Output<br>(Only when executeRollback is true) |
-        | rollbackStartedAt                     | Not output | Output<br>(Only when executeRollback is true and rollback is in progress)  | Not output | Not output | Not output | Output<br>(Only when executeRollback is true) |
-        | rollbackEndedAt                       | Not output | Not output | Not output | Not output | Not output | Output<br>(Only when executeRollback is true, not output if rollbackStatus is SUSPENDED) |
-        | resumeProcedures<br>(field selectable)  | Not output | Not output | Output<br>(Only when executed by resume request)  | Output<br>(Only when executed by resume request)  | Output | Output<br>(Only when executed by resume request) |
-        | resumeResult<br>(field selectable)      | Not output | Not output | Output<br>(Only when executed by resume request)  | Output<br>(Only when executed by resume request)  | Output<br>(Only when executed by resume request) | Output<br>(Only when executed by resume request) |
-        | suspendedAt                             | Not output | Not output | Output<br>(Only when executed by resume request) | Output<br>(Only when executed by resume request) | Output | Output<br>(Only when executed by resume request) |
-        | resumedAt                               | Output<br>(Only when executed by resume request) | Output<br>(Only when executed by resume request) | Output<br>(Only when executed by resume request) | Output<br>(Only when executed by resume request) | △<br>(Only when executed by resume request) | △<br>(Only when executed by resume request) |
+        | applyID                               | 〇 | 〇 | 〇 | 〇 | 〇 | 〇 |
+        | status                                | 〇 | 〇 | 〇 | 〇 | 〇 | 〇 |
+        | procedures<br>(field selectable)         | △<br>(Only when fields are specified) | △<br>(Only when fields are specified)  | △<br>(Only when fields are specified) | △<br>(Only when fields are specified) | △<br>(Only when fields are specified) | △<br>(Only when fields are specified) |
+        | applyResult<br>(field selectable)        | △<br>(Only when fields are specified) | △<br>(Only when fields are specified) | △<br>(Only when fields are specified) | △<br>(Only when fields are specified) | △<br>(Only when fields are specified) | △<br>(Only when fields are specified) |
+        | rollbackProcedures<br>(field selectable) | × | △<br>(Only when executeRollback is true and a rollback is in progress)<br>Note: Returned only when matching the above and fields are specified | × | × | × | △<br>(Only when fields are specified) |
+        | startedAt                             | 〇 | 〇 | 〇 | 〇 | 〇 | 〇 |
+        | endedAt                               | × | × | 〇 | 〇 | × | △<br>(Not returned if rollbackStatus is SUSPENDED) |
+        | canceledAt                            | × | 〇 | × | △<br>(Only if there was an error after the cancel request) | × | 〇 |
+        | executeRollback                       | × | 〇  | × | △<br>(Only if there was an error after the cancel request) | × | 〇 |
+        | rollbackStatus                        | × | × | × | × | × | △<br>(Only when executeRollback is true) |
+        | rollbackResult<br>(field selectable)     | × | △<br>(Only when executeRollback is true and a rollback is in progress)<br>Note: Returned only when matching the above and fields are specified | × | × | × | △<br>(Only when executeRollback is true and a rollback is in progress)<br>Note: Returned only when matching the above and fields are specified |
+        | rollbackStartedAt                     | × | △<br>(Only when executeRollback is true and rollback is in progress)  | × | × | × | △<br>(Only when executeRollback is true) |
+        | rollbackEndedAt                       | × | × | × | × | × | △<br>(Only when executeRollback is true, not returned if rollbackStatus is SUSPENDED) |
+        | resumeProcedures<br>(field selectable)  | △<br>(Only when executed by resume request)<br>Note: Returned only when matching the above and fields are specified | △<br>(Only when executed by resume request)<br>Note: Returned only when matching the above and fields are specified | △<br>(Only when executed by resume request)<br>Note: Returned only when matching the above and fields are specified | △<br>(Only when executed by resume request)<br>Note: Returned only when matching the above and fields are specified  | △<br>(Only when executed by resume request)<br>Note: Returned only when matching the above and fields are specified | △<br>(Only when executed by resume request)<br>Note: Returned only when matching the above and fields are specified |
+        | resumeResult<br>(field selectable)      | △<br>(Only when executed by resume request)<br>Note: Returned only when matching the above and fields are specified | △<br>(Only when executed by resume request)<br>Note: Returned only when matching the above and fields are specified | △<br>(Only when executed by resume request)<br>Note: Returned only when matching the above and fields are specified | △<br>(Only when executed by resume request)<br>Note: Returned only when matching the above and fields are specified  | △<br>(Only when executed by resume request)<br>Note: Returned only when matching the above and fields are specified | △<br>(Only when executed by resume request)<br>Note: Returned only when matching the above and fields are specified |
+        | suspendedAt                             | × | × | △<br>(Only when executed by resume request) | △<br>(Only when executed by resume request) | 〇 | △<br>(Only when executed by resume request) |
+        | resumedAt                               | △<br>(Only when executed by resume request) | △<br>(Only when executed by resume request) | △<br>(Only when executed by resume request) | △<br>(Only when executed by resume request) | △<br>(Only when executed by resume request) | △<br>(Only when executed by resume request) |
 
         By executing the Layout Apply Cancel API "PUT /layout-apply/{applyID}?action=cancel" on a layout apply ID with status IN_PROGRESS (in progress), the ongoing layout apply can be canceled.  
         By executing the Layout Apply Resume API "PUT /layout-apply/{applyID}?action=resume" on a layout apply ID with status SUSPENDED (suspended due to a critical error) after resolving the error cause, you can resume the suspended layout apply.
@@ -227,7 +249,7 @@ paths:
             - resumeProcedures: Resume procedure
             - resumeResult: Resume result
 
-             If fields are not specified, the items for each status will be returned.<br>
+             If fields are not specified, the items for each status will be returned. Detailed information can be found in the status-specific output mapping table or response examples provided in the overview section.<br>
              If fields are specified, the items for each status and the items specified in fields will be returned.<br>
              Items that are not specified in fields will not be output to the response.<br>
              Also, if the items specified in fields do not exist in the layout apply status, the specified items will not be output.
@@ -304,6 +326,11 @@ paths:
         200:
           description: |-
             Returns a list of retrieved layout apply statuses
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -324,48 +351,6 @@ paths:
                         {
                           "applyID": "<Layout Apply ID>",
                           "status": "COMPLETED",
-                          "procedures": <Migration procedure>,
-                          "applyResult":
-                            [
-                              {
-                                "operationID": 1,
-                                "status": "COMPLETED",
-                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
-                                "method": "PUT",
-                                "requestBody":
-                                  {
-                                    "action": "disconnect",
-                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
-                                  },
-                                "statusCode": 200,
-                                "responseBody":
-                                  {
-                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
-                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
-                                  },
-                                "startedAt": "2023-05-10T00:00:01Z",
-                                "endedAt": "2023-05-10T00:05:00Z",
-                              },
-                              {
-                                "operationID": 2,
-                                "status": "COMPLETED",
-                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7/aggregations",
-                                "method": "PUT",
-                                "requestBody":
-                                  {
-                                    "action": "disconnect",
-                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
-                                  },
-                                "statusCode": 200,
-                                "responseBody":
-                                  {
-                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7",
-                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
-                                  },
-                                "startedAt": "2023-05-10T00:00:02Z",
-                                "endedAt": "2023-05-10T00:05:01Z",
-                              },
-                            ],
                           "startedAt": "2023-05-10T00:00:00Z",
                           "endedAt": "2023-05-10T00:10:00Z",
                         },
@@ -375,7 +360,7 @@ paths:
                     "count": 0
                     "totalCount": 0
                     "applyResults": []
-                If layout apply statuses with status FAILED are specified as the target for retrieval:
+                If layout apply statuses with status FAILED are specified as the target for retrieval and the fields 'procedures' and 'applyResult' are specified:
                   value:
                     "count": 2
                     "totalCount": 2
@@ -384,13 +369,28 @@ paths:
                         {
                           "applyID": "<Layout Apply ID>",
                           "status": "FAILED",
-                          "procedures": <Migration procedure>,
+                          "procedures": [
+                              {
+                                "operation": "disconnect",
+                                "operationID": 1,
+                                "targetCPUID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                "dependencies": [],
+                                "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F"
+                              },
+                              {
+                                "operation": "disconnect",
+                                "operationID": 2,
+                                "targetCPUID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                "dependencies": [],
+                                "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F"
+                              },
+                          ],
                           "applyResult":
                             [
                               {
                                 "operationID": 1,
                                 "status": "COMPLETED",
-                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                                "uri": "http://cdim/api/v1/devices/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
                                 "method": "PUT",
                                 "requestBody":
                                   {
@@ -400,8 +400,8 @@ paths:
                                 "statusCode": 200,
                                 "responseBody":
                                   {
-                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
-                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                    "sourceDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                    "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
                                   },
                                 "startedAt": "2023-05-10T00:00:01Z",
                                 "endedAt": "2023-05-10T00:05:00Z",
@@ -409,12 +409,12 @@ paths:
                               {
                                 "operationID": 2,
                                 "status": "FAILED",
-                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7/aggregations",
+                                "uri": "http://cdim/api/v1/devices/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7/aggregations",
                                 "method": "PUT",
                                 "requestBody":
                                   {
                                     "action": "disconnect",
-                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
+                                    "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
                                   },
                                 "statusCode": 500,
                                 "responseBody":
@@ -432,24 +432,39 @@ paths:
                         {
                           "applyID": "<Layout Apply ID>",
                           "status": "FAILED",
-                          "procedures": <Migration procedure>,
+                          "procedures": [
+                              {
+                                "operation": "disconnect",
+                                "operationID": 1,
+                                "targetCPUID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                "dependencies": [],
+                                "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F"
+                              },
+                              {
+                                "operation": "disconnect",
+                                "operationID": 2,
+                                "targetCPUID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                "dependencies": [],
+                                "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F"
+                              },
+                          ],
                           "applyResult":
                             [
                               {
                                 "operationID": 1,
                                 "status": "COMPLETED",
-                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                                "uri": "http://cdim/api/v1/devices/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
                                 "requestBody":
                                   {
                                     "action": "disconnect",
-                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                    "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
                                   },
                                 "method": "PUT",
                                 "statusCode": 200,
                                 "responseBody":
                                   {
-                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
-                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                    "sourceDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                    "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
                                   },
                                 "startedAt": "2023-05-11T00:00:01Z",
                                 "endedAt": "2023-05-11T00:05:00Z",
@@ -457,11 +472,11 @@ paths:
                               {
                                 "operationID": 2,
                                 "status": "FAILED",
-                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7/aggregations",
+                                "uri": "http://cdim/api/v1/devices/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7/aggregations",
                                 "requestBody":
                                   {
                                     "action": "disconnect",
-                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
+                                    "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
                                   },
                                 "method": "PUT",
                                 "statusCode": 500,
@@ -492,18 +507,18 @@ paths:
                               {
                                 "operationID": 1,
                                 "status": "COMPLETED",
-                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                                "uri": "http://cdim/api/v1/devices/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
                                 "method": "PUT",
                                 "requestBody":
                                   {
                                     "action": "disconnect",
-                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                    "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
                                   },
                                 "statusCode": 200,
                                 "responseBody":
                                   {
-                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
-                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                    "sourceDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                    "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
                                   },
                                 "startedAt": "2023-05-10T00:00:01Z",
                                 "endedAt": "2023-05-10T00:05:01Z",
@@ -511,18 +526,18 @@ paths:
                               {
                                 "operationID": 2,
                                 "status": "COMPLETED",
-                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7/aggregations",
+                                "uri": "http://cdim/api/v1/devices/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7/aggregations",
                                 "requestBody":
                                   {
                                     "action": "disconnect",
-                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
+                                    "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
                                   },
                                 "method": "PUT",
                                 "statusCode": 200,
                                 "responseBody":
                                   {
-                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7",
-                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
+                                    "sourceDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7",
+                                    "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
                                   },
                                 "startedAt": "2023-05-10T00:00:02Z",
                                 "endedAt": "2023-05-10T00:05:02Z",
@@ -539,18 +554,18 @@ paths:
                               {
                                 "operationID": 1,
                                 "status": "COMPLETED",
-                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                                "uri": "http://cdim/api/v1/devices/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
                                 "requestBody":
                                   {
                                     "action": "connect",
-                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                    "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
                                   },
                                 "method": "PUT",
                                 "statusCode": 200,
                                 "responseBody":
                                   {
-                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
-                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                    "sourceDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                    "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
                                   },
                                 "startedAt": "2023-05-11T00:00:01Z",
                                 "endedAt": "2023-05-11T00:05:01Z",                                  
@@ -577,18 +592,18 @@ paths:
                               {
                                 "operationID": 1,
                                 "status": "COMPLETED",
-                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                                "uri": "http://cdim/api/v1/devices/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
                                 "method": "PUT",
                                 "requestBody":
                                   {
                                     "action": "disconnect",
-                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                    "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
                                   },
                                 "statusCode": 200,
                                 "responseBody":
                                   {
-                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
-                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                    "sourceDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                    "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
                                   },
                                 "startedAt": "2023-05-10T00:00:01Z",
                                 "endedAt": "2023-05-10T00:05:01Z",
@@ -608,18 +623,18 @@ paths:
                               {
                                 "operationID": 1,
                                 "status": "COMPLETED",
-                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                                "uri": "http://cdim/api/v1/devices/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
                                 "method": "PUT",
                                 "requestBody":
                                   {
                                     "action": "disconnect",
-                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                    "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
                                   },
                                 "statusCode": 200,
                                 "responseBody":
                                   {
-                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
-                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                    "sourceDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                    "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
                                   },
                                 "startedAt": "2023-05-11T00:00:01Z",
                                 "endedAt": "2023-05-11T00:19:00Z",
@@ -665,6 +680,22 @@ paths:
                         {
                           "applyID": "<Layout Apply ID>",
                           "status": "CANCELING",
+                          "procedures": [
+                              {
+                                "operation": "disconnect",
+                                "operationID": 1,
+                                "targetCPUID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                "dependencies": [],
+                                "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F"
+                              },
+                              {
+                                "operation": "disconnect",
+                                "operationID": 2,
+                                "targetCPUID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                "dependencies": [],
+                                "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F"
+                              },
+                          ],
                           "startedAt": "2023-05-11T00:00:00Z",
                           "canceledAt": "2023-05-11T00:20:00Z",
                           "executeRollback": true,
@@ -680,29 +711,6 @@ paths:
                         {
                           "applyID": "<Layout Apply ID>",
                           "status": "CANCELED",
-                          "applyResult":
-                            [
-                              {
-                                "operationID": 1,
-                                "status": "COMPLETED",
-                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
-                                "requestBody":
-                                  {
-                                    "action": "disconnect",
-                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
-                                  },
-                                "method": "PUT",
-                                "statusCode": 200,
-                                "responseBody":
-                                  {
-                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
-                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
-                                  },
-                                "startedAt": "2023-05-10T00:00:01Z",
-                                "endedAt": "2023-05-10T00:09:00Z",
-                              },
-                              { "operationID": 2, "status": "CANCELED" },
-                            ],
                           "startedAt": "2023-05-10T00:00:00Z",
                           "endedAt": "2023-05-10T00:10:00Z",
                           "canceledAt": "2023-05-10T00:05:00Z",
@@ -718,48 +726,6 @@ paths:
                         {
                           "applyID": "<Layout Apply ID>",
                           "status": "COMPLETED",
-                          "procedures": <Migration procedure>,
-                          "applyResult":
-                            [
-                              {
-                                "operationID": 1,
-                                "status": "COMPLETED",
-                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
-                                "method": "PUT",
-                                "requestBody":
-                                  {
-                                    "action": "disconnect",
-                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
-                                  },
-                                "statusCode": 200,
-                                "responseBody":
-                                  {
-                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
-                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
-                                  },
-                                "startedAt": "2023-05-11T00:00:01Z",
-                                "endedAt": "2023-05-11T00:09:00Z",
-                              },
-                              {
-                                "operationID": 2,
-                                "status": "COMPLETED",
-                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7/aggregations",
-                                "method": "PUT",
-                                "requestBody":
-                                  {
-                                    "action": "disconnect",
-                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
-                                  },
-                                "statusCode": 200,
-                                "responseBody":
-                                  {
-                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7",
-                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
-                                  },
-                                "startedAt": "2023-05-11T00:00:02Z",
-                                "endedAt": "2023-05-11T00:09:01Z",
-                              },
-                            ],
                           "startedAt": "2023-05-11T00:00:00Z",
                           "endedAt": "2023-05-11T00:10:00Z",
                         },
@@ -778,96 +744,12 @@ paths:
                         {
                           "applyID": "<Layout Apply ID>",
                           "status": "COMPLETED",
-                          "procedures": <Migration procedure>,
-                          "applyResult":
-                            [
-                              {
-                                "operationID": 1,
-                                "status": "COMPLETED",
-                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
-                                "method": "PUT",
-                                "requestBody":
-                                  {
-                                    "action": "disconnect",
-                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
-                                  },
-                                "statusCode": 200,
-                                "responseBody":
-                                  {
-                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
-                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
-                                  },
-                                "startedAt": "2023-05-10T00:09:01Z",
-                                "endedAt": "2023-05-10T00:09:30Z",
-                              },
-                              {
-                                "operationID": 2,
-                                "status": "COMPLETED",
-                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7/aggregations",
-                                "method": "PUT",
-                                "requestBody":
-                                  {
-                                    "action": "disconnect",
-                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
-                                  },
-                                "statusCode": 200,
-                                "responseBody":
-                                  {
-                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7",
-                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
-                                  },
-                                "startedAt": "2023-05-10T00:09:02Z",
-                                "endedAt": "2023-05-10T00:09:31Z",
-                              },
-                            ],
                           "startedAt": "2023-05-10T00:09:00Z",
                           "endedAt": "2023-05-10T00:10:00Z",
                         },
                         {
                           "applyID": "<Layout Apply ID>",
                           "status": "COMPLETED",
-                          "procedures": <Migration procedure>,
-                          "applyResult":
-                            [
-                              {
-                                "operationID": 1,
-                                "status": "COMPLETED",
-                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
-                                "method": "PUT",
-                                "requestBody":
-                                  {
-                                    "action": "disconnect",
-                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
-                                  },
-                                "statusCode": 200,
-                                "responseBody":
-                                  {
-                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
-                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
-                                  },
-                                "startedAt": "2023-05-10T00:07:01Z",
-                                "endedAt": "2023-05-10T00:07:30Z",
-                              },
-                              {
-                                "operationID": 2,
-                                "status": "COMPLETED",
-                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7/aggregations",
-                                "method": "PUT",
-                                "requestBody":
-                                  {
-                                    "action": "disconnect",
-                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
-                                  },
-                                "statusCode": 200,
-                                "responseBody":
-                                  {
-                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7",
-                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
-                                  },
-                                "startedAt": "2023-05-10T00:07:02Z",
-                                "endedAt": "2023-05-10T00:07:31Z",
-                              },
-                            ],
                           "startedAt": "2023-05-10T00:07:00Z",
                           "endedAt": "2023-05-10T00:08:00Z",
                         },
@@ -881,48 +763,6 @@ paths:
                         {
                           "applyID": "<Layout Apply ID>",
                           "status": "COMPLETED",
-                          "procedures": <Migration procedure>,
-                          "applyResult":
-                            [
-                              {
-                                "operationID": 1,
-                                "status": "COMPLETED",
-                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
-                                "method": "PUT",
-                                "requestBody":
-                                  {
-                                    "action": "disconnect",
-                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
-                                  },
-                                "statusCode": 200,
-                                "responseBody":
-                                  {
-                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
-                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
-                                  },
-                                "startedAt": "2023-05-11T00:00:01Z",
-                                "endedAt": "2023-05-11T00:09:01Z",
-                              },
-                              {
-                                "operationID": 2,
-                                "status": "COMPLETED",
-                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7/aggregations",
-                                "method": "PUT",
-                                "requestBody":
-                                  {
-                                    "action": "disconnect",
-                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
-                                  },
-                                "statusCode": 200,
-                                "responseBody":
-                                  {
-                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7",
-                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
-                                  },
-                                "startedAt": "2023-05-11T00:00:02Z",
-                                "endedAt": "2023-05-11T00:09:02Z",
-                              },
-                            ],
                           "startedAt": "2023-05-11T00:00:00Z",
                           "endedAt": "2023-05-11T00:10:00Z",
                         },
@@ -930,6 +770,11 @@ paths:
         400:
           description: |-
             Invalid parameter specification
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -938,6 +783,11 @@ paths:
         500:
           description: |-
             Internal server error or an error occurred from another component.
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -950,7 +800,7 @@ paths:
     put:
       summary: Layout Apply Cancel/Resume
       description: |-
-        ・Cancel Request<br>
+        [Cancel Request]  
         Cancels the ongoing layout apply process.<br>
         If rollbackOnCancel is specified at the time of the cancel request, a rollback process will be executed to revert the layout applies made, and its execution status can be checked with rollbackStatus.<br>
         If a cancel request is made during the rollback execution, the rollback will not be canceled.<br>
@@ -969,7 +819,7 @@ paths:
         | CANCELED | CANCELED (no change) | SUSPENDED | FAILED | Cancel the suspended rollback of layout apply<br>※Failed if canceled because SUSPENDED results from errors during rollback processing |
         | CANCELED | CANCELED (no change) | COMPLETED, FAILED | COMPLETED, FAILED (no change) | No transition due to already canceled |
 
-        ・Resume Request<br>
+        [Resume Request]  
         Resumes the suspended layout apply process.<br>
         Changes to status and rollbackStatus based on the status and rollbackStatus of the specified Layout Apply ID are shown in the table below.<br>
         Refer to Layout Apply Status (ID specified) for details of status and rollbackStatus.
@@ -1021,8 +871,15 @@ paths:
         200:
           description: |-
             Normal. The transition of the apply state for the specified Layout Apply ID is already completed.  
-            [Cancel Request] Apply state is in canceling or canceled (CANCELED, CANCELING) or apply state is CANCELED and rollback state is COMPLETED or FAILED  
-            [Resume Request] Apply state is already executed (COMPLETED or FAILED or CANCELED) or rollback state is already executed (COMPLETED or FAILED)
+            [Cancel Request]  
+            Apply state is in canceling or canceled (CANCELED, CANCELING) or apply state is CANCELED and rollback state is COMPLETED or FAILED  
+            [Resume Request]  
+            Apply state is already executed (COMPLETED or FAILED or CANCELED) or rollback state is already executed (COMPLETED or FAILED)
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -1052,6 +909,11 @@ paths:
             [Resume Request]  
             Resume the suspended layout apply (transition from SUSPENDED to IN_PROGRESS)  
             Resume suspended rollback of layout apply (transition rollback state from SUSPENDED to IN_PROGRESS)
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -1076,6 +938,11 @@ paths:
                     "rollbackStatus": "IN_PROGRESS"
         400:
           description: Invalid parameter specified
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -1083,6 +950,11 @@ paths:
         404:
           description: |-
             Specified Layout Apply ID does not exist
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -1099,6 +971,11 @@ paths:
             [Resume Request]  
             Unable to transition if the application status of the specified Layout Apply ID is "IN_PROGRESS" or "CANCELING" due to being in execution  
             Unable to transition if the rollback status of the specified Layout Apply ID is "IN_PROGRESS" due to being in execution
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -1152,6 +1029,11 @@ paths:
         500:
           description: |-
             Internal server error or an error occurred from another component.
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -1166,29 +1048,32 @@ paths:
       summary: View Layout Apply Status (ID specified)
       description: |-
         Retrieve the layout apply status for the specified ID from the layout apply DB.<br>
-        Refer to the table below for keys output for each status<br>
+        Refer to the table below for keys returned for each status<br>
+
+        <b>[Legend]</b>  
+        <b>○: Returned / ×: Not returned / △: Conditionally returned</b><br>
         | Item Name | status is IN_PROGRESS | status is CANCELING | status is COMPLETED | status is FAILED | status is SUSPENDED | status is CANCELED |  
         | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
-        | applyID                               | Output | Output | Output | Output | Output | Output |
-        | status                                | Output | Output | Output | Output | Output | Output |
-        | procedures (fields can be specified) | Not output | Not output | Output | Output | Output | Output |
-        | applyResult (fields can be specified) | Not output | Not output | Output | Output | Output | Output |
-        | rollbackProcedures (fields can be specified) | Not output | Not output | Not output | Not output | Not output | Output |
-        | startedAt                             | Output | Output | Output | Output | Output | Output |
-        | endedAt                               | Not output | Not output | Output | Output | Not output | Output (Not output if rollbackStatus is SUSPENDED) |
-        | canceledAt                            | Not output | Output | Not output | Output (Only output if it becomes an error after cancel request) | Not output | Output |
-        | executeRollback                       | Not output | Output | Not output | Output (Only output if it becomes an error after cancel request) | Not output | Output |
-        | rollbackStatus                        | Not output | Not output | Not output | Not output | Not output | Output (Only output if executeRollback is true) |
-        | rollbackResult (fields can be specified) | Not output | Not output | Not output | Not output | Not output | Output (Only output if executeRollback is true) |
-        | rollbackStartedAt                     | Not output | Output (Only output if executeRollback is true and rollback is ongoing) | Not output | Not output | Not output | Output (Only output if executeRollback is true) |
-        | rollbackEndedAt                       | Not output | Not output | Not output | Not output | Not output | Output (Only output if executeRollback is true, not output if rollbackStatus is SUSPENDED) |
-        | resumeProcedures (fields can be specified)  | Not output | Not output | Output (Only output if resume request is executed) | Output (Only output if resume request is executed) | Output | Output (Only output if resume request is executed) |
-        | resumeResult (fields can be specified)      | Not output | Not output | Output (Only output if resume request is executed) | Output (Only output if resume request is executed) | Output (Only output if resume request is executed) | Output (Only output if resume request is executed) |
-        | suspendedAt                             | Not output | Not output | Output (Only output if resume request is executed) | Output (Only output if resume request is executed) | Output | Output (Only output if resume request is executed) |
-        | resumedAt                               | Output (Only output if resume request is executed) | Output (Only output if resume request is executed) | Output (Only output if resume request is executed) | Output (Only output if resume request is executed) | Output (Only output if resume request is executed) | △ (Only output if resume request is executed) |
+        | applyID                               | 〇 | 〇 | 〇 | 〇 | 〇 | 〇 |
+        | status                                | 〇 | 〇 | 〇 | 〇 | 〇 | 〇 |
+        | procedures                            | 〇 | 〇 | 〇 | 〇 | 〇 | 〇 |
+        | applyResult                           | 〇 | 〇 | 〇 | 〇 | 〇 | 〇 |
+        | rollbackProcedures                    | × | △<br>(Only returned if executeRollback is true and rollback is ongoing) | × | × | × | 〇 |
+        | startedAt                             | 〇 | 〇 | 〇 | 〇 | 〇 | 〇 |
+        | endedAt                               | × | × | 〇 | 〇 | × | 〇 |
+        | canceledAt                            | × | 〇 | × | △<br>(Only returned if it becomes an error after cancel request) | × | 〇 |
+        | executeRollback                       | × | 〇 | × | △<br>(Only returned if it becomes an error after cancel request) | × | 〇 |
+        | rollbackStatus                        | × | × | × | × | × | △<br>(Only returned if executeRollback is true) |
+        | rollbackResult                        | × | △<br>(Only returned if executeRollback is true and rollback is ongoing) | × | × | × | △<br>(Only returned if executeRollback is true) |
+        | rollbackStartedAt                     | × | △<br>(Only returned if executeRollback is true and rollback is ongoing) | × | × | × | △<br>(Only returned if executeRollback is true) |
+        | rollbackEndedAt                       | × | × | × | × | × | △<br>(Only returned if executeRollback is true, not returned if rollbackStatus is SUSPENDED) |
+        | resumeProcedures                      | △<br>(Only returned if resume request is executed) | △<br>(Only returned if resume request is executed) | △<br>(Only returned if resume request is executed) | △<br>(Only returned if resume request is executed) | 〇 | △<br>(Only returned if resume request is executed) |
+        | resumeResult                          | △<br>(Only returned if resume request is executed) | △<br>(Only returned if resume request is executed) | △<br>(Only returned if resume request is executed) | △<br>(Only returned if resume request is executed) | △<br>(Only returned if resume request is executed) | △<br>(Only returned if resume request is executed) |
+        | suspendedAt                           | × | × | △<br>(Only returned if resume request is executed) | △<br>(Only returned if resume request is executed) | 〇 | △<br>(Only returned if resume request is executed) |
+        | resumedAt                             | △<br>(Only returned if resume request is executed) | △<br>(Only returned if resume request is executed) | △<br>(Only returned if resume request is executed) | △<br>(Only returned if resume request is executed) | △<br>(Only returned if resume request is executed) | △<br>(Only returned if resume request is executed) |
 
         Use each function based on the status information acquired from this IF.<br>
-        【Example】<br>
+        [Example]  
         For a Layout Apply ID with status IN_PROGRESS (in execution), executing the layout apply cancel API "PUT /layout-apply/{applyID}?action=cancel" can cancel the ongoing layout apply.  
         For a Layout Apply ID with status SUSPENDED (suspended due to critical error), after resolving the cause of the error, executing the layout apply resume API "PUT /layout-apply/{applyID}?action=resume" can resume the suspended layout apply.  
 
@@ -1211,37 +1096,15 @@ paths:
           example: 636ddde1ba
           schema:
             type: string
-        - name: fields
-          in: query
-          description: |
-            Parameters to specify the items of the layout apply status included in the response body.<br>
-            The following 6 items can be specified.
-            - procedures: Migration steps
-            - applyResult: Apply results
-            - rollbackProcedures: Rollback steps
-            - rollbackResult: Rollback results
-            - resumeProcedures: Resume steps
-            - resumeResult: Resume results
-
-             If fields are unspecified, return items for each status.<br>
-             When fields are specified, return items for each status and items specified in fields.<br>
-             Items not specified in fields will not be output in the response.<br>
-             Also, if items specified in fields do not exist in the layout apply status, the specified item will not be output.
-          schema:
-            type: array
-            items:
-              type: string
-              enum:
-                - procedures
-                - applyResult
-                - rollbackProcedures
-                - rollbackResult
-                - resumeProcedures
-                - resumeResult
       responses:
         200:
           description: |-
             Returns the layout apply status obtained by specifying a layout apply ID
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -1252,24 +1115,47 @@ paths:
                   value:
                     applyID: "<Layout Apply ID>"
                     status: "COMPLETED"
-                    procedures: <Migration steps>
+                    procedures: [
+                              {
+                                "operation": "disconnect",
+                                "operationID": 1,
+                                "targetCPUID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                "dependencies": [],
+                                "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F"
+                              },
+                              {
+                                "operation": "disconnect",
+                                "operationID": 2,
+                                "targetCPUID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                "dependencies": [],
+                                "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F"
+                              },
+                              {
+                                "operation": "shutdown",
+                                "operationID": 3,
+                                "dependencies": [
+                                  1, 2
+                                ],
+                                "targetDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6"
+                              },
+                          ]
                     applyResult:
                       [
                         {
                           "operationID": 1,
                           "status": "COMPLETED",
-                          "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                          "uri": "http://cdim/api/v1/devices/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
                           "requestBody":
                             {
                               "action": "disconnect",
-                              "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                              "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
                             },
                           "method": "PUT",
                           "statusCode": 200,
                           "responseBody":
                             {
-                              "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
-                              "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                              "sourceDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                              "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
                             },
                           "startedAt": "2023-05-10T00:00:01Z",
                           "endedAt": "2023-05-10T00:09:01Z",
@@ -1283,7 +1169,7 @@ paths:
                           "statusCode": 200,
                           "responseBody":
                             {
-                              "deviceID ": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                              "deviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
                             },
                           "isOSBoot":
                             {
@@ -1309,7 +1195,7 @@ paths:
                           "statusCode": 200,
                           "responseBody":
                             {
-                              "deviceID ": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                              "deviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
                             },
                           "getInformation":
                             { "responseBody": { "powerState": "Off" } },
@@ -1323,17 +1209,40 @@ paths:
                   value:
                     applyID: "<Layout Apply ID>"
                     status: "FAILED"
-                    procedures: <Migration steps>
+                    procedures: [
+                              {
+                                "operation": "disconnect",
+                                "operationID": 1,
+                                "targetCPUID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                "dependencies": [],
+                                "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F"
+                              },
+                              {
+                                "operation": "disconnect",
+                                "operationID": 2,
+                                "targetCPUID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                "dependencies": [],
+                                "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F"
+                              },
+                              {
+                                "operation": "shutdown",
+                                "operationID": 3,
+                                "dependencies": [
+                                  1, 2
+                                ],
+                                "targetDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6"
+                              },
+                          ]
                     applyResult:
                       [
                         {
                           "operationID": 1,
                           "status": "FAILED",
-                          "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                          "uri": "http://cdim/api/v1/devices/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
                           "requestBody":
                             {
                               "action": "disconnect",
-                              "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                              "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
                             },
                           "method": "PUT",
                           "statusCode": 500,
@@ -1349,28 +1258,52 @@ paths:
                       ]
                     startedAt: "2023-05-10T00:00:00Z"
                     endedAt: "2023-05-10T00:10:00Z"
+
                 ? In case of a cancel request with rollback setting during the layout apply
                 : value:
                     applyID: "<Layout Apply ID>"
                     status: "CANCELED"
-                    procedures: <Migration steps>
+                    procedures: [
+                              {
+                                "operation": "disconnect",
+                                "operationID": 1,
+                                "targetCPUID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                "dependencies": [],
+                                "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F"
+                              },
+                              {
+                                "operation": "disconnect",
+                                "operationID": 2,
+                                "targetCPUID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                "dependencies": [],
+                                "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F"
+                              },
+                              {
+                                "operation": "shutdown",
+                                "operationID": 3,
+                                "dependencies": [
+                                  1, 2
+                                ],
+                                "targetDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6"
+                              },
+                          ]
                     applyResult:
                       [
                         {
                           "operationID": 1,
                           "status": "COMPLETED",
-                          "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                          "uri": "http://cdim/api/v1/devices/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
                           "requestBody":
                             {
                               "action": "disconnect",
-                              "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                              "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
                             },
                           "method": "PUT",
                           "statusCode": 200,
                           "responseBody":
                             {
-                              "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
-                              "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                              "sourceDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                              "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
                             },
                           "startedAt": "2023-05-10T00:00:01Z",
                           "endedAt": "2023-05-10T00:09:01Z",
@@ -1397,18 +1330,18 @@ paths:
                         {
                           "operationID": 1,
                           "status": "COMPLETED",
-                          "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                          "uri": "http://cdim/api/v1/devices/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
                           "requestBody":
                             {
                               "action": "disconnect",
-                              "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                              "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
                             },
                           "method": "PUT",
                           "statusCode": 200,
                           "responseBody":
                             {
-                              "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
-                              "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                              "sourceDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                              "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
                             },
                           "startedAt": "2023-05-10T00:00:02Z",
                           "endedAt": "2023-05-10T00:09:02Z",
@@ -1420,24 +1353,47 @@ paths:
                 : value:
                     applyID: "<Layout Apply ID>"
                     status: "CANCELED"
-                    procedures: <Migration steps>
+                    procedures: [
+                              {
+                                "operation": "disconnect",
+                                "operationID": 1,
+                                "targetCPUID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                "dependencies": [],
+                                "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F"
+                              },
+                              {
+                                "operation": "disconnect",
+                                "operationID": 2,
+                                "targetCPUID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                "dependencies": [],
+                                "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F"
+                              },
+                              {
+                                "operation": "shutdown",
+                                "operationID": 3,
+                                "dependencies": [
+                                  1, 2
+                                ],
+                                "targetDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6"
+                              },
+                          ]
                     applyResult:
                       [
                         {
                           "operationID": 1,
                           "status": "COMPLETED",
-                          "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                          "uri": "http://cdim/api/v1/devices/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
                           "requestBody":
                             {
                               "action": "disconnect",
-                              "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                              "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
                             },
                           "method": "PUT",
                           "statusCode": 200,
                           "responseBody":
                             {
-                              "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
-                              "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                              "sourceDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                              "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
                             },
                           "startedAt": "2023-05-10T00:00:01Z",
                           "endedAt": "2023-05-10T00:09:01Z",
@@ -1462,17 +1418,40 @@ paths:
                 : value:
                     applyID: "<Layout Apply ID>"
                     status: "SUSPENDED"
-                    procedures: <Migration steps>
+                    procedures: [
+                              {
+                                "operation": "disconnect",
+                                "operationID": 1,
+                                "targetCPUID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                "dependencies": [],
+                                "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F"
+                              },
+                              {
+                                "operation": "disconnect",
+                                "operationID": 2,
+                                "targetCPUID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                "dependencies": [],
+                                "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F"
+                              },
+                              {
+                                "operation": "shutdown",
+                                "operationID": 3,
+                                "dependencies": [
+                                  1, 2
+                                ],
+                                "targetDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6"
+                              },
+                          ]
                     applyResult:
                       [
                         {
                           "operationID": 1,
                           "status": "FAILED",
-                          "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                          "uri": "http://cdim/api/v1/devices/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
                           "requestBody":
                             {
                               "action": "disconnect",
-                              "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                              "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
                             },
                           "method": "PUT",
                           "statusCode": 500,
@@ -1493,17 +1472,40 @@ paths:
                   value:
                     applyID: "<Layout Apply ID>"
                     status: "COMPLETED"
-                    procedures: <Migration steps>
+                    procedures: [
+                              {
+                                "operation": "disconnect",
+                                "operationID": 1,
+                                "targetCPUID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                "dependencies": [],
+                                "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F"
+                              },
+                              {
+                                "operation": "disconnect",
+                                "operationID": 2,
+                                "targetCPUID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                "dependencies": [],
+                                "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F"
+                              },
+                              {
+                                "operation": "shutdown",
+                                "operationID": 3,
+                                "dependencies": [
+                                  1, 2
+                                ],
+                                "targetDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6"
+                              },
+                          ]
                     applyResult:
                       [
                         {
                           "operationID": 1,
                           "status": "FAILED",
-                          "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                          "uri": "http://cdim/api/v1/devices/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
                           "requestBody":
                             {
                               "action": "disconnect",
-                              "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                              "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
                             },
                           "method": "PUT",
                           "statusCode": 500,
@@ -1527,6 +1529,8 @@ paths:
                   value:
                     applyID: "<Layout Apply ID>"
                     status: "IN_PROGRESS"
+                    procedures: <Migration procedure>
+                    applyResult: <Apply Result>
                     startedAt: "2023-05-10T00:00:00Z"
                 If layout apply cancel is in execution without rollback:
                   value:
@@ -1543,100 +1547,15 @@ paths:
                     canceledAt: "2023-05-10T00:05:00Z"
                     executeRollback: true
                     rollbackStartedAt: "2023-05-10T00:06:00Z"
-                If only applyResult is specified in fields:
-                  value:
-                    applyID: "<Layout Apply ID>"
-                    status: "COMPLETED"
-                    applyResult:
-                      [
-                        {
-                          "operationID": 1,
-                          "status": "COMPLETED",
-                          "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
-                          "requestBody":
-                            {
-                              "action": "disconnect",
-                              "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
-                            },
-                          "method": "PUT",
-                          "statusCode": 200,
-                          "responseBody":
-                            {
-                              "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
-                              "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
-                            },
-                          "startedAt": "2023-05-10T00:00:01Z",
-                          "endedAt": "2023-05-10T00:09:01Z",
-                        },
-                        {
-                          "operationID": 2,
-                          "status": "COMPLETED",
-                          "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7/aggregations",
-                          "requestBody":
-                            {
-                              "action": "disconnect",
-                              "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
-                            },
-                          "method": "PUT",
-                          "statusCode": 200,
-                          "responseBody":
-                            {
-                              "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7",
-                              "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
-                            },
-                          "startedAt": "2023-05-10T00:00:02Z",
-                          "endedAt": "2023-05-10T00:09:02Z",
-                        },
-                      ]
-                    startedAt: "2023-05-10T00:00:00Z"
-                    endedAt: "2023-05-10T00:10:00Z"
-                If fields specify rollbackProcedures and rollbackResult:
-                  value:
-                    applyID: "<Layout Apply ID>"
-                    status: "CANCELED"
-                    rollbackProcedures:
-                      [
-                        {
-                          "operationID": 1,
-                          "operation": "connect",
-                          "targetCPUID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
-                          "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
-                          "dependencies": [],
-                        },
-                      ]
-                    startedAt: "2023-05-10T00:00:00Z"
-                    endedAt: "2023-05-10T00:20:00Z"
-                    canceledAt: "2023-05-10T00:05:00Z"
-                    executeRollback: true
-                    rollbackStatus: "COMPLETED"
-                    rollbackResult:
-                      [
-                        {
-                          "operationID": 1,
-                          "status": "COMPLETED",
-                          "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
-                          "requestBody":
-                            {
-                              "action": "disconnect",
-                              "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
-                            },
-                          "method": "PUT",
-                          "statusCode": 200,
-                          "responseBody":
-                            {
-                              "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
-                              "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
-                            },
-                          "startedAt": "2023-05-10T00:00:01Z",
-                          "endedAt": "2023-05-10T00:09:01Z",
-                        },
-                      ]
-                    rollbackStartedAt: "2023-05-10T00:10:00Z"
-                    rollbackEndedAt: "2023-05-10T00:20:00Z"
 
         404:
           description: |-
             Specified Layout Apply ID does not exist
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -1644,6 +1563,11 @@ paths:
         400:
           description: |-
             Invalid parameter specified
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -1651,6 +1575,11 @@ paths:
         500:
           description: |-
             Internal server error or an error occurred from another component.
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -1689,6 +1618,11 @@ paths:
             Normal
         400:
           description: Invalid parameter specified
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -1696,6 +1630,11 @@ paths:
         404:
           description: |-
             Specified Layout Apply ID does not exist
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -1703,6 +1642,11 @@ paths:
         409:
           description: |-
             Error occurred when executing deletion processing on executing or suspended Layout Apply ID (status is "IN_PROGRESS", "CANCELING", "SUSPENDED", or rollbackStatus is "IN_PROGRESS", "SUSPENDED")
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -1710,6 +1654,11 @@ paths:
         500:
           description: |-
             Internal server error or an error occurred from another component.
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -1737,7 +1686,7 @@ paths:
          - Just want to delete specific nodes<br>
            - Specify the nodes you want to delete in the node ID list and specify an empty list in the new node configuration
       tags:
-        - Migration Procedure Genaration
+        - Migration Procedure Generation
       deprecated: false
       requestBody:
         required: true
@@ -1763,6 +1712,9 @@ paths:
                         networkInterface:
                           deviceIDs:
                             - 5DFB4893-C16D-4968-89D6-8D1EAECEA31F
+                        gpu:
+                          - deviceID:
+                              1A2B3C4D-5E6F-7081-92A3-B4C5D6E7F809
                     - device:
                         cpu:
                           deviceIDs:
@@ -1776,9 +1728,18 @@ paths:
                         networkInterface:
                           deviceIDs:
                             - 0E9A2838-6AA9-40D2-B3E0-EA7B15E8F18D
+                        gpu:
+                          - deviceID:
+                              D4F5C6E7-8A9B-4C0D-BA1E-2F3A4B5C6D7E
+                        
       responses:
         200:
           description: Normal
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -1802,6 +1763,11 @@ paths:
                       dependencies: [2]
         400:
           description: Invalid request body.
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -1812,6 +1778,11 @@ paths:
         404:
           description: |-
             A non-existent NodeID was specified
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -1819,6 +1790,11 @@ paths:
         500:
           description: |-
             Internal server error or error occurred from other components.
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -1877,3 +1853,9 @@ components:
       $ref: "./openapi_schema.yaml#/components/schemas/DeviceIDList"
     DeviceID:
       $ref: "./openapi_schema.yaml#/components/schemas/DeviceID"
+    X-Content-Type-Options:
+      $ref: "./openapi_schema.yaml#/components/schemas/X-Content-Type-Options"
+    Content-Type:
+      $ref: "./openapi_schema.yaml#/components/schemas/Content-Type"
+    Content-Type_ExampleTextPlain:
+      $ref: "./openapi_schema.yaml#/components/schemas/Content-Type_ExampleTextPlain"

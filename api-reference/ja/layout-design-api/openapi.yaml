@@ -1,0 +1,1221 @@
+openapi: 3.0.3
+servers:
+  - url: http://(host address)/cdim/api/v1
+info:
+  title: 構成案設計API
+  description: |-
+    Composable Disaggregated Infrastructureの構成案の設計を行う機能(設計機構)を管理する機能群
+  version: 0.2.0
+tags:
+  - name: 構成案設計
+    description: |-
+      構成案設計に関する機能群
+paths:
+  /layout-designs:
+    post:
+      summary: 構成案設計要求
+      description: |-
+        本APIでは構成案設計要求を受け付けて設計ID(designID)を返却する。<br>
+        返却された設計IDを指定して構成案設計結果取得API「GET /layout-designs/{designID}」を実行することで設計状態および設計結果を取得することができる。<br>
+        サンプルプラグイン/サンプル設計機構を使用する場合、仕様により以下の機能がサポートされていない。<br>
+          - serviceSetRequestResourcesで要求されたデバイスが接続されたノードが作成されるが、要求されたデバイスの性能情報は考慮されない。<br>
+          - noConditionにfalseを指定して設計要求を行った場合でも、移行条件の算出はサポートされていないため、設計結果のconditionsには常に空のオブジェクトが返却される。<br>
+          - 部分設計要求はサポートされないため、設計要求の内容にかかわらず、必ず入力されたすべてのノードの再設計が行われる。<br>
+      tags:
+        - 構成案設計
+      parameters:
+        - name: designEngine
+          in: query
+          description: |-
+            利用する設計機構名を指定する。<br>
+            未指定の場合は、構成案設計機能の設定ファイルに記載された設計機構名(plugin.defaultの値)が指定される。
+          required: false
+          schema:
+            type: string
+            default: sample_design_engine
+      deprecated: false
+      requestBody:
+        description: 設計クエリ
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RequestBody"
+      responses:
+        "202":
+          description: 正常
+          content:
+            application/json:
+              schema:
+                properties:
+                  designID:
+                    type: string
+                    description: 設計ID
+                    example: 636ddde1ba39547845db0628
+        "400":
+          description: 不正なリクエストボディ。
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: number
+                    description: エラーコード
+                    enum:
+                      - E20001
+                  message:
+                    type: string
+                    description: メッセージ
+                    enum:
+                      - Following request body are required <不足パラメータ>
+        "500":
+          description: |-
+            内部サーバーエラー、他コンポーネントのエラー、またはプラグイン処理のエラーが発生。
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: number
+                    description: エラーコード
+                    enum:
+                      - E20004
+                  message:
+                    type: string
+                    description: メッセージ
+                    enum:
+                      - Failed to load layoutdesign_config.yaml.
+    get:
+      summary: 設計結果一覧取得
+      description: |-
+        本APIでは要求時点で設計機構に保存されている設計結果の一覧を返却する。<br>
+        サンプルプラグイン/サンプル設計機構を使用する場合、仕様により以下の機能がサポートされていない。<br>
+          - 直近1件の設計結果のみを保持するため、limit/offset/sortBy/orderBy/statusのクエリパラメータはサポートされない。<br>
+          - fieldsクエリパラメータで返却される情報のフィルタリングは行われず、設計結果に常にdesign/conditions/proceduresすべての項目が含まれる。<br>
+          - 移行条件(conditions)は算出されないため、必ず空の値が返却される。<br>
+      tags:
+        - 構成案設計
+      parameters:
+        - name: fields
+          in: query
+          description: |-
+            レスポンスボディに含める設計結果の項目を指定するパラメータ。<br>
+            複数の項目を指定することが可能。<br>
+            未指定時には、構成案、移行条件、移行手順の情報を返却しない。<br>
+            fieldsを指定した場合、取得対象項目として指定した項目が返却される。<br>
+            また、取得対象項目として指定しない項目はキーごとレスポンスボディから除外される。
+            - design:構成案
+            - conditions:移行条件
+            - procedures:移行手順
+          required: false
+          schema:
+            description: |-
+              - design:構成案
+              - conditions:移行条件
+              - procedures:移行手順
+            type: array
+            items:
+              type: string
+              enum:
+                - design
+                - conditions
+                - procedures
+        - name: limit
+          in: query
+          description: |-
+            取得件数を指定するパラメータ。<br>
+            1以上の整数値を指定する。<br>
+            設計要求日時(startedAt)の新しい順で指定した件数の構成案の情報を返却する。<br>
+            未指定の場合は、デフォルトとして100件取得となる。<br>
+            設計機構が保持している設計結果の件数が、limitで指定した件数に満たない場合、保持している分すべての設計結果を返却する。
+          required: false
+          schema:
+            type: integer
+            default: 100
+            minimum: 1
+        - name: offset
+          in: query
+          description: |-
+            取得開始位置を指定するパラメータ。<br>
+            sortBy、orderByの指定に従い並び替えを行ったデータの指定した行から取得を行う。<br>
+            0以上の整数値を指定する。<br>
+            仮に100を指定した場合は、101件目以降の構成案を取得する。<br>
+            未指定時には、デフォルトとして1件目から取得する。<br>
+          required: false
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+        - name: sortBy
+          in: query
+          description: |-
+            ソート対象を指定するパラメータ。<br>
+            昇順・降順で並び替える項目を指定する。<br>
+            未指定時にはデフォルトとして設計要求日時(startedAt)が対象となる。
+            - startedAt: 設計要求日時
+            - endedAt: 設計終了日時
+          required: false
+          schema:
+            type: string
+            default: startedAt
+        - name: orderBy
+          in: query
+          description: |-
+            取得した設計結果の順序を指定するパラメータ。<br>
+            未指定時にはデフォルトとして降順(desc)を指定する。<br>
+            - asc: 昇順
+            - desc: 降順
+          required: false
+          schema:
+            type: string
+            default: desc
+        - name: status
+          in: query
+          description: |-
+            取得する構成案の設計状態を指定するパラメータ。<br>
+            複数のパラメータ指定が可能。<br>
+            未指定時にはデフォルトとしてすべての設計状態が指定される。
+            - COMPLETED: 構成案設計完了
+            - IN_PROGRESS: 構成案設計中
+            - FAILED: 構成案設計失敗
+            - CANCELING: 構成案設計キャンセル中
+            - CANCELED: 構成案設計キャンセル完了
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - COMPLETED
+                - IN_PROGRESS
+                - FAILED
+                - CANCELING
+                - CANCELED
+        - name: designEngine
+          in: query
+          description: |-
+            利用する設計機構名を指定する。<br>
+            未指定の場合は、構成案設計機能の設定ファイルに記載された設計機構名(plugin.defaultの値)が指定される。
+          required: false
+          schema:
+            type: string
+            default: sample_design_engine
+      responses:
+        "200":
+          description: 正常
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CompletedDesignDatas"
+              examples:
+                取得件数が0件かつfields未指定の場合のレスポンス:
+                  value:
+                    count: 0
+                    totalCount: 0
+                    designs: []
+                取得件数が1件かつfields未指定の場合のレスポンス:
+                  value:
+                    count: 1
+                    totalCount: 10
+                    designs:
+                      [
+                        {
+                          "id": "67bd83e91b2bf7984df8aed3",
+                          "status": "COMPLETED",
+                          "requestID": "d96533a2-6fb8-498d-9778-4d93141d92b7",
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "endedAt": "2023-05-10T00:00:00Z",
+                        },
+                      ]
+                取得件数が1件かつfieldsにdesignのみを指定した場合のレスポンス:
+                  value:
+                    count: 1
+                    totalCount: 10
+                    designs:
+                      [
+                        {
+                          "id": "67d1069a3c75db0eb3a9531b",
+                          "status": "COMPLETED",
+                          "requestID": "d96533a2-6fb8-498d-9778-4d93141d92b7",
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "endedAt": "2023-05-10T00:00:00Z",
+                          "design":
+                            {
+                              "nodes":
+                                [
+                                  {
+                                    "spec": 0,
+                                    "averageEnergyWatts": 0,
+                                    "constructTime": 60,
+                                    "destructTime": 60,
+                                    "services":
+                                      [
+                                        {
+                                          "id": "ef27cc23-788d-42cd-9f1a-d44e0d2eee89",
+                                          "requestInstanceID": "7ad272e4-3223-4161-b0e9-80b588c7242d",
+                                        },
+                                      ],
+                                    "device":
+                                      {
+                                        "cpu":
+                                          {
+                                            "deviceIDs":
+                                              [
+                                                "b9a1e642-da2e-403a-88f5-fa0eca0d9c52",
+                                              ],
+                                          },
+                                        "memory":
+                                          {
+                                            "deviceIDs":
+                                              [
+                                                "54fd3675-8ad1-42d7-8d61-067dea3f446a",
+                                              ],
+                                          },
+                                        "storage":
+                                          {
+                                            "deviceIDs":
+                                              [
+                                                "f843ae2c-4157-4469-9635-300fb04fdb7b",
+                                              ],
+                                          },
+                                        "gpu":
+                                          [
+                                            {
+                                              "deviceID": "0ca6a442-784d-47c7-ba0c-c4077953da48",
+                                              "requests":
+                                                [
+                                                  {
+                                                    "requestInstanceID": "7ad272e4-3223-4161-b0e9-80b588c7242d",
+                                                    "index": 0,
+                                                  },
+                                                ],
+                                            },
+                                          ],
+                                        "networkInterface":
+                                          {
+                                            "deviceIDs":
+                                              [
+                                                "bfac0e5a-f1b7-42eb-bc69-2e28b5c9f9f8",
+                                              ],
+                                          },
+                                      },
+                                  },
+                                ],
+                            },
+                        },
+                      ]
+                取得件数が1件かつfieldsにdesign/conditions/proceduresすべてを指定した場合のレスポンス:
+                  value:
+                    count: 1
+                    totalCount: 10
+                    designs:
+                      [
+                        {
+                          "id": "67d1069a3c75db0eb3a9531b",
+                          "status": "COMPLETED",
+                          "requestID": "d96533a2-6fb8-498d-9778-4d93141d92b7",
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "endedAt": "2023-05-10T00:00:00Z",
+                          "design":
+                            {
+                              "nodes":
+                                [
+                                  {
+                                    "spec": 0,
+                                    "averageEnergyWatts": 0,
+                                    "constructTime": 60,
+                                    "destructTime": 60,
+                                    "services":
+                                      [
+                                        {
+                                          "id": "ef27cc23-788d-42cd-9f1a-d44e0d2eee89",
+                                          "requestInstanceID": "7ad272e4-3223-4161-b0e9-80b588c7242d",
+                                        },
+                                      ],
+                                    "device":
+                                      {
+                                        "cpu":
+                                          {
+                                            "deviceIDs":
+                                              [
+                                                "b9a1e642-da2e-403a-88f5-fa0eca0d9c52",
+                                              ],
+                                          },
+                                        "memory":
+                                          {
+                                            "deviceIDs":
+                                              [
+                                                "54fd3675-8ad1-42d7-8d61-067dea3f446a",
+                                              ],
+                                          },
+                                        "storage":
+                                          {
+                                            "deviceIDs":
+                                              [
+                                                "f843ae2c-4157-4469-9635-300fb04fdb7b",
+                                              ],
+                                          },
+                                        "gpu":
+                                          [
+                                            {
+                                              "deviceID": "0ca6a442-784d-47c7-ba0c-c4077953da48",
+                                              "requests":
+                                                [
+                                                  {
+                                                    "requestInstanceID": "7ad272e4-3223-4161-b0e9-80b588c7242d",
+                                                    "index": 0,
+                                                  },
+                                                ],
+                                            },
+                                          ],
+                                        "networkInterface":
+                                          {
+                                            "deviceIDs":
+                                              [
+                                                "bfac0e5a-f1b7-42eb-bc69-2e28b5c9f9f8",
+                                              ],
+                                          },
+                                      },
+                                  },
+                                ],
+                            },
+                          "conditions":
+                            {
+                              "toleranceCriteria":
+                                {
+                                  "cpu":
+                                    [
+                                      {
+                                        "deviceIDs":
+                                          [
+                                            "b9a1e642-da2e-403a-88f5-fa0eca0d9c52",
+                                            "e56a1a1c-0556-42ca-8cbb-7c6dc86561eb",
+                                          ],
+                                        "limit":
+                                          {
+                                            "averageUseRate": 284.0,
+                                            "weights": [1.25, 0.8],
+                                          },
+                                      },
+                                    ],
+                                  "memory":
+                                    [
+                                      {
+                                        "deviceIDs":
+                                          [
+                                            "54fd3675-8ad1-42d7-8d61-067dea3f446a",
+                                            "e63fbe90-1b8f-44bd-9f66-ca3a9ce159b2",
+                                          ],
+                                        "limit": { "averageUseBytes": 4000.0 },
+                                      },
+                                    ],
+                                },
+                              "energyCriteria": 500,
+                            },
+                          "procedures":
+                            [
+                              {
+                                "operationID": 1,
+                                "operation": "shutdown",
+                                "targetCPUID": "0621c7fd-5312-4b64-81ba-e5e8d14c46b9",
+                                "targetDeviceID": "1b66b60f-5250-4aa6-8cc3-55e5806ea492",
+                                "targetRequestInstanceID": "7ad272e4-3223-4161-b0e9-80b588c7242d",
+                                "dependencies": [2],
+                              },
+                            ],
+                        },
+                      ]
+                取得件数が5件かつfields未指定の場合のレスポンス:
+                  value:
+                    count: 5
+                    totalCount: 10
+                    designs:
+                      [
+                        {
+                          "id": "67d1069a3c75db0eb3a9531b",
+                          "status": "COMPLETED",
+                          "requestID": "d96533a2-6fb8-498d-9778-4d93141d92b7",
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "endedAt": "2023-05-10T00:00:00Z",
+                        },
+                        {
+                          "id": "67d1069ace1eaa704c3ab721",
+                          "status": "FAILED",
+                          "requestID": "d96533a2-6fb8-498d-9778-4d93141d92b7",
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "cause": "Design request needs more available CPU resources.",
+                          "endedAt": "2023-05-10T00:00:00Z",
+                        },
+                        {
+                          "id": "67d1069a8ff64daf8f251e7c",
+                          "status": "IN_PROGRESS",
+                          "requestID": "d96533a2-6fb8-498d-9778-4d93141d92b7",
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "endedAt": "",
+                        },
+                        {
+                          "id": "67d1069a095fc0157f060b12",
+                          "status": "CANCELING",
+                          "requestID": "d96533a2-6fb8-498d-9778-4d93141d92b7",
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "endedAt": "",
+                        },
+                        {
+                          "id": "67d1069a5c7a0b9db313f3f4",
+                          "status": "CANCELED",
+                          "requestID": "d96533a2-6fb8-498d-9778-4d93141d92b7",
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "endedAt": "2023-05-10T00:00:00Z",
+                        },
+                      ]
+                取得件数が5件かつfieldsにdesignのみを指定した場合のレスポンス:
+                  value:
+                    count: 5
+                    totalCount: 10
+                    designs:
+                      [
+                        {
+                          "id": "67d1069a3c75db0eb3a9531b",
+                          "status": "COMPLETED",
+                          "requestID": "d96533a2-6fb8-498d-9778-4d93141d92b7",
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "endedAt": "2023-05-10T00:00:00Z",
+                          "design":
+                            {
+                              "nodes":
+                                [
+                                  {
+                                    "spec": 0,
+                                    "averageEnergyWatts": 0,
+                                    "constructTime": 60,
+                                    "destructTime": 60,
+                                    "services":
+                                      [
+                                        {
+                                          "id": "ef27cc23-788d-42cd-9f1a-d44e0d2eee89",
+                                          "requestInstanceID": "7ad272e4-3223-4161-b0e9-80b588c7242d",
+                                        },
+                                      ],
+                                    "device":
+                                      {
+                                        "cpu":
+                                          {
+                                            "deviceIDs":
+                                              [
+                                                "b9a1e642-da2e-403a-88f5-fa0eca0d9c52",
+                                              ],
+                                          },
+                                        "memory":
+                                          {
+                                            "deviceIDs":
+                                              [
+                                                "54fd3675-8ad1-42d7-8d61-067dea3f446a",
+                                              ],
+                                          },
+                                        "storage":
+                                          {
+                                            "deviceIDs":
+                                              [
+                                                "f843ae2c-4157-4469-9635-300fb04fdb7b",
+                                              ],
+                                          },
+                                        "gpu":
+                                          [
+                                            {
+                                              "deviceID": "0ca6a442-784d-47c7-ba0c-c4077953da48",
+                                              "requests":
+                                                [
+                                                  {
+                                                    "requestInstanceID": "7ad272e4-3223-4161-b0e9-80b588c7242d",
+                                                    "index": 0,
+                                                  },
+                                                ],
+                                            },
+                                          ],
+                                        "networkInterface":
+                                          {
+                                            "deviceIDs":
+                                              [
+                                                "bfac0e5a-f1b7-42eb-bc69-2e28b5c9f9f8",
+                                              ],
+                                          },
+                                      },
+                                  },
+                                ],
+                            },
+                        },
+                        {
+                          "id": "67d1069ace1eaa704c3ab721",
+                          "status": "FAILED",
+                          "requestID": "d96533a2-6fb8-498d-9778-4d93141d92b7",
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "cause": "Design request needs more available CPU resources.",
+                          "endedAt": "2023-05-10T00:00:00Z",
+                          "design": {},
+                        },
+                        {
+                          "id": "67d1069a8ff64daf8f251e7c",
+                          "status": "IN_PROGRESS",
+                          "requestID": "d96533a2-6fb8-498d-9778-4d93141d92b7",
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "endedAt": "",
+                          "design": {},
+                        },
+                        {
+                          "id": "67d1069a095fc0157f060b12",
+                          "status": "CANCELING",
+                          "requestID": "d96533a2-6fb8-498d-9778-4d93141d92b7",
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "endedAt": "",
+                          "design": {},
+                        },
+                        {
+                          "id": "67d1069a5c7a0b9db313f3f4",
+                          "status": "CANCELED",
+                          "requestID": "d96533a2-6fb8-498d-9778-4d93141d92b7",
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "endedAt": "2023-05-10T00:00:00Z",
+                          "design": {},
+                        },
+                      ]
+                取得件数が5件かつfieldsにdesign/conditions/proceduresすべてを指定した場合のレスポンス:
+                  value:
+                    count: 5
+                    totalCount: 10
+                    designs:
+                      [
+                        {
+                          "id": "67d1069a3c75db0eb3a9531b",
+                          "status": "COMPLETED",
+                          "requestID": "d96533a2-6fb8-498d-9778-4d93141d92b7",
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "endedAt": "2023-05-10T00:00:00Z",
+                          "design":
+                            {
+                              "nodes":
+                                [
+                                  {
+                                    "spec": 0,
+                                    "averageEnergyWatts": 0,
+                                    "constructTime": 60,
+                                    "destructTime": 60,
+                                    "services":
+                                      [
+                                        {
+                                          "id": "ef27cc23-788d-42cd-9f1a-d44e0d2eee89",
+                                          "requestInstanceID": "7ad272e4-3223-4161-b0e9-80b588c7242d",
+                                        },
+                                      ],
+                                    "device":
+                                      {
+                                        "cpu":
+                                          {
+                                            "deviceIDs":
+                                              [
+                                                "b9a1e642-da2e-403a-88f5-fa0eca0d9c52",
+                                              ],
+                                          },
+                                        "memory":
+                                          {
+                                            "deviceIDs":
+                                              [
+                                                "54fd3675-8ad1-42d7-8d61-067dea3f446a",
+                                              ],
+                                          },
+                                        "storage":
+                                          {
+                                            "deviceIDs":
+                                              [
+                                                "f843ae2c-4157-4469-9635-300fb04fdb7b",
+                                              ],
+                                          },
+                                        "gpu":
+                                          [
+                                            {
+                                              "deviceID": "0ca6a442-784d-47c7-ba0c-c4077953da48",
+                                              "requests":
+                                                [
+                                                  {
+                                                    "requestInstanceID": "7ad272e4-3223-4161-b0e9-80b588c7242d",
+                                                    "index": 0,
+                                                  },
+                                                ],
+                                            },
+                                          ],
+                                        "networkInterface":
+                                          {
+                                            "deviceIDs":
+                                              [
+                                                "bfac0e5a-f1b7-42eb-bc69-2e28b5c9f9f8",
+                                              ],
+                                          },
+                                      },
+                                  },
+                                ],
+                            },
+                          "conditions":
+                            {
+                              "toleranceCriteria":
+                                {
+                                  "cpu":
+                                    [
+                                      {
+                                        "deviceIDs":
+                                          [
+                                            "b9a1e642-da2e-403a-88f5-fa0eca0d9c52",
+                                            "e56a1a1c-0556-42ca-8cbb-7c6dc86561eb",
+                                          ],
+                                        "limit":
+                                          {
+                                            "averageUseRate": 284.0,
+                                            "weights": [1.25, 0.8],
+                                          },
+                                      },
+                                    ],
+                                  "memory":
+                                    [
+                                      {
+                                        "deviceIDs":
+                                          [
+                                            "54fd3675-8ad1-42d7-8d61-067dea3f446a",
+                                            "e63fbe90-1b8f-44bd-9f66-ca3a9ce159b2",
+                                          ],
+                                        "limit": { "averageUseBytes": 4000.0 },
+                                      },
+                                    ],
+                                },
+                              "energyCriteria": 500,
+                            },
+                          "procedures":
+                            [
+                              {
+                                "operationID": 1,
+                                "operation": "shutdown",
+                                "targetCPUID": "0621c7fd-5312-4b64-81ba-e5e8d14c46b9",
+                                "targetDeviceID": "1b66b60f-5250-4aa6-8cc3-55e5806ea492",
+                                "targetRequestInstanceID": "7ad272e4-3223-4161-b0e9-80b588c7242d",
+                                "dependencies": [2],
+                              },
+                            ],
+                        },
+                        {
+                          "id": "67d1069ace1eaa704c3ab721",
+                          "status": "FAILED",
+                          "requestID": "d96533a2-6fb8-498d-9778-4d93141d92b7",
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "cause": "Design request needs more available CPU resources.",
+                          "endedAt": "2023-05-10T00:00:00Z",
+                          "design": {},
+                          "conditions": {},
+                          "procedures": [],
+                        },
+                        {
+                          "id": "67d1069a8ff64daf8f251e7c",
+                          "status": "IN_PROGRESS",
+                          "requestID": "d96533a2-6fb8-498d-9778-4d93141d92b7",
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "endedAt": "",
+                          "design": {},
+                          "conditions": {},
+                          "procedures": [],
+                        },
+                        {
+                          "id": "67d1069a095fc0157f060b12",
+                          "status": "CANCELING",
+                          "requestID": "d96533a2-6fb8-498d-9778-4d93141d92b7",
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "endedAt": "",
+                          "design": {},
+                          "conditions": {},
+                          "procedures": [],
+                        },
+                        {
+                          "id": "67d1069a5c7a0b9db313f3f4",
+                          "status": "CANCELED",
+                          "requestID": "d96533a2-6fb8-498d-9778-4d93141d92b7",
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "endedAt": "2023-05-10T00:00:00Z",
+                          "design": {},
+                          "conditions": {},
+                          "procedures": [],
+                        },
+                      ]
+        "400":
+          description: 不正なクエリパラメータ指定。
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: number
+                    description: エラーコード
+                    enum:
+                      - E20001
+                  message:
+                    type: string
+                    description: メッセージ
+                    enum:
+                      - "Invalid value is specified for query parameters. query name: fields"
+        "500":
+          description: |-
+            内部サーバーエラー、他コンポーネントのエラー、またはプラグイン処理のエラーが発生。
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: number
+                    description: エラーコード
+                    enum:
+                      - E20004
+                  message:
+                    type: string
+                    description: メッセージ
+                    enum:
+                      - Failed to load layoutdesign_config.yaml.
+
+  /layout-designs/{designID}:
+    get:
+      tags:
+        - 構成案設計
+      summary: 構成案設計結果取得
+      description: |-
+        本APIでは指定された設計ID(designID)の設計情報を返却する。<br>
+        返却されるレスポンスボディのstatusで設計状態を確認することができる。<br>
+        statusがCOMPLETEDでない場合、designとconditionsには空のオブジェクト、proceduresには空のリストを返却する。<br>
+        構成案設計要求で noCondition に true 指定されている場合、移行条件(conditions)の情報は省略され、conditions のキーがレスポンスボディに含まれなくなる。<br>
+        サンプルプラグイン/サンプル設計機構を使用する場合、移行条件の算出はサポートされていないため、必ず空のオブジェクトが返却される。
+      parameters:
+        - name: designID
+          in: path
+          description: 設計ID。構成案設計要求時に受け取った設計IDを指定する。
+          required: true
+          example: 636ddde1ba39547845db0628
+          schema:
+            type: string
+        - name: designEngine
+          in: query
+          description: |-
+            利用する設計機構名を指定する。<br>
+            未指定の場合は、構成案設計機能の設定ファイルに記載された設計機構名(plugin.defaultの値)が指定される。
+          required: false
+          schema:
+            type: string
+            default: sample_design_engine
+      responses:
+        "200":
+          description: 正常
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/CompletedDesignData"
+                  - $ref: "#/components/schemas/FailedDesignData"
+              examples:
+                設計状態がCOMPLETEDのレスポンス:
+                  value:
+                    status: "COMPLETED"
+                    requestID: "17d9a80f-1a32-4f5a-9c50-b1c64c259f15"
+                    startedAt: "2023-05-10T00:00:00Z"
+                    endedAt: "2023-05-10T00:00:00Z"
+                    design:
+                      {
+                        "nodes":
+                          [
+                            {
+                              "spec": 0,
+                              "averageEnergyWatts": 0,
+                              "constructTime": 0,
+                              "destructTime": 0,
+                              "services":
+                                [
+                                  {
+                                    "id": "ef27cc23-788d-42cd-9f1a-d44e0d2eee89",
+                                    "requestInstanceID": "7ad272e4-3223-4161-b0e9-80b588c7242d",
+                                  },
+                                ],
+                              "device":
+                                {
+                                  "cpu":
+                                    {
+                                      "deviceIDs":
+                                        [
+                                          "b9a1e642-da2e-403a-88f5-fa0eca0d9c52",
+                                        ],
+                                    },
+                                  "memory":
+                                    {
+                                      "deviceIDs":
+                                        [
+                                          "54fd3675-8ad1-42d7-8d61-067dea3f446a",
+                                        ],
+                                    },
+                                  "storage":
+                                    {
+                                      "deviceIDs":
+                                        [
+                                          "f843ae2c-4157-4469-9635-300fb04fdb7b",
+                                        ],
+                                    },
+                                  "gpu":
+                                    [
+                                      {
+                                        "deviceID": "0ca6a442-784d-47c7-ba0c-c4077953da48",
+                                        "requests":
+                                          [
+                                            {
+                                              "requestInstanceID": "7ad272e4-3223-4161-b0e9-80b588c7242d",
+                                              "index": 0,
+                                            },
+                                          ],
+                                      },
+                                    ],
+                                  "networkInterface":
+                                    {
+                                      "deviceIDs":
+                                        [
+                                          "bfac0e5a-f1b7-42eb-bc69-2e28b5c9f9f8",
+                                        ],
+                                    },
+                                },
+                            },
+                          ],
+                      }
+                    conditions:
+                      {
+                        "toleranceCriteria":
+                          {
+                            "cpu":
+                              [
+                                {
+                                  "deviceIDs":
+                                    [
+                                      "b9a1e642-da2e-403a-88f5-fa0eca0d9c52",
+                                      "e56a1a1c-0556-42ca-8cbb-7c6dc86561eb",
+                                    ],
+                                  "limit":
+                                    {
+                                      "averageUseRate": 284.0,
+                                      "weights": [1.25, 0.8],
+                                    },
+                                },
+                              ],
+                            "memory":
+                              [
+                                {
+                                  "deviceIDs":
+                                    [
+                                      "54fd3675-8ad1-42d7-8d61-067dea3f446a",
+                                      "e63fbe90-1b8f-44bd-9f66-ca3a9ce159b2",
+                                    ],
+                                  "limit": { "averageUseBytes": 284.0 },
+                                },
+                              ],
+                          },
+                        "energyCriteria": 5284,
+                      }
+                    procedures:
+                      [
+                        {
+                          "operationID": 1,
+                          "operation": "shutdown",
+                          "targetCPUID": "0621c7fd-5312-4b64-81ba-e5e8d14c46b9",
+                          "targetDeviceID": "1b66b60f-5250-4aa6-8cc3-55e5806ea492",
+                          "targetRequestInstanceID": "7ad272e4-3223-4161-b0e9-80b588c7242d",
+                          "dependencies": [2],
+                        },
+                      ]
+                    designID: "67bd83e91b2bf7984df8aed3"
+                設計状態がFAILEDの場合のレスポンス:
+                  value:
+                    status: "FAILED"
+                    requestID: "17d9a80f-1a32-4f5a-9c50-b1c64c259f15"
+                    startedAt: "2023-05-10T00:00:00Z"
+                    endedAt: "2023-05-10T00:00:00Z"
+                    cause: "Failed to connect to device spec value manager in intent synthesizer."
+                    design: {}
+                    conditions: {}
+                    procedures: []
+                    designID: "67bd83e91b2bf7984df8aed3"
+                設計状態がIN_PROGRESSの場合のレスポンス:
+                  value:
+                    status: "IN_PROGRESS"
+                    requestID: "17d9a80f-1a32-4f5a-9c50-b1c64c259f15"
+                    startedAt: "2023-05-10T00:00:00Z"
+                    endedAt: ""
+                    design: {}
+                    conditions: {}
+                    procedures: []
+                    designID: "67bd83e91b2bf7984df8aed3"
+                設計状態がCANCELINGの場合のレスポンス:
+                  value:
+                    status: "CANCELING"
+                    requestID: "17d9a80f-1a32-4f5a-9c50-b1c64c259f15"
+                    startedAt: "2023-05-10T00:00:00Z"
+                    endedAt: ""
+                    design: {}
+                    conditions: {}
+                    procedures: []
+                    designID: "67bd83e91b2bf7984df8aed3"
+                設計状態がCANCELEDの場合のレスポンス:
+                  value:
+                    status: "CANCELED"
+                    requestID: "17d9a80f-1a32-4f5a-9c50-b1c64c259f15"
+                    startedAt: "2023-05-10T00:00:00Z"
+                    endedAt: "2023-05-10T00:00:00Z"
+                    design: {}
+                    conditions: {}
+                    procedures: []
+                    designID: "67bd83e91b2bf7984df8aed3"
+        "400":
+          description: 不正なクエリパラメータ指定。
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: number
+                    description: エラーコード
+                    enum:
+                      - E20001
+                  message:
+                    type: string
+                    description: メッセージ
+                    enum:
+                      - "The specified design engine does not exist."
+        "404":
+          description: 存在しない設計IDが指定された。
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: number
+                    description: エラーコード
+                    enum:
+                      - E20009
+                  message:
+                    type: string
+                    description: メッセージ
+                    enum:
+                      - "Error was returned from design engine. Design ID Not Found: Design ID not found"
+        "500":
+          description: |-
+            内部サーバーエラー、他コンポーネントのエラー、またはプラグイン処理のエラーが発生。
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: number
+                    description: エラーコード
+                    enum:
+                      - E20004
+                  message:
+                    type: string
+                    description: メッセージ
+                    enum:
+                      - Failed to load layoutdesign_config.yaml.
+
+    put:
+      tags:
+        - 構成案設計
+      summary: 構成案設計キャンセル
+      description: |-
+        本APIでは指定された設計ID(designID)の構成案設計処理の設計状態をキャンセルへ遷移する要求を行う。<br>
+        構成案設計結果取得API「GET /layout-designs/{designID}」を実行し現在の設計状態を取得することで、設計状態が遷移したことを確認することができる。<br>
+        サンプルプラグイン/サンプル設計機構では、本APIの機能はサポートされていないため、設計状態がCANCELINGまたはCANCELEDに遷移することなく、常にHTTP 500エラーを返却する。
+      parameters:
+        - name: designID
+          in: path
+          description: 設計ID。構成案設計要求時に受け取った設計IDを指定する。
+          required: true
+          example: 636ddde1ba39547845db0628
+          schema:
+            type: string
+        - name: action
+          in: query
+          description: |-
+            設計機構に要求するアクション種別を指定するパラメータ。
+            - cancel: 構成案設計処理をキャンセル要求する。
+          required: true
+          schema:
+            type: string
+            enum:
+              - cancel
+        - name: designEngine
+          in: query
+          description: |-
+            利用する設計機構名を指定する。<br>
+            未指定の場合は、構成案設計機能の設定ファイルに記載された設計機構名(plugin.defaultの値)が指定される。
+          required: false
+          schema:
+            type: string
+            default: sample_design_engine
+      responses:
+        "200":
+          description: 正常。既に設計状態の遷移が完了している場合。
+          content:
+            application/json:
+              schema:
+                properties:
+                  status:
+                    type: string
+                    description: 現在の設計状態
+                    enum:
+                      - "CANCELED"
+        "202":
+          description: 正常。設計状態の遷移の要求が受け付けられた場合。
+          content:
+            application/json:
+              schema:
+                properties:
+                  status:
+                    type: string
+                    description: 現在の設計状態
+                    enum:
+                      - "CANCELING"
+        "400":
+          description: 不正なクエリパラメータ指定。
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: number
+                    description: エラーコード
+                    enum:
+                      - E20001
+                  message:
+                    type: string
+                    description: メッセージ
+                    enum:
+                      - "Invalid value is specified for query parameters. query name: action"
+        "404":
+          description: 存在しない設計IDが指定された。
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: number
+                    description: エラーコード
+                    enum:
+                      - E20009
+                  message:
+                    type: string
+                    description: メッセージ
+                    enum:
+                      - "Error was returned from design engine. Design ID Not Found: Design ID not found"
+        "409":
+          description: 現在の設計状態から遷移ができない場合。
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: number
+                    description: エラーコード
+                    enum:
+                      - E20009
+                  message:
+                    type: string
+                    description: メッセージ
+                    enum:
+                      - "Error was returned from design engine. Could Not Change Status: Current status is <現在の設計状態>"
+        "500":
+          description: |-
+            内部サーバーエラー、他コンポーネントのエラー、またはプラグイン処理のエラーが発生。
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: number
+                    description: エラーコード
+                    enum:
+                      - E20004
+                  message:
+                    type: string
+                    description: メッセージ
+                    enum:
+                      - Failed to load layoutdesign_config.yaml.
+
+    delete:
+      tags:
+        - 構成案設計
+      summary: 構成案設計結果削除
+      description: |-
+        本APIでは指定された設計ID(designID)の構成案設計結果を削除する。<br>
+        サンプルプラグイン/サンプル設計機構では、本APIの機能はサポートされていないため、設計結果は削除されることはなく、常にHTTP 500エラーを返却する。
+      parameters:
+        - name: designID
+          in: path
+          description: 設計ID。構成案設計要求時に受け取った設計IDを指定する。
+          required: true
+          example: 636ddde1ba39547845db0628
+          schema:
+            type: string
+        - name: designEngine
+          in: query
+          description: |-
+            利用する設計機構名を指定する。<br>
+            未指定の場合は、構成案設計機能の設定ファイルに記載された設計機構名(plugin.defaultの値)が指定される。
+          required: false
+          schema:
+            type: string
+            default: sample_design_engine
+
+      responses:
+        "204":
+          description: 正常
+        "404":
+          description: 存在しない設計IDが指定された。
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: number
+                    description: エラーコード
+                    enum:
+                      - E20009
+                  message:
+                    type: string
+                    description: メッセージ
+                    enum:
+                      - "Error was returned from design engine. Design ID Not Found: Design ID not found"
+        "500":
+          description: |-
+            内部サーバーエラー、他コンポーネントのエラー、またはプラグイン処理のエラーが発生。
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: number
+                    description: エラーコード
+                    enum:
+                      - E20004
+                  message:
+                    type: string
+                    description: メッセージ
+                    enum:
+                      - Failed to load layoutdesign_config.yaml.
+
+components:
+  schemas:
+    RequestBody:
+      $ref: "./openapi_schema.yaml#/components/schemas/RequestBody"
+    CompletedDesignDatas:
+      $ref: "./openapi_schema.yaml#/components/schemas/CompletedDesignDatas"
+    CompletedDesignData:
+      $ref: "./openapi_schema.yaml#/components/schemas/CompletedDesignData"
+    FailedDesignData:
+      $ref: "./openapi_schema.yaml#/components/schemas/FailedDesignData"
+    Design:
+      $ref: "./openapi_schema.yaml#/components/schemas/Design"
+    Conditions:
+      $ref: "./openapi_schema.yaml#/components/schemas/Conditions"
+    Procedures:
+      $ref: "./openapi_schema.yaml#/components/schemas/Procedures"

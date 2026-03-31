@@ -101,5 +101,5 @@ $ docker image rm $(docker image ls -q)
 $ docker volume rm $(docker volume ls -q)
 # Start containers
 $ cd ~/cdim
-$ ./install --up
+$ ./install -b -u
 ```

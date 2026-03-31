@@ -205,20 +205,20 @@ class BaseHWControlError(Exception):
   * デフォルトエラーメッセージ: `"Your request is not supported for the specified target device."`
 
 * `FMConnectFailureHWControlError`
-  * Fabric Managerが指定されたHost CPUとデバイス間の接続に失敗した場合に送出してください。
+  * Fabric Managerが指定されたUSPとDSP間の接続に失敗した場合に送出してください。
   * ベースクラス：`ControlObjectHWControlError`
   * 対象プラグイン: FM
   * エラーコード: `"EF004BAS001"`
   * HTTPステータスコード: `500`
-  * デフォルトエラーメッセージ: `"The Fabric Manager failed to establish a connection between the specified Host CPU and target device."`
+  * デフォルトエラーメッセージ: `"The Fabric Manager failed to establish a connection between the specified source device and the destination device."`
 
 * `FMDisconnectFailureHWControlError`
-  * Fabric Managerが指定されたHost CPUとデバイスの切断に失敗した場合に送出してください。
+  * Fabric Managerが指定されたUSPとDSP間の切断に失敗した場合に送出してください。
   * ベースクラス：`ControlObjectHWControlError`
   * 対象プラグイン: FM
   * エラーコード: `"EF004BAS002"`
   * HTTPステータスコード: `500`
-  * デフォルトエラーメッセージ: `"The Fabric Manager failed to disconnect a connection between the specified Host CPU and the target device."`
+  * デフォルトエラーメッセージ: `"The Fabric Manager failed to disconnect a connection between the specified source device and the destination device."`
 
 * `PowerOnFailureHWControlError`
   * OOBコントローラーが、指定されたデバイスの電源Onに失敗した場合に送出してください。

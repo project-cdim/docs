@@ -93,7 +93,7 @@ components:
         }
     ApplyResult:
       description: |-
-        Detailed list of execution results for migration procedures
+        Details of the execution results of the migration procedure
       type: object
       required:
         - operationID
@@ -130,8 +130,7 @@ components:
             Note: Not present if status is SKIPPED or CANCELED
           example:
             {
-              "hostCpuId": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
-              "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+              "timeOut": 30,
             }
         requestBody:
           type: object
@@ -151,7 +150,7 @@ components:
               description: |-
                 Operation on the device<br>
                 Note: Reset can only be specified for CPU
-            deviceID:
+            destinationDeviceID:
               type: string
               example: 895DFB43-68CD-41D6-8996-EAC8D1EA1E3F
               description: |-
@@ -201,7 +200,7 @@ components:
               type: string
               description: Method of the sent OS boot confirmation API request
             statusCode:
-              type: int
+              type: integer
               description: HTTP status code of the OS boot confirmation API response
             responseBody:
               type: object
@@ -252,8 +251,7 @@ components:
             Note: Not present if status is SKIPPED or CANCELED
           example:
             {
-              "hostCpuId": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
-              "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+              "timeOut": 30,
             }
         requestBody:
           type: string
@@ -262,8 +260,8 @@ components:
             Note: Not present if status is SKIPPED or CANCELED
           example:
             {
-              "hostCpuId": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
-              "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+              "action": "connect",
+              "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
             }
         statusCode:
           type: integer
@@ -308,7 +306,7 @@ components:
         details:
           type: array
           description: |-
-            Detailed list of execution results for migration procedures
+            Details of the execution results for migration procedures
           items:
             $ref: "#/components/schemas/ApplyResult"
     ApplyErrorResponse:
@@ -338,7 +336,7 @@ components:
         details:
           type: array
           description: |-
-            Detailed list of execution results for migration procedures
+            Details of the execution results for migration procedures
           items:
             $ref: "#/components/schemas/ApplyErrorResult"
     ApplyResponseCanceled:
@@ -356,7 +354,7 @@ components:
         details:
           type: array
           description: |-
-            Detailed list of execution results for migration procedures
+            Details of the execution results for migration procedures
           items:
             $ref: "#/components/schemas/ApplyResult"
         rollbackProcedures:
@@ -424,7 +422,7 @@ components:
           example: E40001
         message:
           type: string
-          example: Value is not one of ['procedures', 'applyResult', 'rollbackProcedures', 'rollbackResult', 'resumekProcedures']
+          example: Value is not one of ['procedures', 'applyResult', 'rollbackProcedures', 'rollbackResult', 'resumeProcedures']
           description: Error message representing the error content.
     ConflictErrorResponse:
       description: |-
@@ -482,7 +480,11 @@ components:
         procedures:
           $ref: "#/components/schemas/ProcedureList"
         applyResult:
-          $ref: "#/components/schemas/ApplyResult"
+          type: array
+          description: |-
+            Details of the execution results for migration procedures
+          items:
+            $ref: "#/components/schemas/ApplyResult"
         rollbackProcedures:
           $ref: "#/components/schemas/RollbackProcedureList"
         startedAt:
@@ -505,14 +507,16 @@ components:
           type: string
           example: COMPLETED
           description: |-
-            Rollback status information<br>"COMPLETED": Rollback complete, "IN_PROGRESS": Rollback in progress, SUSPENDED": Rollback suspended, "FAILED": Rollback failed<br>
+            Rollback status information<br>"COMPLETED": Rollback complete, "IN_PROGRESS": Rollback in progress, "SUSPENDED": Rollback suspended, "FAILED": Rollback failed<br>
             Note: Not present if status is COMPLETED or FAILED, and if the layout apply for the applicable ID was canceled without rollback execution options
         rollbackResult:
-          type: object
+          type: array
           description: |-
             Result of rollback execution after layout apply for the applicable ID was canceled.<br>
             Data format is similar to layout apply result (applyResult)<br>
             Note: Not present if status is COMPLETED or FAILED, and if the layout apply for the applicable ID was canceled without rollback execution options
+          items:
+            $ref: "#/components/schemas/ApplyResult"
         rollbackStartedAt:
           type: datetime
           description: Rollback start time. Time when rollback for layout apply of applicable ID started
@@ -522,11 +526,13 @@ components:
         resumeProcedures:
           $ref: "#/components/schemas/ResumeProcedureList"
         resumeResult:
-          type: object
+          type: array
           description: |-
             Result after layout apply for the applicable ID is resumed or result after resuming interrupted data during rollback.<br>
             Data format is similar to layout apply result (applyResult)<br>
             Note: If interruption and resumption occur repeatedly, the latest result is stored
+          items:
+            $ref: "#/components/schemas/ApplyResult"
         suspendedAt:
           type: datetime
           description: |-
@@ -586,7 +592,7 @@ components:
         rollbackStatus:
           type: string
           example: |-
-            "IN_PROGRESS", "COMPLETED", SUSPENDED", "FAILED"
+            "IN_PROGRESS", "COMPLETED", "SUSPENDED", "FAILED"
           description: Message representing rollback status information.
 
     DesiredLayout:
@@ -633,18 +639,33 @@ components:
           type: object
           description: |-
             Device information object stored in nodes<br>
-            Note: When creating device data, cpu is required
+            Note: When creating device data, cpu is required<br>
+            Note: Only for the gpu key, it becomes an array type, while for other device types (cpu/memory/storage/networkInterface etc.), it is an object type.
           properties:
             <DeviceType>:
               type: object
               description: |-
-                Example of device type: cpu/memory/storage/networkInterface/gpu etc...<br>
+                Example of device type: cpu/memory/storage/networkInterface etc...<br>
+                Note: Only in the case of the gpu, it becomes an array type (refer to the gpu schema)<br>
                 Note: Case sensitivity is not distinguished (For CPU, allows representations like cpu/CPU/Cpu/cPu/CpU...)
               required:
                 - deviceIDs
               properties:
                 deviceIDs:
                   $ref: "#/components/schemas/DeviceIDList"
+            gpu:
+              type: array
+              description: |-
+                GPU (Array Type)<br>
+                Note: Only in the case of the gpu, it becomes an array type
+                Note: Case sensitivity is not distinguished (For gpu/GPU, allows representations like Gpu/gPu/GpU...)
+              items:
+                type: object
+                required:
+                  - deviceID
+                properties:
+                  deviceID:
+                    $ref: "#/components/schemas/DeviceID"
     DeviceIDList:
       description: List of device IDs for the corresponding device
       type: array
@@ -654,3 +675,13 @@ components:
       description: Device ID
       type: string
       example: "2CA6D4DF-2739-45BA-ACA4-6ABE93E81E15"
+    X-Content-Type-Options:
+      description: Header to prevent sniffing for the MIME type specified in Content-Type
+      schema:
+        type: string
+        example: nosniff
+    Content-Type:
+      description: Header for specifying MIME types or character encoding types
+      schema:
+        type: string
+        example: application/json; charset=utf-8

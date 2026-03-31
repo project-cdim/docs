@@ -1,0 +1,1221 @@
+openapi: 3.0.3
+servers:
+  - url: http://(host address)/cdim/api/v1
+info:
+  title: Layout Design API
+  description: |-
+    A suite of functions for designing layouts (design engine) for the managed Composable Disaggregated Infrastructure
+  version: 0.2.0
+tags:
+  - name: Layout Design
+    description: |-
+      A suite of functions related to layout design
+paths:
+  /layout-designs:
+    post:
+      summary: Layout Design Request
+      description: |-
+        Accepts a layout design request and returns a Design ID (designID).<br>
+        You can obtain the design status and results by specifying the returned Design ID and executing the Get Layout Design Result API "GET /layout-designs/{designID}".<br>
+        When you use the sample plugin/sample design engine, the following functions are not supported due to specifications.<br>
+          - A node to which the device requested in serviceSetRequestResources is connected is created, but the performance information of the requested device is not taken into account.<br>
+          - Even if a design request is made with noCondition set to false, the calculation of migration conditions is not supported, so an empty object is always returned in the conditions of the design results.<br>
+          - Since partial design requests are not supported, all input nodes are always redesigned regardless of the content of the design request.<br>
+      tags:
+        - Layout Design
+      parameters:
+        - name: designEngine
+          in: query
+          description: |-
+            Specifies the design engine name to use.<br>
+            If omitted, the design engine name (the value of plugin.default) described in the configuration file of the layout design is used.
+          required: false
+          schema:
+            type: string
+            default: sample_design_engine
+      deprecated: false
+      requestBody:
+        description: Design query
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RequestBody"
+      responses:
+        "202":
+          description: Normal
+          content:
+            application/json:
+              schema:
+                properties:
+                  designID:
+                    type: string
+                    description: Design ID
+                    example: 636ddde1ba39547845db0628
+        "400":
+          description: Invalid request body.
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: number
+                    description: Error code
+                    enum:
+                      - E20001
+                  message:
+                    type: string
+                    description: Message
+                    enum:
+                      - Following request body are required <missing parameter>
+        "500":
+          description: |-
+            An internal server error, an error from another component, or a plugin processing error occurred.
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: number
+                    description: Error code
+                    enum:
+                      - E20004
+                  message:
+                    type: string
+                    description: Message
+                    enum:
+                      - Failed to load layoutdesign_config.yaml.
+    get:
+      summary: List Layout Design Results
+      description: |-
+        Returns the list of layout design results stored in the design engine at the time of the request.<br>
+        When you use the sample plugin/sample design engine, the following features are not supported by specification.<br>
+          - Since only the most recent design result is retained, the query parameters limit, offset, sortBy, orderBy, and status are not supported.<br>
+          - Information returned by the fields query parameter is not filtered, and the design result always includes all items: design, conditions, and procedures.<br>
+          - Since migration conditions (conditions) are not calculated, an empty value is always returned.<br>
+      tags:
+        - Layout Design
+      parameters:
+        - name: fields
+          in: query
+          description: |-
+            Parameter specifying which design result fields to include in the response body.<br>
+            Multiple fields can be specified.<br>
+            If omitted, information for design result, migration conditions, and migration procedures is not returned.<br>
+            If fields is specified, only the specified fields are returned.<br>
+            Fields that are not specified are excluded from the response body entirely (including the key).
+            - design: design results
+            - conditions: migration conditions
+            - procedures: migration procedures
+          required: false
+          schema:
+            description: |-
+              - design: design results
+              - conditions: migration conditions
+              - procedures: migration procedures
+            type: array
+            items:
+              type: string
+              enum:
+                - design
+                - conditions
+                - procedures
+        - name: limit
+          in: query
+          description: |-
+            Parameter specifying the number of results to retrieve.<br>
+            Specify an integer greater than or equal to 1.<br>
+            Returns the specified number of results ordered by design request time (startedAt) from newest to oldest.<br>
+            If omitted, the default is 100 results.<br>
+            If the number of stored design results is less than the value specified by limit, all stored design results are returned.
+          required: false
+          schema:
+            type: integer
+            default: 100
+            minimum: 1
+        - name: offset
+          in: query
+          description: |-
+            Parameter specifying the start position for retrieval.<br>
+            Retrieves data starting from the specified row after sorting according to sortBy and orderBy.<br>
+            Specify an integer greater than or equal to 0.<br>
+            For example, if 100 is specified, results from the 101st item onward are returned.<br>
+            If omitted, the default is 0 (start from the first item).<br>
+          required: false
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+        - name: sortBy
+          in: query
+          description: |-
+            Parameter specifying the sort target.<br>
+            Specifies the field to be sorted in ascending/descending order.<br>
+            If omitted, the design request time (startedAt) is used by default.
+            - startedAt: Design request time
+            - endedAt: Design end time
+          required: false
+          schema:
+            type: string
+            default: startedAt
+        - name: orderBy
+          in: query
+          description: |-
+            Parameter specifying the order of retrieved design results.<br>
+            If omitted, descending order (desc) is used by default.<br>
+            - asc: Ascending
+            - desc: Descending
+          required: false
+          schema:
+            type: string
+            default: desc
+        - name: status
+          in: query
+          description: |-
+            Parameter specifying the design status to retrieve.<br>
+            Multiple values can be specified.<br>
+            If omitted, all design statuses are selected by default.
+            - COMPLETED: Design completed
+            - IN_PROGRESS: Design in progress
+            - FAILED: Design failed
+            - CANCELING: Design canceling
+            - CANCELED: Design canceled
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - COMPLETED
+                - IN_PROGRESS
+                - FAILED
+                - CANCELING
+                - CANCELED
+        - name: designEngine
+          in: query
+          description: |-
+            Specifies the design engine name to use.<br>
+            If omitted, the design engine name (the value of plugin.default) described in the configuration file of the layout design is used.
+          required: false
+          schema:
+            type: string
+            default: sample_design_engine
+      responses:
+        "200":
+          description: Normal
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CompletedDesignDatas"
+              examples:
+                Response when count is 0 and fields is omitted:
+                  value:
+                    count: 0
+                    totalCount: 0
+                    designs: []
+                Response when count is 1 and fields is omitted:
+                  value:
+                    count: 1
+                    totalCount: 10
+                    designs:
+                      [
+                        {
+                          "id": "67bd83e91b2bf7984df8aed3",
+                          "status": "COMPLETED",
+                          "requestID": "d96533a2-6fb8-498d-9778-4d93141d92b7",
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "endedAt": "2023-05-10T00:00:00Z",
+                        },
+                      ]
+                Response when count is 1 and only design is specified in fields:
+                  value:
+                    count: 1
+                    totalCount: 10
+                    designs:
+                      [
+                        {
+                          "id": "67d1069a3c75db0eb3a9531b",
+                          "status": "COMPLETED",
+                          "requestID": "d96533a2-6fb8-498d-9778-4d93141d92b7",
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "endedAt": "2023-05-10T00:00:00Z",
+                          "design":
+                            {
+                              "nodes":
+                                [
+                                  {
+                                    "spec": 0,
+                                    "averageEnergyWatts": 0,
+                                    "constructTime": 60,
+                                    "destructTime": 60,
+                                    "services":
+                                      [
+                                        {
+                                          "id": "ef27cc23-788d-42cd-9f1a-d44e0d2eee89",
+                                          "requestInstanceID": "7ad272e4-3223-4161-b0e9-80b588c7242d",
+                                        },
+                                      ],
+                                    "device":
+                                      {
+                                        "cpu":
+                                          {
+                                            "deviceIDs":
+                                              [
+                                                "b9a1e642-da2e-403a-88f5-fa0eca0d9c52",
+                                              ],
+                                          },
+                                        "memory":
+                                          {
+                                            "deviceIDs":
+                                              [
+                                                "54fd3675-8ad1-42d7-8d61-067dea3f446a",
+                                              ],
+                                          },
+                                        "storage":
+                                          {
+                                            "deviceIDs":
+                                              [
+                                                "f843ae2c-4157-4469-9635-300fb04fdb7b",
+                                              ],
+                                          },
+                                        "gpu":
+                                          [
+                                            {
+                                              "deviceID": "0ca6a442-784d-47c7-ba0c-c4077953da48",
+                                              "requests":
+                                                [
+                                                  {
+                                                    "requestInstanceID": "7ad272e4-3223-4161-b0e9-80b588c7242d",
+                                                    "index": 0,
+                                                  },
+                                                ],
+                                            },
+                                          ],
+                                        "networkInterface":
+                                          {
+                                            "deviceIDs":
+                                              [
+                                                "bfac0e5a-f1b7-42eb-bc69-2e28b5c9f9f8",
+                                              ],
+                                          },
+                                      },
+                                  },
+                                ],
+                            },
+                        },
+                      ]
+                Response when count is 1 and design/conditions/procedures are all specified in fields:
+                  value:
+                    count: 1
+                    totalCount: 10
+                    designs:
+                      [
+                        {
+                          "id": "67d1069a3c75db0eb3a9531b",
+                          "status": "COMPLETED",
+                          "requestID": "d96533a2-6fb8-498d-9778-4d93141d92b7",
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "endedAt": "2023-05-10T00:00:00Z",
+                          "design":
+                            {
+                              "nodes":
+                                [
+                                  {
+                                    "spec": 0,
+                                    "averageEnergyWatts": 0,
+                                    "constructTime": 60,
+                                    "destructTime": 60,
+                                    "services":
+                                      [
+                                        {
+                                          "id": "ef27cc23-788d-42cd-9f1a-d44e0d2eee89",
+                                          "requestInstanceID": "7ad272e4-3223-4161-b0e9-80b588c7242d",
+                                        },
+                                      ],
+                                    "device":
+                                      {
+                                        "cpu":
+                                          {
+                                            "deviceIDs":
+                                              [
+                                                "b9a1e642-da2e-403a-88f5-fa0eca0d9c52",
+                                              ],
+                                          },
+                                        "memory":
+                                          {
+                                            "deviceIDs":
+                                              [
+                                                "54fd3675-8ad1-42d7-8d61-067dea3f446a",
+                                              ],
+                                          },
+                                        "storage":
+                                          {
+                                            "deviceIDs":
+                                              [
+                                                "f843ae2c-4157-4469-9635-300fb04fdb7b",
+                                              ],
+                                          },
+                                        "gpu":
+                                          [
+                                            {
+                                              "deviceID": "0ca6a442-784d-47c7-ba0c-c4077953da48",
+                                              "requests":
+                                                [
+                                                  {
+                                                    "requestInstanceID": "7ad272e4-3223-4161-b0e9-80b588c7242d",
+                                                    "index": 0,
+                                                  },
+                                                ],
+                                            },
+                                          ],
+                                        "networkInterface":
+                                          {
+                                            "deviceIDs":
+                                              [
+                                                "bfac0e5a-f1b7-42eb-bc69-2e28b5c9f9f8",
+                                              ],
+                                          },
+                                      },
+                                  },
+                                ],
+                            },
+                          "conditions":
+                            {
+                              "toleranceCriteria":
+                                {
+                                  "cpu":
+                                    [
+                                      {
+                                        "deviceIDs":
+                                          [
+                                            "b9a1e642-da2e-403a-88f5-fa0eca0d9c52",
+                                            "e56a1a1c-0556-42ca-8cbb-7c6dc86561eb",
+                                          ],
+                                        "limit":
+                                          {
+                                            "averageUseRate": 284.0,
+                                            "weights": [1.25, 0.8],
+                                          },
+                                      },
+                                    ],
+                                  "memory":
+                                    [
+                                      {
+                                        "deviceIDs":
+                                          [
+                                            "54fd3675-8ad1-42d7-8d61-067dea3f446a",
+                                            "e63fbe90-1b8f-44bd-9f66-ca3a9ce159b2",
+                                          ],
+                                        "limit": { "averageUseBytes": 4000.0 },
+                                      },
+                                    ],
+                                },
+                              "energyCriteria": 500,
+                            },
+                          "procedures":
+                            [
+                              {
+                                "operationID": 1,
+                                "operation": "shutdown",
+                                "targetCPUID": "0621c7fd-5312-4b64-81ba-e5e8d14c46b9",
+                                "targetDeviceID": "1b66b60f-5250-4aa6-8cc3-55e5806ea492",
+                                "targetRequestInstanceID": "7ad272e4-3223-4161-b0e9-80b588c7242d",
+                                "dependencies": [2],
+                              },
+                            ],
+                        },
+                      ]
+                Response when count is 5 and fields is omitted:
+                  value:
+                    count: 5
+                    totalCount: 10
+                    designs:
+                      [
+                        {
+                          "id": "67d1069a3c75db0eb3a9531b",
+                          "status": "COMPLETED",
+                          "requestID": "d96533a2-6fb8-498d-9778-4d93141d92b7",
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "endedAt": "2023-05-10T00:00:00Z",
+                        },
+                        {
+                          "id": "67d1069ace1eaa704c3ab721",
+                          "status": "FAILED",
+                          "requestID": "d96533a2-6fb8-498d-9778-4d93141d92b7",
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "cause": "Design request needs more available CPU resources.",
+                          "endedAt": "2023-05-10T00:00:00Z",
+                        },
+                        {
+                          "id": "67d1069a8ff64daf8f251e7c",
+                          "status": "IN_PROGRESS",
+                          "requestID": "d96533a2-6fb8-498d-9778-4d93141d92b7",
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "endedAt": "",
+                        },
+                        {
+                          "id": "67d1069a095fc0157f060b12",
+                          "status": "CANCELING",
+                          "requestID": "d96533a2-6fb8-498d-9778-4d93141d92b7",
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "endedAt": "",
+                        },
+                        {
+                          "id": "67d1069a5c7a0b9db313f3f4",
+                          "status": "CANCELED",
+                          "requestID": "d96533a2-6fb8-498d-9778-4d93141d92b7",
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "endedAt": "2023-05-10T00:00:00Z",
+                        },
+                      ]
+                Response when count is 5 and only design is specified in fields:
+                  value:
+                    count: 5
+                    totalCount: 10
+                    designs:
+                      [
+                        {
+                          "id": "67d1069a3c75db0eb3a9531b",
+                          "status": "COMPLETED",
+                          "requestID": "d96533a2-6fb8-498d-9778-4d93141d92b7",
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "endedAt": "2023-05-10T00:00:00Z",
+                          "design":
+                            {
+                              "nodes":
+                                [
+                                  {
+                                    "spec": 0,
+                                    "averageEnergyWatts": 0,
+                                    "constructTime": 60,
+                                    "destructTime": 60,
+                                    "services":
+                                      [
+                                        {
+                                          "id": "ef27cc23-788d-42cd-9f1a-d44e0d2eee89",
+                                          "requestInstanceID": "7ad272e4-3223-4161-b0e9-80b588c7242d",
+                                        },
+                                      ],
+                                    "device":
+                                      {
+                                        "cpu":
+                                          {
+                                            "deviceIDs":
+                                              [
+                                                "b9a1e642-da2e-403a-88f5-fa0eca0d9c52",
+                                              ],
+                                          },
+                                        "memory":
+                                          {
+                                            "deviceIDs":
+                                              [
+                                                "54fd3675-8ad1-42d7-8d61-067dea3f446a",
+                                              ],
+                                          },
+                                        "storage":
+                                          {
+                                            "deviceIDs":
+                                              [
+                                                "f843ae2c-4157-4469-9635-300fb04fdb7b",
+                                              ],
+                                          },
+                                        "gpu":
+                                          [
+                                            {
+                                              "deviceID": "0ca6a442-784d-47c7-ba0c-c4077953da48",
+                                              "requests":
+                                                [
+                                                  {
+                                                    "requestInstanceID": "7ad272e4-3223-4161-b0e9-80b588c7242d",
+                                                    "index": 0,
+                                                  },
+                                                ],
+                                            },
+                                          ],
+                                        "networkInterface":
+                                          {
+                                            "deviceIDs":
+                                              [
+                                                "bfac0e5a-f1b7-42eb-bc69-2e28b5c9f9f8",
+                                              ],
+                                          },
+                                      },
+                                  },
+                                ],
+                            },
+                        },
+                        {
+                          "id": "67d1069ace1eaa704c3ab721",
+                          "status": "FAILED",
+                          "requestID": "d96533a2-6fb8-498d-9778-4d93141d92b7",
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "cause": "Design request needs more available CPU resources.",
+                          "endedAt": "2023-05-10T00:00:00Z",
+                          "design": {},
+                        },
+                        {
+                          "id": "67d1069a8ff64daf8f251e7c",
+                          "status": "IN_PROGRESS",
+                          "requestID": "d96533a2-6fb8-498d-9778-4d93141d92b7",
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "endedAt": "",
+                          "design": {},
+                        },
+                        {
+                          "id": "67d1069a095fc0157f060b12",
+                          "status": "CANCELING",
+                          "requestID": "d96533a2-6fb8-498d-9778-4d93141d92b7",
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "endedAt": "",
+                          "design": {},
+                        },
+                        {
+                          "id": "67d1069a5c7a0b9db313f3f4",
+                          "status": "CANCELED",
+                          "requestID": "d96533a2-6fb8-498d-9778-4d93141d92b7",
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "endedAt": "2023-05-10T00:00:00Z",
+                          "design": {},
+                        },
+                      ]
+                Response when count is 5 and design/conditions/procedures are all specified in fields:
+                  value:
+                    count: 5
+                    totalCount: 10
+                    designs:
+                      [
+                        {
+                          "id": "67d1069a3c75db0eb3a9531b",
+                          "status": "COMPLETED",
+                          "requestID": "d96533a2-6fb8-498d-9778-4d93141d92b7",
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "endedAt": "2023-05-10T00:00:00Z",
+                          "design":
+                            {
+                              "nodes":
+                                [
+                                  {
+                                    "spec": 0,
+                                    "averageEnergyWatts": 0,
+                                    "constructTime": 60,
+                                    "destructTime": 60,
+                                    "services":
+                                      [
+                                        {
+                                          "id": "ef27cc23-788d-42cd-9f1a-d44e0d2eee89",
+                                          "requestInstanceID": "7ad272e4-3223-4161-b0e9-80b588c7242d",
+                                        },
+                                      ],
+                                    "device":
+                                      {
+                                        "cpu":
+                                          {
+                                            "deviceIDs":
+                                              [
+                                                "b9a1e642-da2e-403a-88f5-fa0eca0d9c52",
+                                              ],
+                                          },
+                                        "memory":
+                                          {
+                                            "deviceIDs":
+                                              [
+                                                "54fd3675-8ad1-42d7-8d61-067dea3f446a",
+                                              ],
+                                          },
+                                        "storage":
+                                          {
+                                            "deviceIDs":
+                                              [
+                                                "f843ae2c-4157-4469-9635-300fb04fdb7b",
+                                              ],
+                                          },
+                                        "gpu":
+                                          [
+                                            {
+                                              "deviceID": "0ca6a442-784d-47c7-ba0c-c4077953da48",
+                                              "requests":
+                                                [
+                                                  {
+                                                    "requestInstanceID": "7ad272e4-3223-4161-b0e9-80b588c7242d",
+                                                    "index": 0,
+                                                  },
+                                                ],
+                                            },
+                                          ],
+                                        "networkInterface":
+                                          {
+                                            "deviceIDs":
+                                              [
+                                                "bfac0e5a-f1b7-42eb-bc69-2e28b5c9f9f8",
+                                              ],
+                                          },
+                                      },
+                                  },
+                                ],
+                            },
+                          "conditions":
+                            {
+                              "toleranceCriteria":
+                                {
+                                  "cpu":
+                                    [
+                                      {
+                                        "deviceIDs":
+                                          [
+                                            "b9a1e642-da2e-403a-88f5-fa0eca0d9c52",
+                                            "e56a1a1c-0556-42ca-8cbb-7c6dc86561eb",
+                                          ],
+                                        "limit":
+                                          {
+                                            "averageUseRate": 284.0,
+                                            "weights": [1.25, 0.8],
+                                          },
+                                      },
+                                    ],
+                                  "memory":
+                                    [
+                                      {
+                                        "deviceIDs":
+                                          [
+                                            "54fd3675-8ad1-42d7-8d61-067dea3f446a",
+                                            "e63fbe90-1b8f-44bd-9f66-ca3a9ce159b2",
+                                          ],
+                                        "limit": { "averageUseBytes": 4000.0 },
+                                      },
+                                    ],
+                                },
+                              "energyCriteria": 500,
+                            },
+                          "procedures":
+                            [
+                              {
+                                "operationID": 1,
+                                "operation": "shutdown",
+                                "targetCPUID": "0621c7fd-5312-4b64-81ba-e5e8d14c46b9",
+                                "targetDeviceID": "1b66b60f-5250-4aa6-8cc3-55e5806ea492",
+                                "targetRequestInstanceID": "7ad272e4-3223-4161-b0e9-80b588c7242d",
+                                "dependencies": [2],
+                              },
+                            ],
+                        },
+                        {
+                          "id": "67d1069ace1eaa704c3ab721",
+                          "status": "FAILED",
+                          "requestID": "d96533a2-6fb8-498d-9778-4d93141d92b7",
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "cause": "Design request needs more available CPU resources.",
+                          "endedAt": "2023-05-10T00:00:00Z",
+                          "design": {},
+                          "conditions": {},
+                          "procedures": [],
+                        },
+                        {
+                          "id": "67d1069a8ff64daf8f251e7c",
+                          "status": "IN_PROGRESS",
+                          "requestID": "d96533a2-6fb8-498d-9778-4d93141d92b7",
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "endedAt": "",
+                          "design": {},
+                          "conditions": {},
+                          "procedures": [],
+                        },
+                        {
+                          "id": "67d1069a095fc0157f060b12",
+                          "status": "CANCELING",
+                          "requestID": "d96533a2-6fb8-498d-9778-4d93141d92b7",
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "endedAt": "",
+                          "design": {},
+                          "conditions": {},
+                          "procedures": [],
+                        },
+                        {
+                          "id": "67d1069a5c7a0b9db313f3f4",
+                          "status": "CANCELED",
+                          "requestID": "d96533a2-6fb8-498d-9778-4d93141d92b7",
+                          "startedAt": "2023-05-10T00:00:00Z",
+                          "endedAt": "2023-05-10T00:00:00Z",
+                          "design": {},
+                          "conditions": {},
+                          "procedures": [],
+                        },
+                      ]
+        "400":
+          description: Invalid query parameter specification.
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: number
+                    description: Error code
+                    enum:
+                      - E20001
+                  message:
+                    type: string
+                    description: Message
+                    enum:
+                      - "Invalid value is specified for query parameters. query name: fields"
+        "500":
+          description: |-
+            An internal server error, an error from another component, or a plugin processing error occurred.
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: number
+                    description: Error code
+                    enum:
+                      - E20004
+                  message:
+                    type: string
+                    description: Message
+                    enum:
+                      - Failed to load layoutdesign_config.yaml.
+
+  /layout-designs/{designID}:
+    get:
+      tags:
+        - Layout Design
+      summary: Get Layout Design Result
+      description: |-
+        Returns layout design result for the specified Design ID (designID).<br>
+        You can check the design status via the status field in the response body.<br>
+        If status is not COMPLETED, an empty object is returned for design and conditions, and an empty list is returned for procedures.<br>
+        If noCondition is set to true in the Layout Design Request, migration conditions (conditions) are omitted and the conditions key is not included in the response body.<br>
+        When you use the sample plugin/sample design engine, calculation of migration conditions is not supported, so an empty object is always returned.
+      parameters:
+        - name: designID
+          in: path
+          description: Design ID. Specify the Design ID received from the Layout Design Request.
+          required: true
+          example: 636ddde1ba39547845db0628
+          schema:
+            type: string
+        - name: designEngine
+          in: query
+          description: |-
+            Specifies the design engine name to use.<br>
+            If omitted, the design engine name (the value of plugin.default) described in the configuration file of the layout design feature is used.
+          required: false
+          schema:
+            type: string
+            default: sample_design_engine
+      responses:
+        "200":
+          description: Normal
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/CompletedDesignData"
+                  - $ref: "#/components/schemas/FailedDesignData"
+              examples:
+                Response when design status is COMPLETED:
+                  value:
+                    status: "COMPLETED"
+                    requestID: "17d9a80f-1a32-4f5a-9c50-b1c64c259f15"
+                    startedAt: "2023-05-10T00:00:00Z"
+                    endedAt: "2023-05-10T00:00:00Z"
+                    design:
+                      {
+                        "nodes":
+                          [
+                            {
+                              "spec": 0,
+                              "averageEnergyWatts": 0,
+                              "constructTime": 0,
+                              "destructTime": 0,
+                              "services":
+                                [
+                                  {
+                                    "id": "ef27cc23-788d-42cd-9f1a-d44e0d2eee89",
+                                    "requestInstanceID": "7ad272e4-3223-4161-b0e9-80b588c7242d",
+                                  },
+                                ],
+                              "device":
+                                {
+                                  "cpu":
+                                    {
+                                      "deviceIDs":
+                                        [
+                                          "b9a1e642-da2e-403a-88f5-fa0eca0d9c52",
+                                        ],
+                                    },
+                                  "memory":
+                                    {
+                                      "deviceIDs":
+                                        [
+                                          "54fd3675-8ad1-42d7-8d61-067dea3f446a",
+                                        ],
+                                    },
+                                  "storage":
+                                    {
+                                      "deviceIDs":
+                                        [
+                                          "f843ae2c-4157-4469-9635-300fb04fdb7b",
+                                        ],
+                                    },
+                                  "gpu":
+                                    [
+                                      {
+                                        "deviceID": "0ca6a442-784d-47c7-ba0c-c4077953da48",
+                                        "requests":
+                                          [
+                                            {
+                                              "requestInstanceID": "7ad272e4-3223-4161-b0e9-80b588c7242d",
+                                              "index": 0,
+                                            },
+                                          ],
+                                      },
+                                    ],
+                                  "networkInterface":
+                                    {
+                                      "deviceIDs":
+                                        [
+                                          "bfac0e5a-f1b7-42eb-bc69-2e28b5c9f9f8",
+                                        ],
+                                    },
+                                },
+                            },
+                          ],
+                      }
+                    conditions:
+                      {
+                        "toleranceCriteria":
+                          {
+                            "cpu":
+                              [
+                                {
+                                  "deviceIDs":
+                                    [
+                                      "b9a1e642-da2e-403a-88f5-fa0eca0d9c52",
+                                      "e56a1a1c-0556-42ca-8cbb-7c6dc86561eb",
+                                    ],
+                                  "limit":
+                                    {
+                                      "averageUseRate": 284.0,
+                                      "weights": [1.25, 0.8],
+                                    },
+                                },
+                              ],
+                            "memory":
+                              [
+                                {
+                                  "deviceIDs":
+                                    [
+                                      "54fd3675-8ad1-42d7-8d61-067dea3f446a",
+                                      "e63fbe90-1b8f-44bd-9f66-ca3a9ce159b2",
+                                    ],
+                                  "limit": { "averageUseBytes": 284.0 },
+                                },
+                              ],
+                          },
+                        "energyCriteria": 5284,
+                      }
+                    procedures:
+                      [
+                        {
+                          "operationID": 1,
+                          "operation": "shutdown",
+                          "targetCPUID": "0621c7fd-5312-4b64-81ba-e5e8d14c46b9",
+                          "targetDeviceID": "1b66b60f-5250-4aa6-8cc3-55e5806ea492",
+                          "targetRequestInstanceID": "7ad272e4-3223-4161-b0e9-80b588c7242d",
+                          "dependencies": [2],
+                        },
+                      ]
+                    designID: "67bd83e91b2bf7984df8aed3"
+                Response when design status is FAILED:
+                  value:
+                    status: "FAILED"
+                    requestID: "17d9a80f-1a32-4f5a-9c50-b1c64c259f15"
+                    startedAt: "2023-05-10T00:00:00Z"
+                    endedAt: "2023-05-10T00:00:00Z"
+                    cause: "Failed to connect to device spec value manager in intent synthesizer."
+                    design: {}
+                    conditions: {}
+                    procedures: []
+                    designID: "67bd83e91b2bf7984df8aed3"
+                Response when design status is IN_PROGRESS:
+                  value:
+                    status: "IN_PROGRESS"
+                    requestID: "17d9a80f-1a32-4f5a-9c50-b1c64c259f15"
+                    startedAt: "2023-05-10T00:00:00Z"
+                    endedAt: ""
+                    design: {}
+                    conditions: {}
+                    procedures: []
+                    designID: "67bd83e91b2bf7984df8aed3"
+                Response when design status is CANCELING:
+                  value:
+                    status: "CANCELING"
+                    requestID: "17d9a80f-1a32-4f5a-9c50-b1c64c259f15"
+                    startedAt: "2023-05-10T00:00:00Z"
+                    endedAt: ""
+                    design: {}
+                    conditions: {}
+                    procedures: []
+                    designID: "67bd83e91b2bf7984df8aed3"
+                Response when design status is CANCELED:
+                  value:
+                    status: "CANCELED"
+                    requestID: "17d9a80f-1a32-4f5a-9c50-b1c64c259f15"
+                    startedAt: "2023-05-10T00:00:00Z"
+                    endedAt: "2023-05-10T00:00:00Z"
+                    design: {}
+                    conditions: {}
+                    procedures: []
+                    designID: "67bd83e91b2bf7984df8aed3"
+        "400":
+          description: Invalid query parameter specification.
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: number
+                    description: Error code
+                    enum:
+                      - E20001
+                  message:
+                    type: string
+                    description: Message
+                    enum:
+                      - "The specified design engine does not exist."
+        "404":
+          description: The specified designID does not exist.
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: number
+                    description: Error code
+                    enum:
+                      - E20009
+                  message:
+                    type: string
+                    description: Message
+                    enum:
+                      - "Error was returned from design engine. Design ID Not Found: Design ID not found"
+        "500":
+          description: |-
+            An internal server error, an error from another component, or a plugin processing error occurred.
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: number
+                    description: Error code
+                    enum:
+                      - E20004
+                  message:
+                    type: string
+                    description: Message
+                    enum:
+                      - Failed to load layoutdesign_config.yaml.
+
+    put:
+      tags:
+        - Layout Design
+      summary: Cancel Layout Design
+      description: |-
+        Requests the design engine to transition the design status of the specified Design ID (designID) to CANCELING.<br>
+        You can confirm the status transition by executing the Get Layout Design Result API "GET /layout-designs/{designID}" and checking the current design status.<br>
+        In the sample plugin/sample design engine, this API function is not supported, so it always returns an HTTP 500 error without transitioning the design status to CANCELING or CANCELED.
+      parameters:
+        - name: designID
+          in: path
+          description: Design ID. Specify the Design ID received from the Layout Design Request.
+          required: true
+          example: 636ddde1ba39547845db0628
+          schema:
+            type: string
+        - name: action
+          in: query
+          description: |-
+            Parameter specifying the action type to request to the design engine.
+            - cancel: Requests cancellation of the layout design processing.
+          required: true
+          schema:
+            type: string
+            enum:
+              - cancel
+        - name: designEngine
+          in: query
+          description: |-
+            Specifies the design engine name to use.<br>
+            If omitted, the design engine name (the value of plugin.default) described in the configuration file of the layout design feature is used.
+          required: false
+          schema:
+            type: string
+            default: sample_design_engine
+      responses:
+        "200":
+          description: Normal. When the layout design process has already been canceled.
+          content:
+            application/json:
+              schema:
+                properties:
+                  status:
+                    type: string
+                    description: Current design status
+                    enum:
+                      - "CANCELED"
+        "202":
+          description: Normal. When the request to transition the design status has been accepted.
+          content:
+            application/json:
+              schema:
+                properties:
+                  status:
+                    type: string
+                    description: Current design status
+                    enum:
+                      - "CANCELING"
+        "400":
+          description: Invalid query parameter specification.
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: number
+                    description: Error code
+                    enum:
+                      - E20001
+                  message:
+                    type: string
+                    description: Message
+                    enum:
+                      - "Invalid value is specified for query parameters. query name: action"
+        "404":
+          description: The specified designID does not exist.
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: number
+                    description: Error code
+                    enum:
+                      - E20009
+                  message:
+                    type: string
+                    description: Message
+                    enum:
+                      - "Error was returned from design engine. Design ID Not Found: Design ID not found"
+        "409":
+          description: Transition is not allowed from the current design status.
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: number
+                    description: Error code
+                    enum:
+                      - E20009
+                  message:
+                    type: string
+                    description: Message
+                    enum:
+                      - "Error was returned from design engine. Could Not Change Status: Current status is <current design status>"
+        "500":
+          description: |-
+            An internal server error, an error from another component, or a plugin processing error occurred.
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: number
+                    description: Error code
+                    enum:
+                      - E20004
+                  message:
+                    type: string
+                    description: Message
+                    enum:
+                      - Failed to load layoutdesign_config.yaml.
+
+    delete:
+      tags:
+        - Layout Design
+      summary: Delete Layout Design Result
+      description: |-
+        Deletes the layout design result for the specified Design ID (designID).<br>
+        In the sample plugin/sample design engine, this API function is not supported, so design results are never deleted and an HTTP 500 error is always returned.
+      parameters:
+        - name: designID
+          in: path
+          description: Design ID. Specify the Design ID received from the Layout Design Request.
+          required: true
+          example: 636ddde1ba39547845db0628
+          schema:
+            type: string
+        - name: designEngine
+          in: query
+          description: |-
+            Specifies the design engine name to use.<br>
+            If omitted, the design engine name (the value of plugin.default) described in the configuration file of the layout design feature is used.
+          required: false
+          schema:
+            type: string
+            default: sample_design_engine
+
+      responses:
+        "204":
+          description: Normal
+        "404":
+          description: The specified designID does not exist.
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: number
+                    description: Error code
+                    enum:
+                      - E20009
+                  message:
+                    type: string
+                    description: Message
+                    enum:
+                      - "Error was returned from design engine. Design ID Not Found: Design ID not found"
+        "500":
+          description: |-
+            An internal server error, an error from another component, or a plugin processing error occurred.
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: number
+                    description: Error code
+                    enum:
+                      - E20004
+                  message:
+                    type: string
+                    description: Message
+                    enum:
+                      - Failed to load layoutdesign_config.yaml.
+
+components:
+  schemas:
+    RequestBody:
+      $ref: "./openapi_schema.yaml#/components/schemas/RequestBody"
+    CompletedDesignDatas:
+      $ref: "./openapi_schema.yaml#/components/schemas/CompletedDesignDatas"
+    CompletedDesignData:
+      $ref: "./openapi_schema.yaml#/components/schemas/CompletedDesignData"
+    FailedDesignData:
+      $ref: "./openapi_schema.yaml#/components/schemas/FailedDesignData"
+    Design:
+      $ref: "./openapi_schema.yaml#/components/schemas/Design"
+    Conditions:
+      $ref: "./openapi_schema.yaml#/components/schemas/Conditions"
+    Procedures:
+      $ref: "./openapi_schema.yaml#/components/schemas/Procedures"

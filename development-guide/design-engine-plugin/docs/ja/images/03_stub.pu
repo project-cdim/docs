@@ -1,0 +1,18 @@
+@startuml "03_stub"
+
+actor " " as consumer
+rectangle "構成案設計" as layout_design
+rectangle "プラグイン" <<サンプル>> as plugin
+rectangle "設計機構" <<サンプル>> as design_engine
+rectangle "構成情報管理" <<スタブ>> as configuration_manager
+rectangle "制約条件管理" <<スタブ>> as policy_manager
+rectangle "構成案反映" <<スタブ>> as layout_apply
+
+consumer -> layout_design: REST API
+layout_design -> plugin: 呼出
+plugin -> design_engine: 呼出
+design_engine --> layout_apply: 通信
+layout_design --> configuration_manager: 通信
+layout_design --> policy_manager: 通信
+
+@enduml

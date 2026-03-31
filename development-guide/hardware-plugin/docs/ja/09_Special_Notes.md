@@ -58,6 +58,84 @@ def post_os_shutdown(self, key_values: list[dict[str, str]]) -> dict[str, list[d
     raise RequestNotSupportedHWControlError
 ```
 
+### 拡張インターフェース
+
+拡張インターフェース`app.common.plugin.ext.LifecycleAware`を継承することにより、  
+プラグインに初期処理と終了処理を実装することができます。
+
+以下に`LifecycleAware`のメソッドを示します。
+
+#### 初期処理
+
+``` python
+def initialize(self) -> None:
+```
+
+初期処理はプラグイン生成直後に呼び出されます。  
+通常、REST API接続プールの生成など、リソースの生成処理を行います。
+
+#### 終了処理
+
+``` python
+def finalize(self) -> None:
+```
+
+終了処理はプラグインの使用終了後に呼び出されます。  
+通常、REST API接続プールの破棄など、リソースの解放処理を行います。
+
+#### 注意と例
+
+現在のHW制御機能では、`LifecycleAware`のメソッドは常に呼び出されるわけではありません。  
+`initialize()`が呼び出された場合は`finalize()`も呼び出されますが、`initialize()`も`finalize()`も呼び出されない場合があります。  
+そのことを考慮して実装する必要があります。
+
+以下に例を示します。
+
+``` python
+from contextlib import contextmanager
+from typing import Iterator
+
+import requests
+
+from app.common.utils.oob_plugin_base import OOBPluginBase, OOBDeviceListItem
+from app.common.plugin import ext
+
+class OOBPlugin(OOBPluginBase, ext.LifecycleAware):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self._session: requests.Session | None = None
+
+    def initialize(self) -> None:
+        # allocate a session
+        self._session = requests.Session()
+
+    def finalize(self) -> None:
+        # release the session if it was allocated
+        if self._session:
+            self._session.close()
+            self._session = None
+
+    @contextmanager
+    def _get_session(self) -> Iterator[requests.Session]:
+        # initialize() was called
+        if self._session:
+            yield self._session
+            return
+
+        # initialize() was not called
+        session = requests.Session()
+        try:
+            yield session
+        finally:
+            session.close()
+
+    def get_device_info(self) -> list[OOBDeviceListItem]:
+        with self._get_session() as session:
+            # use session to consume REST API
+            response = session.get(...)
+            ...
+```
+
 ## 9.2. 制限事項
 
 ### 追加パッケージ

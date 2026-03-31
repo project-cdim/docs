@@ -18,8 +18,7 @@ By default, logs are output to the following location. However, they are retaine
 $ docker exec -it <container-name> /bin/sh
 $ ls /var/log/cdim
 ```
-Logs are organized by component into the following files:
-
+Logs are organized by component into the following files.
 
 | Log Type                                               | Log File Name                | Container Name         |
 | :----------------------------------------------------- | :--------------------------- | :--------------------- |
@@ -27,8 +26,11 @@ Logs are organized by component into the following files:
 | Application Log (Hardware Control)                     | app_hw_control.log           | hw-control             |
 | Application Log (Layout Application)                   | app_layout_apply.log         | layout-apply           |
 | Application Log (Migration Procedure Generation)       | app_migration_procedures.log | migration-procedure-generator |
+| Application Log (Layout Design)                 | app_layout_design.log | layout-design |
+| Application Log (Policy Manager)               | app_policy.log | policy-manager |
 | Application Log (Configuration Information Management) | app_config_info.log          | configuration-manager |
 | Application Log (Configuration Exporter)               | app_exporter.log             | configuration-exporter |
+| Application Log（Sample Design Engine） | sample_design_engine.log | layout-design |
 
 ##### 3.1.2. Change Log Output Methods
 To modify the log output settings, update the settings file corresponding to each component.
@@ -49,10 +51,10 @@ After modifying the settings, restart the component using [this procedure](../ap
 | Audit Log (Performance Information Collection) | main.go | performance-collector-compose/performance-collector/performance-collector |
 | Audit Log (Performance Information Exporter) | main.go | performance-exporter-compose/performance-exporter/performance-exporter |
 | Audit Log (Configuration Information Exporter) | main.go | configuration-exporter-compose/configuration-exporter/configuration-exporter |
-| Audit Log (Configuration Information Management) | main.go | configuration-manager-compose/configuration-manager/configuration-manager |
+| Audit Log (Configuration Information Management) | middleware.go | configuration-manager-compose/configuration-manager/configuration-manager/server |
 | Performance Information Exporter | logger.go | performance-exporter-compose/performance-exporter/performance-exporter/internal/service |
 | Configuration Information Exporter | controller_common.go | configuration-exporter-compose/configuration-exporter/configuration-exporter/controller |
-| Configuration Information Management | gi_cm_applog.go | configuration-manager-compose/configuration-manager/configuration-manager/common |
+| Configuration Information Management | cm_applog.go | configuration-manager-compose/configuration-manager/configuration-manager/common |
 
 The settings for log output files are as follows. For settings files in Go format, write the following items in the code.
 | Setting Item | Description |
@@ -93,9 +95,12 @@ var Log, _ = logger.New(logger_common.Option{
 
 | Component Name | Settings File Name | File Path |
 |:--|:--|:--|
-| Hardware Control | settings.py | hw-control-compose/hw-control/src/app/common |
-| Layout Application | layoutapply_config.yaml | layout-apply-compose/layout-apply/src/layoutapply/config |
+| Hardware Control | logging_config.yaml | hw-control-compose/configs/hw-control |
+| Layout Application | layoutapply_config.yaml | layout-apply-compose/layout-apply/config |
 | Migration Procedure Generation | migrationprocedures_config.yaml | migration-procedure-generator-compose/migration-procedure-generator/src/migrationproceduregenerator/config |
+| Layout Design | layoutdesign_log_config.yaml | layout-design-compose/layout-design/config |
+| Policy Manager | policymanager_log_config.yaml | policy-manager-compose/policy-manager/config |
+| Sample Design Engine | config_sample_design_engine.yaml | layout-design-compose/layout-design/plugins/sample_design_engine |
 
 The settings for log output files are as follows.
 Modify the YAML file.
@@ -137,10 +142,12 @@ global:
     scrape_interval: 180s      # Performance information timeout value (s)
 ```
 
-For performance information collection, you need to restart the information collection.
+If you want the performance information collection settings to take effect immediately, you need to restart the information collection.
+Even if the restart described below is not performed, the settings will be applied when the configuration information collection job is executed or updated by the job manager.
+
 ```sh
 $ docker exec -it performance-collector /bin/sh
-$ curl -i -s -X PUT http://localhost:8080/cdim/api/v1/configs
+$ curl -i -s -X POST http://localhost:8080/cdim/api/v1/configs
 ```
 
 #### 3.3. Change User Authentication Methods and Permissions

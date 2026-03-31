@@ -19,16 +19,19 @@ Keycloak にログインします。
 http://cdim-server:8287/
 ```
 
-1. Realm を「CDIM」に切り替えます。
-2. 「Realm settings」をクリックします。
-3. 「Keys」タブをクリックします。
-4. 「RS256」の「Public key」をクリックします。
+Realm を「CDIM」に切り替えます。
 
-![fig 1-1 realm settings keys](img/public_key_01.png)
+![fig 1-1 realm settings keys](img/select_realm1.png)
+
+1. 「Realm settings」をクリックします。
+2. 「Keys」タブをクリックします。
+3. 「RS256」の「Public key」をクリックします。
+
+![fig 1-2 realm settings keys](img/public_key_01.png)
 
 Public Key が表示されるので、内容をコピーしておきます。
 
-![fig 1-1 realm settings keys](img/public_key_02.png)
+![fig 1-3 realm settings keys](img/public_key_02.png)
 
 ### 1.2. gateway の初期設定
 
@@ -82,13 +85,13 @@ Realmを「CDIM」に切り替えます。
 
 「General settings」で以下のように設定を行い「Next」をクリックします。
 
-| 項目 | 値 |
-|---|---|
-| Client type | OpenID Connect|
-| Client ID | cdim-client |
-| Name | (空欄のまま) |
-| Description | (空欄のまま) |
-| Always display in UI | Off |
+| 項目                 | 値             |
+| -------------------- | -------------- |
+| Client type          | OpenID Connect |
+| Client ID            | cdim-client    |
+| Name                 | (空欄のまま)   |
+| Description          | (空欄のまま)   |
+| Always display in UI | Off            |
 
 ![fig 2-2 Clients Create client](img/add_client2.png)
 
@@ -98,13 +101,13 @@ Realmを「CDIM」に切り替えます。
 
 「Login settings」で以下のように指定します。
 
-| 項目 | 値 |
-|------|------|
-|Root URL| <http://cdim-server:3000/>  |
-|Home URL| <http://cdim-server:3000/>  |
-|Valid redirect URIs| <http://cdim-server:3000/*> |
-|Valid post logout redirect URIs| <http://cdim-server:3000/*> |
-|Web origins| * |
+| 項目                            | 値                          |
+| ------------------------------- | --------------------------- |
+| Root URL                        | <http://cdim-server:3000/>  |
+| Home URL                        | <http://cdim-server:3000/>  |
+| Valid redirect URIs             | <http://cdim-server:3000/*> |
+| Valid post logout redirect URIs | <http://cdim-server:3000/*> |
+| Web origins                     | *                           |
 
 ![fig 2-4 Clients Create client](img/add_client4.png)
 
@@ -137,10 +140,8 @@ Password を入力します。Temporary は「Off」にします。「Save」ボ
 #### 2.2.3. User にロールを付与する
 
 「Role mapping」タブをクリックし、「Assign role」ボタンをクリックします。
-![fig 2-6 Users Add user](img/add_user6.png)
-
 フィルターの条件を「Filter by realm roles」に切り替えます。
-![fig 2-7 Users Add user](img/add_user7.png)
+![fig 2-6 Users Add user](img/add_user6.png)
 
 一覧の中で付与するロールにチェックを付けます。
 ここでは管理者権限を表す「cdim-administrator」にチェックを付けます。

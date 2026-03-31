@@ -52,6 +52,83 @@ def post_os_shutdown(self, key_values: list[dict[str, str]]) -> dict[str, list[d
     raise RequestNotSupportedHWControlError
 ```
 
+### Extension Interfaces
+
+Inheriting the extension interface `app.common.plugin.ext.LifecycleAware` enables to initialize / finalize a plugin.
+
+The following are the methods of the LifecycleAware interface.
+
+#### initialize
+
+``` python
+def initialize(self) -> None:
+```
+
+The initialize method is called right after the plugin is created.  
+It typically allocates resources, such as REST API connections.
+
+#### finalize
+
+``` python
+def finalize(self) -> None:
+```
+
+The finalize method is called right after the plugin is no longer in use.  
+It typically releases resources, such as REST API connections.
+
+#### Notice with an Example
+
+The current HW control function does not always call the `LifecycleAware` methods.  
+If `initialize()` is called, then `finalize()` is also called, but there are cases where neither `initialize()` nor `finalize()` are called.  
+This should be considered when implementing.
+
+For example:
+
+``` python
+from contextlib import contextmanager
+from typing import Iterator
+
+import requests
+
+from app.common.utils.oob_plugin_base import OOBPluginBase, OOBDeviceListItem
+from app.common.plugin import ext
+
+class OOBPlugin(OOBPluginBase, ext.LifecycleAware):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self._session: requests.Session | None = None
+
+    def initialize(self) -> None:
+        # allocate a session
+        self._session = requests.Session()
+
+    def finalize(self) -> None:
+        # release the session if it was allocated
+        if self._session:
+            self._session.close()
+            self._session = None
+
+    @contextmanager
+    def _get_session(self) -> Iterator[requests.Session]:
+        # initialize() was called
+        if self._session:
+            yield self._session
+            return
+
+        # initialize() was not called
+        session = requests.Session()
+        try:
+            yield session
+        finally:
+            session.close()
+
+    def get_device_info(self) -> list[OOBDeviceListItem]:
+        with self._get_session() as session:
+            # use session to consume REST API
+            response = session.get(...)
+            ...
+```
+
 ## 9.2. Restriction
 
 ### Additional Packages

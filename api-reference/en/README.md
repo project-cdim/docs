@@ -7,11 +7,15 @@ This is the external API reference provided by Composable Disaggregated Infrastr
 
 ## API List
 
+* [Layout Design API][]
+* [Policy Manager API][]
 * [Layout Apply API][]
 * [Configuration Management API][]
 * Performance Management API
   * The Performance Manager utilizes VictoriaMetrics. Accumulated performance data can be retrieved using the VictoriaMetrics Query. For more details, please refer to the [VictoriaMetrics API example][].
 
+[Layout Design API]: https://project-cdim.github.io/docs/api-reference/en/layout-design-api/index.html
+[Policy Manager API]: https://project-cdim.github.io/docs/api-reference/en/policy-manager-api/index.html
 [Layout Apply API]: https://project-cdim.github.io/docs/api-reference/en/layout-apply-api/index.html
 [Configuration Management API]: https://project-cdim.github.io/docs/api-reference/en/configuration-management-api/index.html
 [VictoriaMetrics API example]: https://docs.victoriametrics.com/url-examples/#apiv1query_range

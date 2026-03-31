@@ -36,75 +36,79 @@ Function descriptions are as follows:
 
 ### Base Services
 
-| Function Name     | Repository        | Description                                  |
-|--|--|--|
-| Gateway (Kong)    | [base-compose][]  | API gateway for backend services using Kong. |
-| IAM (Keycloak)    | [base-compose][]  | Provides authentication and authorization features, implemented using Keycloak. |
+| Function Name  | Repository       | Description                                                                     |
+| -------------- | ---------------- | ------------------------------------------------------------------------------- |
+| Gateway (Kong) | [base-compose][] | API gateway for backend services using Kong.                                    |
+| IAM (Keycloak) | [base-compose][] | Provides authentication and authorization features, implemented using Keycloak. |
 
 ### Frontend Services
 
-| Function Name         | Repository        | Description                              |
-|--|--|--|
-| Main UI               | [mf-core][]       | Main web user interface.                 |
-| Resource Management UI| [mf-resource][]   | Web interface for resource details and listings. |
-| Layout Management UI  | [mf-layout][]     | Web interface for modifying and viewing compute node layouts. |
-| User Management UI    | [mf-user][]       | Web interface for user management (e.g., adding or removing users). |
-| UI Shared Modules     | [mf-shared-modules][] | Common modules for web interfaces.     |
+| Function Name          | Repository            | Description                                                         |
+| ---------------------- | --------------------- | ------------------------------------------------------------------- |
+| Main UI                | [mf-core][]           | Main web user interface.                                            |
+| Resource Management UI | [mf-resource][]       | Web interface for resource details and listings.                    |
+| Layout Management UI   | [mf-layout][]         | Web interface for modifying and viewing compute node layouts.       |
+| User Management UI     | [mf-user][]           | Web interface for user management (e.g., adding or removing users). |
+| Alert Management UI    | [mf-alert][]          | Web interface for alert management.                                 |
+| UI Shared Modules      | [mf-shared-modules][] | Common modules for web interfaces.                                  |
 
 ### Backend Services
 
 #### Configuration Management Services
 
-| Function Name            | Repository                     | Description                                              |
-|--|--|--|
-| Configuration Manager    | [configuration-manager][]      | Manages configuration data and status for resources and compute nodes in a database. |
-| Configuration Exporter  | [configuration-exporter][]     | Exports configuration data and status for resources and compute nodes. |
+| Function Name          | Repository                 | Description                                                                          |
+| ---------------------- | -------------------------- | ------------------------------------------------------------------------------------ |
+| Configuration Manager  | [configuration-manager][]  | Manages configuration data and status for resources and compute nodes in a database. |
+| Configuration Exporter | [configuration-exporter][] | Exports configuration data and status for resources and compute nodes.               |
 
 #### Alert Management Services
 
-| Function Name | Repository | Description |
-|--|--|--|
+| Function Name | Repository                | Description                                       |
+| ------------- | ------------------------- | ------------------------------------------------- |
 | Alert Manager | [alert-manager-compose][] | Manage alert information such as hardware errors. |
 
 #### Job Management Services
 
-| Function Name | Repository | Description |
-|--|--|--|
-| Job Manager | [job-manager-compose][] | Automatically executes pre-registered jobs according to the set schedule. By default, it runs two jobs: an information collection job from the Configuration Exporter and a housekeeping job for the Alert Manager. |
+| Function Name | Repository              | Description                                                                                                                                                                                                         |
+| ------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Job Manager   | [job-manager-compose][] | Automatically executes pre-registered jobs according to the set schedule. By default, it runs two jobs: an information collection job from the Configuration Exporter and a housekeeping job for the Alert Manager. |
 
 #### Layout Apply Services
 
-| Function Name                | Repository                  | Description                                                  |
-|--|--|--|
-| Layout Apply                 | [layout-apply][]            | Processes requests to apply new compute node layouts and controls resources via hw-control. |
-| Migration Procedure Generator| [migration-procedure-generator][] | Creates resource control procedures for transitioning to new compute node layouts. |
+| Function Name                 | Repository                        | Description                                                                                                                                 |
+| ----------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Layout Design                 | [layout-design][]                 | Requests layout design (configuration design of a new set of compute nodes) from the specified design engine and obtains the design result. |
+| Policy Manager                | [policy-manager][]                | Manages policy conditions for layout design.                                                                                                |
+| Layout Apply                  | [layout-apply][]                  | Processes requests to apply new compute node layouts and controls resources via hw-control.                                                 |
+| Migration Procedure Generator | [migration-procedure-generator][] | Creates resource control procedures for transitioning to new compute node layouts.                                                          |
+| Design Engine Plugin (sample) | [sample-design-engine-plugin][]   | A sample implementation of the design engine and a plugin for collaborating with the sample implementation.                                 |
 
 #### Performance Management Services
 
-| Function Name                 | Repository                        | Description                                              |
-|--|--|--|
-| Performance Manager (VictoriaMetrics) | [performance-manager-compose][] | Manages performance data for resources and compute nodes using VictoriaMetrics. |
-| Performance Collector         | [performance-collector][]         | Collects performance data in conjunction with Configuration Manager. Prometheus is used for implementation. |
-| Performance Exporter          | [performance-exporter][]          | Exports performance data for resources and compute nodes. |
+| Function Name                         | Repository                      | Description                                                                                                 |
+| ------------------------------------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Performance Manager (VictoriaMetrics) | [performance-manager-compose][] | Manages performance data for resources and compute nodes using VictoriaMetrics.                             |
+| Performance Collector                 | [performance-collector][]       | Collects performance data in conjunction with Configuration Manager. Prometheus is used for implementation. |
+| Performance Exporter                  | [performance-exporter][]        | Exports performance data for resources and compute nodes.                                                   |
 
 #### Hardware Control Services
 
-| Function Name         | Repository        | Description                                   |
-|--|--|--|
-| Hardware Control      | [hw-control][]    | Manages operations such as retrieving resource information, powering on/off resources, and connecting/disconnecting resources. |
+| Function Name    | Repository     | Description                                                                                                                    |
+| ---------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Hardware Control | [hw-control][] | Manages operations such as retrieving resource information, powering on/off resources, and connecting/disconnecting resources. |
 
 ##### Reference Hardware Plugins
 
-| Function Name                  | Repository              | Description                                                    |
-|--|--|--|
-| Reference Fabric Manager Plugin| [fm-plugin-reference][] | Reference implementation for a Fabric Manager plugin.           |
-| Reference Out-of-Band Plugin   | [oob-plugin-reference][]| Reference implementation for an Out-of-Band management plugin. |
+| Function Name                   | Repository               | Description                                                    |
+| ------------------------------- | ------------------------ | -------------------------------------------------------------- |
+| Reference Fabric Manager Plugin | [fm-plugin-reference][]  | Reference implementation for a Fabric Manager plugin.          |
+| Reference Out-of-Band Plugin    | [oob-plugin-reference][] | Reference implementation for an Out-of-Band management plugin. |
 
 ### Reference Hardware Emulator
 
-| Function Name                 | Repository                  | Description                                         |
-|--|--|--|
-| Reference Hardware Emulator  | [hw-emulator-reference][]   | Emulates the Redfish interface for hardware.        |
+| Function Name               | Repository                | Description                                  |
+| --------------------------- | ------------------------- | -------------------------------------------- |
+| Reference Hardware Emulator | [hw-emulator-reference][] | Emulates the Redfish interface for hardware. |
 
 <!-- Link informations  -->
 
@@ -119,6 +123,7 @@ Function descriptions are as follows:
 [mf-resource]: https://github.com/project-cdim/mf-resource
 [mf-layout]: https://github.com/project-cdim/mf-layout
 [mf-user]: https://github.com/project-cdim/mf-user
+[mf-alert]: https://github.com/project-cdim/mf-alert
 [mf-shared-modules]: https://github.com/project-cdim/mf-shared-modules
 
 [configuration-manager]: https://github.com/project-cdim/configuration-manager
@@ -127,8 +132,11 @@ Function descriptions are as follows:
 [alert-manager-compose]: https://github.com/project-cdim/alert-manager-compose
 [job-manager-compose]: https://github.com/project-cdim/job-manager-compose
 
+[layout-design]: https://github.com/project-cdim/layout-design
+[policy-manager]: https://github.com/project-cdim/policy-manager
 [layout-apply]: https://github.com/project-cdim/layout-apply
 [migration-procedure-generator]: https://github.com/project-cdim/migration-procedure-generator
+[sample-design-engine-plugin]: https://github.com/project-cdim/sample-design-engine-plugin
 
 [performance-manager-compose]: https://github.com/project-cdim/performance-manager-compose
 [performance-collector]: https://github.com/project-cdim/performance-collector

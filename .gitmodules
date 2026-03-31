@@ -1,0 +1,4 @@
+[submodule "development-guide/design-engine-plugin/samples/sample-design-engine-plugin"]
+	path = development-guide/design-engine-plugin/samples/sample-design-engine-plugin
+	url = https://github.com/project-cdim/sample-design-engine-plugin.git
+	branch = main

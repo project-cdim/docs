@@ -5,7 +5,7 @@ info:
   title: 構成案反映API
   description: |-
     管理対象となるComposable Disaggregated Infrastructureの構成変更を行うための機能群
-  version: 0.1.0 # 改版履歴のバージョンに合わせる
+  version: 0.2.0 # 改版履歴のバージョンに合わせる
 tags:
   - name: 構成案反映
     description: |-
@@ -28,7 +28,6 @@ paths:
         | SUSPENDED | - | エラーにより中断状態の構成案反映要求があるため、実行不可として異常終了 |
         | CANCELED | IN_PROGRESS | ロールバック実行中の構成案反映要求があるため、二重起動として異常終了 |
         | CANCELED | SUSPENDED | エラーによりロールバックが中断状態のため、実行不可として異常終了 |
-
         ※status、rollbackStatusの詳細については構成案反映状態参照(ID指定)を参照<br>
         ※ロールバックについては構成案反映キャンセルを参照
       tags:
@@ -64,6 +63,11 @@ paths:
       responses:
         202:
           description: 正常
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -74,6 +78,11 @@ paths:
                     example: 636ddde1ba
         400:
           description: 不正なリクエストボディ。
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -82,6 +91,11 @@ paths:
           description: |-
             構成案反映の排他制御に際してエラーが発生した場合
             または、反映状態が「SUSPENDED」もしくはロールバック状態が「SUSPENDED」のデータが存在する場合
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -98,6 +112,11 @@ paths:
         500:
           description: |-
             内部サーバーエラーまたは他コンポーネントからエラーが発生。
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -120,26 +139,29 @@ paths:
         offsetに指定があり、sortBy、orderByに指定があった場合、sortBy、orderByの指定に従い並び替えを行ったデータの指定した行から取得を行う。<br>
 
         各statusごとのレスポンスに出力されるキーについては以下表を参照。また、statusの詳細については構成案反映状態参照(ID指定)を参照<br>
-        <b>【凡例】〇：出力、×：出力されない、△：条件付きで出力</b><br>
+
+        <b>【凡例】</b>  
+        <b>〇：出力する、×：出力されない、△：条件付きで出力する</b><br>
+        <b>■statusに応じた出力項目対応表</b><br>
         | 項目名 | statusがIN_PROGRESS |statusがCANCELING |statusがCOMPLETED |statusがFAILED | statusがSUSPENDED | statusがCANCELED |  
         | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
         | applyID                               | 〇 | 〇 | 〇 | 〇 | 〇 | 〇 |
         | status                                | 〇 | 〇 | 〇 | 〇 | 〇 | 〇 |
-        | procedures<br>(fields指定可能)         | ×  | ×  | 〇 | 〇 | 〇 | 〇 |
-        | applyResult<br>(fields指定可能)        | ×  | ×  | 〇 | 〇 | 〇 | 〇 |
-        | rollbackProcedures<br>(fields指定可能) | ×  | ×  | ×  | ×  | ×  | 〇 |
+        | procedures<br>(fields指定可能)         | △<br> (fields指定された場合のみ出力)  | △<br> (fields指定された場合のみ出力)  | △<br> (fields指定された場合のみ出力)  | △<br> (fields指定された場合のみ出力)  | △<br> (fields指定された場合のみ出力)  | △<br> (fields指定された場合のみ出力)  |
+        | applyResult<br>(fields指定可能)        | △<br> (fields指定された場合のみ出力)  | △<br> (fields指定された場合のみ出力)  | △<br> (fields指定された場合のみ出力)  | △<br> (fields指定された場合のみ出力)  | △<br> (fields指定された場合のみ出力)  | △<br> (fields指定された場合のみ出力)  |
+        | rollbackProcedures<br>(fields指定可能) | × | △<br> (executeRollbackがtrueでロールバック実行中の場合のみ) <br>※上記に合わせてfields指定された場合のみ出力  | ×  | ×  | ×  | △<br> (fields指定された場合のみ出力)  |
         | startedAt                             | 〇 | 〇 | 〇 | 〇 | 〇 | 〇 |
-        | endedAt                               | ×  | ×  | 〇 | 〇 | ×  | △<br>(rollbackStatusがSUSPENDEDの場合は出力されない) |
-        | canceledAt                            | ×  | 〇 | ×  | △<br>(キャンセル要求後にエラーとなった場合のみ) | ×  | 〇 |
-        | executeRollback                       | ×  | 〇  | ×  | △<br>(キャンセル要求後にエラーとなった場合のみ) | ×  | 〇 |
-        | rollbackStatus                        | ×  | ×  | ×  | ×  | ×  | △<br>(executeRollbackがtrue時のみ) |
-        | rollbackResult<br>(fields指定可能)     | ×  | ×  | ×  | ×  | ×  | △<br>(executeRollbackがtrue時のみ) |
-        | rollbackStartedAt                     | ×  | △<br> (executeRollbackがtrueでロールバック実行中の場合のみ)   | ×  | ×  | ×  | △<br>(executeRollbackがtrue時のみ) |
+        | endedAt                               | × | ×  | 〇 | 〇 | ×  | △<br>(rollbackStatusがSUSPENDEDの場合は出力されない) |
+        | canceledAt                            | × | 〇 | ×  | △<br>(キャンセル要求後にエラーとなった場合のみ) | ×  | 〇 |
+        | executeRollback                       | × | 〇  | ×  | △<br>(キャンセル要求後にエラーとなった場合のみ) | ×  | 〇 |
+        | rollbackStatus                        | × | ×  | ×  | ×  | ×  | △<br>(executeRollbackがtrue時のみ) |
+        | rollbackResult<br>(fields指定可能)     | × | △<br> (executeRollbackがtrueでロールバック実行中の場合のみ) <br>※上記に合わせてfields指定された場合のみ出力  | ×  | ×  | ×  | △<br>(executeRollbackがtrue時のみ)<br>※上記に合わせてfields指定された場合のみ出力 |
+        | rollbackStartedAt                     | × | △<br> (executeRollbackがtrueでロールバック実行中の場合のみ)   | ×  | ×  | ×  | △<br>(executeRollbackがtrue時のみ) |
         | rollbackEndedAt                       | ×  | ×  | ×  | ×  | ×  | △<br>(executeRollbackがtrue時のみ、rollbackStatusがSUSPENDEDの場合は出力されない) |
-        | resumeProcedures<br>(fields指定可能)  | ×  | ×  | △<br> (再開要求で実行した場合のみ)   | △<br> (再開要求で実行した場合のみ)   | 〇 | △<br> (再開要求で実行した場合のみ)  |
-        | resumeResult<br>(fields指定可能)      | ×  | ×  | △<br> (再開要求で実行した場合のみ)   | △<br> (再開要求で実行した場合のみ)   | △<br> (再開要求で実行した場合のみ)  | △<br> (再開要求で実行した場合のみ)  |
-        | suspendedAt                             | ×  | ×  | △<br> (再開要求で実行した場合のみ)  | △<br> (再開要求で実行した場合のみ)  | 〇 | △<br> (再開要求で実行した場合のみ)  |
-        | resumedAt                               | △<br> (再開要求で実行した場合のみ)  | △<br> (再開要求で実行した場合のみ)  | △<br> (再開要求で実行した場合のみ)  | △<br> (再開要求で実行した場合のみ)  | △<br> (再開要求で実行した場合のみ)  | △<br> (再開要求で実行した場合のみ)  |
+        | resumeProcedures<br>(fields指定可能)  |△<br> (再開要求で実行した場合のみ) <br>※上記に合わせてfields指定された場合のみ出力| △<br> (再開要求で実行した場合のみ) <br>※上記に合わせてfields指定された場合のみ出力  | △<br> (再開要求で実行した場合のみ) <br>※上記に合わせてfields指定された場合のみ出力  | △<br> (再開要求で実行した場合のみ) <br>※上記に合わせてfields指定された場合のみ出力  | △<br> (fields指定された場合のみ出力)  | △<br> (再開要求で実行した場合のみ) <br>※上記に合わせてfields指定された場合のみ出力 |
+        | resumeResult<br>(fields指定可能)      | △<br> (再開要求で実行した場合のみ) <br>※上記に合わせてfields指定された場合のみ出力  | △<br> (再開要求で実行した場合のみ) <br>※上記に合わせてfields指定された場合のみ出力  | △<br> (再開要求で実行した場合のみ) <br>※上記に合わせてfields指定された場合のみ出力  | △<br> (再開要求で実行した場合のみ) <br>※上記に合わせてfields指定された場合のみ出力  | △<br> (再開要求で実行した場合のみ) <br>※上記に合わせてfields指定された場合のみ出力 | △<br> (再開要求で実行した場合のみ) <br>※上記に合わせてfields指定された場合のみ出力 |
+        | suspendedAt                           | ×  | ×  | △<br> (再開要求で実行した場合のみ)  | △<br> (再開要求で実行した場合のみ)  | 〇 | △<br> (再開要求で実行した場合のみ)  |
+        | resumedAt                             | △<br> (再開要求で実行した場合のみ)  | △<br> (再開要求で実行した場合のみ)  | △<br> (再開要求で実行した場合のみ)  | △<br> (再開要求で実行した場合のみ)  | △<br> (再開要求で実行した場合のみ)  | △<br> (再開要求で実行した場合のみ)  |
 
         statusがIN_PROGRESS(実行中) の構成案反映IDに対して、構成案反映キャンセルAPI「PUT /layout-apply/{applyID}?action=cancel」を実行することで、実行中の構成案反映をキャンセルすることができる。  
         statusがSUSPENDED(重大なエラーが発生し中断中) の構成案反映IDに対して、エラー原因を解消した後、構成案反映再開API「PUT /layout-apply/{applyID}?action=resume」を実行することで、中断中の構成案反映を再開することができる。
@@ -227,7 +249,7 @@ paths:
             - resumeProcedures: 再開手順
             - resumeResult: 再開結果
 
-             fieldsが未指定の場合は、statusに応じた各項目を返却する。<br>
+             fieldsが未指定の場合は、statusに応じた各項目を返却する。詳細については概要欄のstatusに応じた出力項目対応表またはレスポンスの出力例を参照。<br>
              fieldsを指定した場合、statusに応じた各項目と、fieldsに指定した項目を返却する。<br>
              fieldsに指定しなかった項目はレスポンスに出力されない。<br>
              また、fieldsに指定した項目が構成案反映状態に存在しない場合、指定の項目は出力されない。
@@ -306,6 +328,11 @@ paths:
         200:
           description: |-
             取得した構成案反映状態の一覧を返す
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -326,48 +353,6 @@ paths:
                         {
                           "applyID": "<構成案反映ID>",
                           "status": "COMPLETED",
-                          "procedures": <移行手順>,
-                          "applyResult":
-                            [
-                              {
-                                "operationID": 1,
-                                "status": "COMPLETED",
-                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
-                                "method": "PUT",
-                                "requestBody":
-                                  {
-                                    "action": "disconnect",
-                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
-                                  },
-                                "statusCode": 200,
-                                "responseBody":
-                                  {
-                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
-                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
-                                  },
-                                "startedAt": "2023-05-10T00:00:01Z",
-                                "endedAt": "2023-05-10T00:05:00Z",
-                              },
-                              {
-                                "operationID": 2,
-                                "status": "COMPLETED",
-                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7/aggregations",
-                                "method": "PUT",
-                                "requestBody":
-                                  {
-                                    "action": "disconnect",
-                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
-                                  },
-                                "statusCode": 200,
-                                "responseBody":
-                                  {
-                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7",
-                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
-                                  },
-                                "startedAt": "2023-05-10T00:00:02Z",
-                                "endedAt": "2023-05-10T00:05:01Z",
-                              },
-                            ],
                           "startedAt": "2023-05-10T00:00:00Z",
                           "endedAt": "2023-05-10T00:10:00Z",
                         },
@@ -377,7 +362,7 @@ paths:
                     "count": 0
                     "totalCount": 0
                     "applyResults": []
-                statusがFAILEDの構成案反映状態を取得対象に指定した場合:
+                statusがFAILEDの構成案反映状態を取得対象に指定し、fieldsにproceduresとapplyResultを指定した場合:
                   value:
                     "count": 2
                     "totalCount": 2
@@ -386,24 +371,39 @@ paths:
                         {
                           "applyID": "<構成案反映ID>",
                           "status": "FAILED",
-                          "procedures": <移行手順>,
+                          "procedures": [
+                              {
+                                "operation": "disconnect",
+                                "operationID": 1,
+                                "targetCPUID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                "dependencies": [],
+                                "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F"
+                              },
+                              {
+                                "operation": "disconnect",
+                                "operationID": 2,
+                                "targetCPUID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                "dependencies": [],
+                                "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F"
+                              },
+                          ],
                           "applyResult":
                             [
                               {
                                 "operationID": 1,
                                 "status": "COMPLETED",
-                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                                "uri": "http://cdim/api/v1/devices/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
                                 "method": "PUT",
                                 "requestBody":
                                   {
                                     "action": "disconnect",
-                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                    "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
                                   },
                                 "statusCode": 200,
                                 "responseBody":
                                   {
-                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
-                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                    "sourceDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                    "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
                                   },
                                 "startedAt": "2023-05-10T00:00:01Z",
                                 "endedAt": "2023-05-10T00:05:00Z",
@@ -411,12 +411,12 @@ paths:
                               {
                                 "operationID": 2,
                                 "status": "FAILED",
-                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7/aggregations",
+                                "uri": "http://cdim/api/v1/devices/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7/aggregations",
                                 "method": "PUT",
                                 "requestBody":
                                   {
                                     "action": "disconnect",
-                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
+                                    "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
                                   },
                                 "statusCode": 500,
                                 "responseBody":
@@ -434,24 +434,39 @@ paths:
                         {
                           "applyID": "<構成案反映ID>",
                           "status": "FAILED",
-                          "procedures": <移行手順>,
+                          "procedures": [
+                              {
+                                "operation": "disconnect",
+                                "operationID": 1,
+                                "targetCPUID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                "dependencies": [],
+                                "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F"
+                              },
+                              {
+                                "operation": "disconnect",
+                                "operationID": 2,
+                                "targetCPUID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                "dependencies": [],
+                                "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F"
+                              },
+                          ],
                           "applyResult":
                             [
                               {
                                 "operationID": 1,
                                 "status": "COMPLETED",
-                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                                "uri": "http://cdim/api/v1/devices/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
                                 "requestBody":
                                   {
                                     "action": "disconnect",
-                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                    "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
                                   },
                                 "method": "PUT",
                                 "statusCode": 200,
                                 "responseBody":
                                   {
-                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
-                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                    "sourceDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                    "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
                                   },
                                 "startedAt": "2023-05-11T00:00:01Z",
                                 "endedAt": "2023-05-11T00:05:00Z",
@@ -459,11 +474,11 @@ paths:
                               {
                                 "operationID": 2,
                                 "status": "FAILED",
-                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7/aggregations",
+                                "uri": "http://cdim/api/v1/devices/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7/aggregations",
                                 "requestBody":
                                   {
                                     "action": "disconnect",
-                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
+                                    "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
                                   },
                                 "method": "PUT",
                                 "statusCode": 500,
@@ -494,18 +509,18 @@ paths:
                               {
                                 "operationID": 1,
                                 "status": "COMPLETED",
-                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                                "uri": "http://cdim/api/v1/devices/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
                                 "method": "PUT",
                                 "requestBody":
                                   {
                                     "action": "disconnect",
-                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                    "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
                                   },
                                 "statusCode": 200,
                                 "responseBody":
                                   {
-                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
-                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                    "sourceDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                    "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
                                   },
                                 "startedAt": "2023-05-10T00:00:01Z",
                                 "endedAt": "2023-05-10T00:05:01Z",
@@ -513,18 +528,18 @@ paths:
                               {
                                 "operationID": 2,
                                 "status": "COMPLETED",
-                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7/aggregations",
+                                "uri": "http://cdim/api/v1/devices/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7/aggregations",
                                 "requestBody":
                                   {
                                     "action": "disconnect",
-                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
+                                    "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
                                   },
                                 "method": "PUT",
                                 "statusCode": 200,
                                 "responseBody":
                                   {
-                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7",
-                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
+                                    "sourceDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7",
+                                    "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
                                   },
                                 "startedAt": "2023-05-10T00:00:02Z",
                                 "endedAt": "2023-05-10T00:05:02Z",
@@ -541,18 +556,18 @@ paths:
                               {
                                 "operationID": 1,
                                 "status": "COMPLETED",
-                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                                "uri": "http://cdim/api/v1/devices/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
                                 "requestBody":
                                   {
                                     "action": "connect",
-                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                    "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
                                   },
                                 "method": "PUT",
                                 "statusCode": 200,
                                 "responseBody":
                                   {
-                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
-                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                    "sourceDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                    "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
                                   },
                                 "startedAt": "2023-05-11T00:00:01Z",
                                 "endedAt": "2023-05-11T00:05:01Z",                                  
@@ -579,18 +594,18 @@ paths:
                               {
                                 "operationID": 1,
                                 "status": "COMPLETED",
-                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                                "uri": "http://cdim/api/v1/devices/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
                                 "method": "PUT",
                                 "requestBody":
                                   {
                                     "action": "disconnect",
-                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                    "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
                                   },
                                 "statusCode": 200,
                                 "responseBody":
                                   {
-                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
-                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                    "sourceDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                    "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
                                   },
                                 "startedAt": "2023-05-10T00:00:01Z",
                                 "endedAt": "2023-05-10T00:05:01Z",
@@ -610,18 +625,18 @@ paths:
                               {
                                 "operationID": 1,
                                 "status": "COMPLETED",
-                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                                "uri": "http://cdim/api/v1/devices/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
                                 "method": "PUT",
                                 "requestBody":
                                   {
                                     "action": "disconnect",
-                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                    "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
                                   },
                                 "statusCode": 200,
                                 "responseBody":
                                   {
-                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
-                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                                    "sourceDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                    "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
                                   },
                                 "startedAt": "2023-05-11T00:00:01Z",
                                 "endedAt": "2023-05-11T00:19:00Z",
@@ -667,6 +682,22 @@ paths:
                         {
                           "applyID": "<構成案反映ID>",
                           "status": "CANCELING",
+                          "procedures": [
+                              {
+                                "operation": "disconnect",
+                                "operationID": 1,
+                                "targetCPUID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                "dependencies": [],
+                                "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F"
+                              },
+                              {
+                                "operation": "disconnect",
+                                "operationID": 2,
+                                "targetCPUID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                "dependencies": [],
+                                "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F"
+                              },
+                          ],
                           "startedAt": "2023-05-11T00:00:00Z",
                           "canceledAt": "2023-05-11T00:20:00Z",
                           "executeRollback": true,
@@ -682,29 +713,6 @@ paths:
                         {
                           "applyID": "<構成案反映ID>",
                           "status": "CANCELED",
-                          "applyResult":
-                            [
-                              {
-                                "operationID": 1,
-                                "status": "COMPLETED",
-                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
-                                "requestBody":
-                                  {
-                                    "action": "disconnect",
-                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
-                                  },
-                                "method": "PUT",
-                                "statusCode": 200,
-                                "responseBody":
-                                  {
-                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
-                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
-                                  },
-                                "startedAt": "2023-05-10T00:00:01Z",
-                                "endedAt": "2023-05-10T00:09:00Z",
-                              },
-                              { "operationID": 2, "status": "CANCELED" },
-                            ],
                           "startedAt": "2023-05-10T00:00:00Z",
                           "endedAt": "2023-05-10T00:10:00Z",
                           "canceledAt": "2023-05-10T00:05:00Z",
@@ -720,48 +728,6 @@ paths:
                         {
                           "applyID": "<構成案反映ID>",
                           "status": "COMPLETED",
-                          "procedures": <移行手順>,
-                          "applyResult":
-                            [
-                              {
-                                "operationID": 1,
-                                "status": "COMPLETED",
-                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
-                                "method": "PUT",
-                                "requestBody":
-                                  {
-                                    "action": "disconnect",
-                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
-                                  },
-                                "statusCode": 200,
-                                "responseBody":
-                                  {
-                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
-                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
-                                  },
-                                "startedAt": "2023-05-11T00:00:01Z",
-                                "endedAt": "2023-05-11T00:09:00Z",
-                              },
-                              {
-                                "operationID": 2,
-                                "status": "COMPLETED",
-                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7/aggregations",
-                                "method": "PUT",
-                                "requestBody":
-                                  {
-                                    "action": "disconnect",
-                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
-                                  },
-                                "statusCode": 200,
-                                "responseBody":
-                                  {
-                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7",
-                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
-                                  },
-                                "startedAt": "2023-05-11T00:00:02Z",
-                                "endedAt": "2023-05-11T00:09:01Z",
-                              },
-                            ],
                           "startedAt": "2023-05-11T00:00:00Z",
                           "endedAt": "2023-05-11T00:10:00Z",
                         },
@@ -780,96 +746,12 @@ paths:
                         {
                           "applyID": "<構成案反映ID>",
                           "status": "COMPLETED",
-                          "procedures": <移行手順>,
-                          "applyResult":
-                            [
-                              {
-                                "operationID": 1,
-                                "status": "COMPLETED",
-                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
-                                "method": "PUT",
-                                "requestBody":
-                                  {
-                                    "action": "disconnect",
-                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
-                                  },
-                                "statusCode": 200,
-                                "responseBody":
-                                  {
-                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
-                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
-                                  },
-                                "startedAt": "2023-05-10T00:09:01Z",
-                                "endedAt": "2023-05-10T00:09:30Z",
-                              },
-                              {
-                                "operationID": 2,
-                                "status": "COMPLETED",
-                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7/aggregations",
-                                "method": "PUT",
-                                "requestBody":
-                                  {
-                                    "action": "disconnect",
-                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
-                                  },
-                                "statusCode": 200,
-                                "responseBody":
-                                  {
-                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7",
-                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
-                                  },
-                                "startedAt": "2023-05-10T00:09:02Z",
-                                "endedAt": "2023-05-10T00:09:31Z",
-                              },
-                            ],
                           "startedAt": "2023-05-10T00:09:00Z",
                           "endedAt": "2023-05-10T00:10:00Z",
                         },
                         {
                           "applyID": "<構成案反映ID>",
                           "status": "COMPLETED",
-                          "procedures": <移行手順>,
-                          "applyResult":
-                            [
-                              {
-                                "operationID": 1,
-                                "status": "COMPLETED",
-                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
-                                "method": "PUT",
-                                "requestBody":
-                                  {
-                                    "action": "disconnect",
-                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
-                                  },
-                                "statusCode": 200,
-                                "responseBody":
-                                  {
-                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
-                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
-                                  },
-                                "startedAt": "2023-05-10T00:07:01Z",
-                                "endedAt": "2023-05-10T00:07:30Z",
-                              },
-                              {
-                                "operationID": 2,
-                                "status": "COMPLETED",
-                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7/aggregations",
-                                "method": "PUT",
-                                "requestBody":
-                                  {
-                                    "action": "disconnect",
-                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
-                                  },
-                                "statusCode": 200,
-                                "responseBody":
-                                  {
-                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7",
-                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
-                                  },
-                                "startedAt": "2023-05-10T00:07:02Z",
-                                "endedAt": "2023-05-10T00:07:31Z",
-                              },
-                            ],
                           "startedAt": "2023-05-10T00:07:00Z",
                           "endedAt": "2023-05-10T00:08:00Z",
                         },
@@ -883,48 +765,6 @@ paths:
                         {
                           "applyID": "<構成案反映ID>",
                           "status": "COMPLETED",
-                          "procedures": <移行手順>,
-                          "applyResult":
-                            [
-                              {
-                                "operationID": 1,
-                                "status": "COMPLETED",
-                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
-                                "method": "PUT",
-                                "requestBody":
-                                  {
-                                    "action": "disconnect",
-                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
-                                  },
-                                "statusCode": 200,
-                                "responseBody":
-                                  {
-                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
-                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
-                                  },
-                                "startedAt": "2023-05-11T00:00:01Z",
-                                "endedAt": "2023-05-11T00:09:01Z",
-                              },
-                              {
-                                "operationID": 2,
-                                "status": "COMPLETED",
-                                "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7/aggregations",
-                                "method": "PUT",
-                                "requestBody":
-                                  {
-                                    "action": "disconnect",
-                                    "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
-                                  },
-                                "statusCode": 200,
-                                "responseBody":
-                                  {
-                                    "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7",
-                                    "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
-                                  },
-                                "startedAt": "2023-05-11T00:00:02Z",
-                                "endedAt": "2023-05-11T00:09:02Z",
-                              },
-                            ],
                           "startedAt": "2023-05-11T00:00:00Z",
                           "endedAt": "2023-05-11T00:10:00Z",
                         },
@@ -932,6 +772,11 @@ paths:
         400:
           description: |-
             不正なパラメータ指定
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -940,6 +785,11 @@ paths:
         500:
           description: |-
             内部サーバーエラーまたは他コンポーネントからエラーが発生。
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -952,7 +802,7 @@ paths:
     put:
       summary: 構成案反映キャンセル/構成案反映再開
       description: |-
-        ・キャンセル要求<br>
+        [キャンセル要求]  
         実行中の構成案反映処理をキャンセルする。<br>
         キャンセル要求時にrollbackOnCancelが指定された場合は、実施した構成変更を元に戻すロールバック処理が実施され、その実行状況はrollbackStatusで確認できる。<br>
         キャンセルのロールバック実行中に、構成案反映要求のキャンセルを実行した場合、ロールバックのキャンセルは実行されない。<br>
@@ -971,7 +821,7 @@ paths:
         | CANCELED | CANCELED(変更されない) | SUSPENDED | FAILED | ロールバック中断中の構成案反映をキャンセルする<br>※ロールバック中断はロールバック処理のエラーにより遷移するrollbackStatusのため、キャンセルされた際はFAILEDとなる |
         | CANCELED | CANCELED(変更されない) | COMPLETED、FAILED | COMPLETED、FAILED(変更されない) | キャンセル済みのため遷移無し |
 
-        ・再開要求<br>
+        [再開要求]  
         中断中の構成案反映処理を再開する。<br>
         指定した構成案反映IDのstatus、rollbackStatusによって以下表のようにstatus、rollbackStatusを変更する。<br>
         status、rollbackStatusの詳細については構成案反映状態参照(ID指定)を参照
@@ -1023,14 +873,21 @@ paths:
         200:
           description: |-
             正常。指定された構成案反映IDの反映状態の遷移が既に完了している  
-            [キャンセル要求]反映状態がキャンセル中もしくはキャンセル済み(CANCELED、CANCELING) または反映状態が「CANCELED」でロールバック状態が「COMPLETED」もしくは「FAILED」  
-            [再開要求]反映状態が実行済み(COMPLETED」もしくは「FAILED」もしくは「CANCELED」)  またはロールバック状態が実行済み(COMPLETED」もしくは「FAILED」)
+            [キャンセル要求]  
+            反映状態がキャンセル中もしくはキャンセル済み(「CANCELED」もしくは「CANCELING」) または反映状態が「CANCELED」でロールバック状態が「COMPLETED」もしくは「FAILED」  
+            [再開要求]  
+            反映状態が実行済み(「COMPLETED」もしくは「FAILED」もしくは「CANCELED」)  またはロールバック状態が実行済み(「COMPLETED」もしくは「FAILED」)
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplyIDPutResponse"
               examples:
-                ? キャンセル要求でキャンセル中もしくはキャンセル済み(反映状態が「CANCELING]もしくは「CANCELED」) の場合
+                ? キャンセル要求でキャンセル中もしくはキャンセル済み(反映状態が「CANCELING」もしくは「CANCELED」) の場合
                 : value:
                     "status": "CANCELED"
                 ? キャンセル要求でキャンセル済み(反映状態が「CANCELED」、ロールバック状態が「COMPLETED」)の場合
@@ -1054,6 +911,11 @@ paths:
             [再開要求]  
             中断中の構成案反映を再開(SUSPENDEDからIN_PROGRESSに反映状態が遷移)  
             ロールバック中断中の構成案反映を再開(SUSPENDEDからIN_PROGRESSにロールバック状態が遷移)
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -1078,6 +940,11 @@ paths:
                     "rollbackStatus": "IN_PROGRESS"
         400:
           description: 不正なパラメータ指定
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -1085,6 +952,11 @@ paths:
         404:
           description: |-
             存在しない構成案反映IDが指定された
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -1101,6 +973,11 @@ paths:
             [再開要求]  
             指定された構成案反映IDの反映状態が「IN_PROGRESS」「CANCELING」の場合、反映実行中のため遷移不可  
             指定された構成案反映IDのロールバック状態が「IN_PROGRESS」の場合、ロールバック実行中のため遷移不可
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -1154,6 +1031,11 @@ paths:
         500:
           description: |-
             内部サーバーエラーまたは他コンポーネントからエラーが発生。
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -1169,26 +1051,29 @@ paths:
       description: |-
         構成案反映DBから指定したIDの構成案反映状態を取得する。<br>
         各statusごとのレスポンスに出力されるキーについては以下表を参照<br>
-        <b>【凡例】〇：出力、×：出力されない、△：条件付きで出力</b><br>
+
+        <b>【凡例】</b>  
+        <b>〇：出力する、×：出力されない、△：条件付きで出力する</b><br>
+        <b>■statusに応じた出力項目対応表</b><br>
         | 項目名 | statusがIN_PROGRESS |statusがCANCELING |statusがCOMPLETED |statusがFAILED | statusがSUSPENDED | statusがCANCELED |  
         | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
         | applyID                               | 〇 | 〇 | 〇 | 〇 | 〇 | 〇 |
         | status                                | 〇 | 〇 | 〇 | 〇 | 〇 | 〇 |
-        | procedures<br>(fields指定可能)         | ×  | ×  | 〇 | 〇 | 〇 | 〇 |
-        | applyResult<br>(fields指定可能)        | ×  | ×  | 〇 | 〇 | 〇 | 〇 |
-        | rollbackProcedures<br>(fields指定可能) | ×  | ×  | ×  | ×  | ×  | 〇 |
+        | procedures                            | 〇 | 〇 | 〇 | 〇 | 〇 | 〇 |
+        | applyResult                           | 〇 | 〇 | 〇 | 〇 | 〇 | 〇 |
+        | rollbackProcedures                    | × | △<br> (executeRollbackがtrueでロールバック実行中の場合のみ)   | ×  | ×  | ×  | 〇 |
         | startedAt                             | 〇 | 〇 | 〇 | 〇 | 〇 | 〇 |
-        | endedAt                               | ×  | ×  | 〇 | 〇 | × | △<br>(rollbackStatusがSUSPENDEDの場合は出力されない) |
-        | canceledAt                            | ×  | 〇 | ×  | △<br>(キャンセル要求後にエラーとなった場合のみ) | ×  | 〇 |
-        | executeRollback                       | ×  | 〇  | ×  | △<br>(キャンセル要求後にエラーとなった場合のみ) | ×  | 〇 |
-        | rollbackStatus                        | ×  | ×  | ×  | ×  | ×  | △<br>(executeRollbackがtrue時のみ) |
-        | rollbackResult<br>(fields指定可能)     | ×  | ×  | ×  | ×  | ×  | △<br>(executeRollbackがtrue時のみ) |
-        | rollbackStartedAt                     | ×  | △<br> (executeRollbackがtrueでロールバック実行中の場合のみ)   | ×  | ×  | ×  | △<br>(executeRollbackがtrue時のみ) |
+        | endedAt                               | × | ×  | 〇 | 〇 | ×  | △<br>(rollbackStatusがSUSPENDEDの場合は出力されない) |
+        | canceledAt                            | × | 〇 | ×  | △<br>(キャンセル要求後にエラーとなった場合のみ) | ×  | 〇 |
+        | executeRollback                       | × | 〇  | ×  | △<br>(キャンセル要求後にエラーとなった場合のみ) | ×  | 〇 |
+        | rollbackStatus                        | × | ×  | ×  | ×  | ×  | △<br>(executeRollbackがtrue時のみ) |
+        | rollbackResult                        | × | △<br> (executeRollbackがtrueでロールバック実行中の場合のみ)   | ×  | ×  | ×  | △<br>(executeRollbackがtrue時のみ) |
+        | rollbackStartedAt                     | × | △<br> (executeRollbackがtrueでロールバック実行中の場合のみ)   | ×  | ×  | ×  | △<br>(executeRollbackがtrue時のみ) |
         | rollbackEndedAt                       | ×  | ×  | ×  | ×  | ×  | △<br>(executeRollbackがtrue時のみ、rollbackStatusがSUSPENDEDの場合は出力されない) |
-        | resumeProcedures<br>(fields指定可能)  | ×  | ×  | △<br> (再開要求で実行した場合のみ)   | △<br> (再開要求で実行した場合のみ)   | 〇 | △<br> (再開要求で実行した場合のみ)  |
-        | resumeResult<br>(fields指定可能)      | ×  | ×  | △<br> (再開要求で実行した場合のみ)   | △<br> (再開要求で実行した場合のみ)   | △<br> (再開要求で実行した場合のみ)  | △<br> (再開要求で実行した場合のみ)  |
-        | suspendedAt                             | ×  | ×  | △<br> (再開要求で実行した場合のみ)  | △<br> (再開要求で実行した場合のみ)  | 〇 | △<br> (再開要求で実行した場合のみ)  |
-        | resumedAt                               | △<br> (再開要求で実行した場合のみ)  | △<br> (再開要求で実行した場合のみ)  | △<br> (再開要求で実行した場合のみ)  | △<br> (再開要求で実行した場合のみ)  | △<br> (再開要求で実行した場合のみ)  | △<br> (再開要求で実行した場合のみ)  |
+        | resumeProcedures                      |△<br> (再開要求で実行した場合のみ) | △<br> (再開要求で実行した場合のみ)   | △<br> (再開要求で実行した場合のみ)   | △<br> (再開要求で実行した場合のみ)   | 〇 | △<br> (再開要求で実行した場合のみ)  |
+        | resumeResult                          |△<br> (再開要求で実行した場合のみ)   | △<br> (再開要求で実行した場合のみ)   | △<br> (再開要求で実行した場合のみ)   | △<br> (再開要求で実行した場合のみ)   | △<br> (再開要求で実行した場合のみ)  | △<br> (再開要求で実行した場合のみ)  |
+        | suspendedAt                           | ×  | ×  | △<br> (再開要求で実行した場合のみ)  | △<br> (再開要求で実行した場合のみ)  | 〇 | △<br> (再開要求で実行した場合のみ)  |
+        | resumedAt                             | △<br> (再開要求で実行した場合のみ)  | △<br> (再開要求で実行した場合のみ)  | △<br> (再開要求で実行した場合のみ)  | △<br> (再開要求で実行した場合のみ)  | △<br> (再開要求で実行した場合のみ)  | △<br> (再開要求で実行した場合のみ)  |
 
         当IFで取得したstatusの情報をもとに、各機能を使用する。<br>
         【例】<br>
@@ -1214,37 +1099,15 @@ paths:
           example: 636ddde1ba
           schema:
             type: string
-        - name: fields
-          in: query
-          description: |
-            レスポンスボディに含める構成案反映状態の項目を指定するパラメータ。<br>
-            指定可能な項目は下記の6種。
-            - procedures: 移行手順
-            - applyResult: 反映結果
-            - rollbackProcedures: ロールバック手順
-            - rollbackResult: ロールバック結果
-            - resumeProcedures: 再開手順
-            - resumeResult: 再開結果
-
-             fieldsが未指定の場合は、statusに応じた各項目を返却する。<br>
-             fieldsを指定した場合、statusに応じた各項目と、fieldsに指定した項目を返却する。<br>
-             fieldsに指定しなかった項目はレスポンスに出力されない。<br>
-             また、fieldsに指定した項目が構成案反映状態に存在しない場合、指定の項目は出力されない。
-          schema:
-            type: array
-            items:
-              type: string
-              enum:
-                - procedures
-                - applyResult
-                - rollbackProcedures
-                - rollbackResult
-                - resumeProcedures
-                - resumeResult
       responses:
         200:
           description: |-
             構成案反映IDを指定して取得した構成案反映状態を返す
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -1255,24 +1118,47 @@ paths:
                   value:
                     applyID: "<構成案反映ID>"
                     status: "COMPLETED"
-                    procedures: <移行手順>
+                    procedures: [
+                              {
+                                "operation": "disconnect",
+                                "operationID": 1,
+                                "targetCPUID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                "dependencies": [],
+                                "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F"
+                              },
+                              {
+                                "operation": "disconnect",
+                                "operationID": 2,
+                                "targetCPUID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                "dependencies": [],
+                                "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F"
+                              },
+                              {
+                                "operation": "shutdown",
+                                "operationID": 3,
+                                "dependencies": [
+                                  1, 2
+                                ],
+                                "targetDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6"
+                              },
+                          ]
                     applyResult:
                       [
                         {
                           "operationID": 1,
                           "status": "COMPLETED",
-                          "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                          "uri": "http://cdim/api/v1/devices/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
                           "requestBody":
                             {
                               "action": "disconnect",
-                              "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                              "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
                             },
                           "method": "PUT",
                           "statusCode": 200,
                           "responseBody":
                             {
-                              "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
-                              "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                              "sourceDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                              "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
                             },
                           "startedAt": "2023-05-10T00:00:01Z",
                           "endedAt": "2023-05-10T00:09:01Z",
@@ -1286,7 +1172,7 @@ paths:
                           "statusCode": 200,
                           "responseBody":
                             {
-                              "deviceID ": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                              "deviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
                             },
                           "isOSBoot":
                             {
@@ -1312,7 +1198,7 @@ paths:
                           "statusCode": 200,
                           "responseBody":
                             {
-                              "deviceID ": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                              "deviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
                             },
                           "getInformation":
                             { "responseBody": { "powerState": "Off" } },
@@ -1326,17 +1212,40 @@ paths:
                   value:
                     applyID: "<構成案反映ID>"
                     status: "FAILED"
-                    procedures: <移行手順>
+                    procedures: [
+                              {
+                                "operation": "disconnect",
+                                "operationID": 1,
+                                "targetCPUID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                "dependencies": [],
+                                "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F"
+                              },
+                              {
+                                "operation": "disconnect",
+                                "operationID": 2,
+                                "targetCPUID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                "dependencies": [],
+                                "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F"
+                              },
+                              {
+                                "operation": "shutdown",
+                                "operationID": 3,
+                                "dependencies": [
+                                  1, 2
+                                ],
+                                "targetDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6"
+                              },
+                          ]
                     applyResult:
                       [
                         {
                           "operationID": 1,
                           "status": "FAILED",
-                          "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                          "uri": "http://cdim/api/v1/devices/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
                           "requestBody":
                             {
                               "action": "disconnect",
-                              "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                              "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
                             },
                           "method": "PUT",
                           "statusCode": 500,
@@ -1352,28 +1261,52 @@ paths:
                       ]
                     startedAt: "2023-05-10T00:00:00Z"
                     endedAt: "2023-05-10T00:10:00Z"
+
                 ? 構成案反映の途中でロールバックする設定でキャンセル要求があった場合
                 : value:
                     applyID: "<構成案反映ID>"
                     status: "CANCELED"
-                    procedures: <移行手順>
+                    procedures: [
+                              {
+                                "operation": "disconnect",
+                                "operationID": 1,
+                                "targetCPUID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                "dependencies": [],
+                                "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F"
+                              },
+                              {
+                                "operation": "disconnect",
+                                "operationID": 2,
+                                "targetCPUID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                "dependencies": [],
+                                "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F"
+                              },
+                              {
+                                "operation": "shutdown",
+                                "operationID": 3,
+                                "dependencies": [
+                                  1, 2
+                                ],
+                                "targetDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6"
+                              },
+                          ]
                     applyResult:
                       [
                         {
                           "operationID": 1,
                           "status": "COMPLETED",
-                          "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                          "uri": "http://cdim/api/v1/devices/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
                           "requestBody":
                             {
                               "action": "disconnect",
-                              "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                              "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
                             },
                           "method": "PUT",
                           "statusCode": 200,
                           "responseBody":
                             {
-                              "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
-                              "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                              "sourceDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                              "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
                             },
                           "startedAt": "2023-05-10T00:00:01Z",
                           "endedAt": "2023-05-10T00:09:01Z",
@@ -1400,18 +1333,18 @@ paths:
                         {
                           "operationID": 1,
                           "status": "COMPLETED",
-                          "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                          "uri": "http://cdim/api/v1/devices/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
                           "requestBody":
                             {
                               "action": "disconnect",
-                              "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                              "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
                             },
                           "method": "PUT",
                           "statusCode": 200,
                           "responseBody":
                             {
-                              "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
-                              "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                              "sourceDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                              "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
                             },
                           "startedAt": "2023-05-10T00:00:02Z",
                           "endedAt": "2023-05-10T00:09:02Z",
@@ -1423,24 +1356,47 @@ paths:
                 : value:
                     applyID: "<構成案反映ID>"
                     status: "CANCELED"
-                    procedures: <移行手順>
+                    procedures: [
+                              {
+                                "operation": "disconnect",
+                                "operationID": 1,
+                                "targetCPUID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                "dependencies": [],
+                                "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F"
+                              },
+                              {
+                                "operation": "disconnect",
+                                "operationID": 2,
+                                "targetCPUID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                "dependencies": [],
+                                "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F"
+                              },
+                              {
+                                "operation": "shutdown",
+                                "operationID": 3,
+                                "dependencies": [
+                                  1, 2
+                                ],
+                                "targetDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6"
+                              },
+                          ]
                     applyResult:
                       [
                         {
                           "operationID": 1,
                           "status": "COMPLETED",
-                          "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                          "uri": "http://cdim/api/v1/devices/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
                           "requestBody":
                             {
                               "action": "disconnect",
-                              "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                              "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
                             },
                           "method": "PUT",
                           "statusCode": 200,
                           "responseBody":
                             {
-                              "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
-                              "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                              "sourceDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                              "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
                             },
                           "startedAt": "2023-05-10T00:00:01Z",
                           "endedAt": "2023-05-10T00:09:01Z",
@@ -1465,17 +1421,40 @@ paths:
                 : value:
                     applyID: "<構成案反映ID>"
                     status: "SUSPENDED"
-                    procedures: <移行手順>
+                    procedures: [
+                              {
+                                "operation": "disconnect",
+                                "operationID": 1,
+                                "targetCPUID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                "dependencies": [],
+                                "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F"
+                              },
+                              {
+                                "operation": "disconnect",
+                                "operationID": 2,
+                                "targetCPUID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                "dependencies": [],
+                                "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F"
+                              },
+                              {
+                                "operation": "shutdown",
+                                "operationID": 3,
+                                "dependencies": [
+                                  1, 2
+                                ],
+                                "targetDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6"
+                              },
+                          ]
                     applyResult:
                       [
                         {
                           "operationID": 1,
                           "status": "FAILED",
-                          "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                          "uri": "http://cdim/api/v1/devices/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
                           "requestBody":
                             {
                               "action": "disconnect",
-                              "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                              "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
                             },
                           "method": "PUT",
                           "statusCode": 500,
@@ -1496,17 +1475,40 @@ paths:
                   value:
                     applyID: "<構成案反映ID>"
                     status: "COMPLETED"
-                    procedures: <移行手順>
+                    procedures: [
+                              {
+                                "operation": "disconnect",
+                                "operationID": 1,
+                                "targetCPUID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                "dependencies": [],
+                                "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F"
+                              },
+                              {
+                                "operation": "disconnect",
+                                "operationID": 2,
+                                "targetCPUID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
+                                "dependencies": [],
+                                "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F"
+                              },
+                              {
+                                "operation": "shutdown",
+                                "operationID": 3,
+                                "dependencies": [
+                                  1, 2
+                                ],
+                                "targetDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6"
+                              },
+                          ]
                     applyResult:
                       [
                         {
                           "operationID": 1,
                           "status": "FAILED",
-                          "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
+                          "uri": "http://cdim/api/v1/devices/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
                           "requestBody":
                             {
                               "action": "disconnect",
-                              "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
+                              "destinationDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
                             },
                           "method": "PUT",
                           "statusCode": 500,
@@ -1530,6 +1532,8 @@ paths:
                   value:
                     applyID: "<構成案反映ID>"
                     status: "IN_PROGRESS"
+                    procedures: <移行手順>
+                    applyResult: <反映結果>
                     startedAt: "2023-05-10T00:00:00Z"
                 構成案反映キャンセル実行中の場合(ロールバック実行が無い場合):
                   value:
@@ -1546,100 +1550,15 @@ paths:
                     canceledAt: "2023-05-10T00:05:00Z"
                     executeRollback: true
                     rollbackStartedAt: "2023-05-10T00:06:00Z"
-                fieldsにapplyResultのみを指定した場合:
-                  value:
-                    applyID: "<構成案反映ID>"
-                    status: "COMPLETED"
-                    applyResult:
-                      [
-                        {
-                          "operationID": 1,
-                          "status": "COMPLETED",
-                          "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
-                          "requestBody":
-                            {
-                              "action": "disconnect",
-                              "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
-                            },
-                          "method": "PUT",
-                          "statusCode": 200,
-                          "responseBody":
-                            {
-                              "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
-                              "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
-                            },
-                          "startedAt": "2023-05-10T00:00:01Z",
-                          "endedAt": "2023-05-10T00:09:01Z",
-                        },
-                        {
-                          "operationID": 2,
-                          "status": "COMPLETED",
-                          "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7/aggregations",
-                          "requestBody":
-                            {
-                              "action": "disconnect",
-                              "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
-                            },
-                          "method": "PUT",
-                          "statusCode": 200,
-                          "responseBody":
-                            {
-                              "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D7",
-                              "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3T",
-                            },
-                          "startedAt": "2023-05-10T00:00:02Z",
-                          "endedAt": "2023-05-10T00:09:02Z",
-                        },
-                      ]
-                    startedAt: "2023-05-10T00:00:00Z"
-                    endedAt: "2023-05-10T00:10:00Z"
-                fieldsにrollbackProceduresとrollbackResultを指定した場合:
-                  value:
-                    applyID: "<構成案反映ID>"
-                    status: "CANCELED"
-                    rollbackProcedures:
-                      [
-                        {
-                          "operationID": 1,
-                          "operation": "connect",
-                          "targetCPUID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
-                          "targetDeviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
-                          "dependencies": [],
-                        },
-                      ]
-                    startedAt: "2023-05-10T00:00:00Z"
-                    endedAt: "2023-05-10T00:20:00Z"
-                    canceledAt: "2023-05-10T00:05:00Z"
-                    executeRollback: true
-                    rollbackStatus: "COMPLETED"
-                    rollbackResult:
-                      [
-                        {
-                          "operationID": 1,
-                          "status": "COMPLETED",
-                          "uri": "http://cdim/api/v1/cpu/3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6/aggregations",
-                          "requestBody":
-                            {
-                              "action": "disconnect",
-                              "deviceID": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
-                            },
-                          "method": "PUT",
-                          "statusCode": 200,
-                          "responseBody":
-                            {
-                              "CPUDeviceID": "3B4EBEEA-B6DD-45DA-8C8A-2CA2F8F728D6",
-                              "deviceID ": "895DFB43-68CD-41D6-8996-EAC8D1EA1E3F",
-                            },
-                          "startedAt": "2023-05-10T00:00:01Z",
-                          "endedAt": "2023-05-10T00:09:01Z",
-                        },
-                      ]
-                    rollbackStartedAt: "2023-05-10T00:10:00Z"
-                    rollbackEndedAt: "2023-05-10T00:20:00Z"
 
         404:
           description: |-
             存在しない構成案反映IDが指定された
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -1647,6 +1566,11 @@ paths:
         400:
           description: |-
             不正なパラメータ指定
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -1654,6 +1578,11 @@ paths:
         500:
           description: |-
             内部サーバーエラーまたは他コンポーネントからエラーが発生。
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -1692,6 +1621,11 @@ paths:
             正常
         400:
           description: 不正なパラメータ指定
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -1699,6 +1633,11 @@ paths:
         404:
           description: |-
             存在しない構成案反映IDが指定された
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -1706,6 +1645,11 @@ paths:
         409:
           description: |-
             実行中、あるいは中断中の構成案反映ID (statusが「IN_PROGRESS」、「CANCELING」、「SUSPENDED」のいずれか、もしくはrollbackStatusが「IN_PROGRESS」、「SUSPENDED」のいずれか) に対して削除処理を実行してエラーが発生した
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -1713,6 +1657,11 @@ paths:
         500:
           description: |-
             内部サーバーエラーまたは他コンポーネントからエラーが発生。
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -1765,6 +1714,9 @@ paths:
                         networkInterface:
                           deviceIDs:
                             - 5DFB4893-C16D-4968-89D6-8D1EAECEA31F
+                        gpu:
+                          - deviceID:
+                              1A2B3C4D-5E6F-7081-92A3-B4C5D6E7F809
                     - device:
                         cpu:
                           deviceIDs:
@@ -1778,9 +1730,18 @@ paths:
                         networkInterface:
                           deviceIDs:
                             - 0E9A2838-6AA9-40D2-B3E0-EA7B15E8F18D
+                        gpu:
+                          - deviceID:
+                              D4F5C6E7-8A9B-4C0D-BA1E-2F3A4B5C6D7E
+                        
       responses:
         200:
           description: 正常
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -1804,6 +1765,11 @@ paths:
                       dependencies: [2]
         400:
           description: 不正なリクエストボディ。
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -1814,6 +1780,11 @@ paths:
         404:
           description: |-
             存在しないNodeIDが指定された
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -1821,6 +1792,11 @@ paths:
         500:
           description: |-
             内部サーバーエラーまたは他コンポーネントからエラーが発生。
+          headers:
+            X-Content-Type-Options:
+              $ref: "#/components/schemas/X-Content-Type-Options"
+            Content-Type:
+              $ref: "#/components/schemas/Content-Type"
           content:
             application/json:
               schema:
@@ -1879,3 +1855,9 @@ components:
       $ref: "./openapi_schema.yaml#/components/schemas/DeviceIDList"
     DeviceID:
       $ref: "./openapi_schema.yaml#/components/schemas/DeviceID"
+    X-Content-Type-Options:
+      $ref: "./openapi_schema.yaml#/components/schemas/X-Content-Type-Options"
+    Content-Type:
+      $ref: "./openapi_schema.yaml#/components/schemas/Content-Type"
+    Content-Type_ExampleTextPlain:
+      $ref: "./openapi_schema.yaml#/components/schemas/Content-Type_ExampleTextPlain"

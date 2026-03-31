@@ -1,0 +1,1383 @@
+{
+  "count": 10,
+  "resources": [
+    {
+      "annotation": {
+        "available": true
+      },
+      "detected": true,
+      "device": {
+        "allocationAlignmentMiB": 123,
+        "allocationIncrementMiB": 50,
+        "allowedSpeedsMHz": [
+          30
+        ],
+        "busWidthBits": 72,
+        "capacityMiB": 4096,
+        "constraints": {
+          "nonRemovableDevices": [
+            {
+              "deviceID": "b477ea1c-db3d-48b3-9725-b0ce6e25efc2"
+            }
+          ]
+        },
+        "dataWidthBits": 64,
+        "deviceID": "4ca84d71-22da-4faf-94d8-5e159397115b",
+        "enabled": true,
+        "infoTimestamp": "2025-01-14T01:14:55Z",
+        "links": [
+          {
+            "deviceID": "b477ea1c-db3d-48b3-9725-b0ce6e25efc2",
+            "type": "CPU"
+          }
+        ],
+        "logicalSizeMiB": 0,
+        "manufacturer": "Generic",
+        "maxTDPsMilliWatts": [
+          12000
+        ],
+        "memoryDeviceType": "DDR4",
+        "memoryLocation": {
+          "channel": 1,
+          "memoryController": 1,
+          "slot": 1,
+          "socket": 1
+        },
+        "memoryMedia": [
+          "DRAM"
+        ],
+        "memoryType": "DRAM",
+        "metricBandwidthPercent": 14,
+        "metricBlockSizeBytes": 4096,
+        "metricEnergyJoules": {
+          "reading": 6,
+          "readingTime": "2024-12-27T03:34:10Z",
+          "sensingInterval": 3,
+          "sensorResetTime": "2024-12-24T03:34:10Z"
+        },
+        "metricHealthData": {
+          "dataLossDetected": false,
+          "lastShutdownSuccess": true,
+          "performanceDegraded": false,
+          "predictedMediaLifeLeftPercent": 50
+        },
+        "metricOperatingSpeedMHz": 3200,
+        "model": "mem",
+        "nonVolatileSizeMiB": 0,
+        "operatingSpeedMHz": 3200,
+        "persistentRegionNumberLimit": 1,
+        "persistentRegionSizeLimitMiB": 8000,
+        "persistentRegionSizeMaxMiB": 8000,
+        "powerCapability": false,
+        "powerState": "On",
+        "serialNumber": "1001",
+        "status": {
+          "health": "OK",
+          "state": "InTest"
+        },
+        "swap": 0,
+        "type": "memory",
+        "usedMemory": 242240,
+        "volatileRegionSizeLimitMiB": 8000,
+        "volatileRegionSizeMaxMiB": 8000
+      },
+      "nodeIDs": [
+        "b477ea1c-db3d-48b3-9725-b0ce6e25efc2"
+      ],
+      "resourceGroupIDs": [
+        "00000000-0000-7000-8000-000000000000"
+      ]
+    },
+    {
+      "annotation": {
+        "available": true
+      },
+      "detected": true,
+      "device": {
+        "allocationAlignmentMiB": 123,
+        "allocationIncrementMiB": 50,
+        "allowedSpeedsMHz": [
+          30
+        ],
+        "busWidthBits": 72,
+        "capacityMiB": 8192,
+        "constraints": {
+          "nonRemovableDevices": [
+            {
+              "deviceID": "b9a1e642-da2e-403a-88f5-fa0eca0d9c52"
+            }
+          ]
+        },
+        "dataWidthBits": 64,
+        "deviceID": "54fd3675-8ad1-42d7-8d61-067dea3f446a",
+        "enabled": true,
+        "infoTimestamp": "2025-01-14T01:15:08Z",
+        "links": [
+          {
+            "deviceID": "b9a1e642-da2e-403a-88f5-fa0eca0d9c52",
+            "type": "CPU"
+          }
+        ],
+        "logicalSizeMiB": 0,
+        "manufacturer": "Generic",
+        "maxTDPsMilliWatts": [
+          12000
+        ],
+        "memoryDeviceType": "DDR4",
+        "memoryLocation": {
+          "channel": 1,
+          "memoryController": 1,
+          "slot": 1,
+          "socket": 1
+        },
+        "memoryMedia": [
+          "DRAM"
+        ],
+        "memoryType": "DRAM",
+        "metricBandwidthPercent": 55,
+        "metricBlockSizeBytes": 4096,
+        "metricEnergyJoules": {
+          "reading": 78,
+          "readingTime": "2024-12-27T03:34:10Z",
+          "sensingInterval": 3,
+          "sensorResetTime": "2024-12-24T03:34:10Z"
+        },
+        "metricHealthData": {
+          "dataLossDetected": false,
+          "lastShutdownSuccess": true,
+          "performanceDegraded": false,
+          "predictedMediaLifeLeftPercent": 50
+        },
+        "metricOperatingSpeedMHz": 3200,
+        "model": "mem",
+        "nonVolatileSizeMiB": 0,
+        "operatingSpeedMHz": 3200,
+        "persistentRegionNumberLimit": 1,
+        "persistentRegionSizeLimitMiB": 8000,
+        "persistentRegionSizeMaxMiB": 8000,
+        "powerCapability": false,
+        "powerState": "On",
+        "serialNumber": "1003",
+        "status": {
+          "health": "OK",
+          "state": "Enabled"
+        },
+        "swap": 0,
+        "type": "memory",
+        "usedMemory": 240412,
+        "volatileRegionSizeLimitMiB": 8000,
+        "volatileRegionSizeMaxMiB": 8000
+      },
+      "nodeIDs": [
+        "b9a1e642-da2e-403a-88f5-fa0eca0d9c52"
+      ],
+      "resourceGroupIDs": [
+        "00000000-0000-7000-8000-000000000000"
+      ]
+    },
+    {
+      "annotation": {
+        "available": true
+      },
+      "detected": true,
+      "device": {
+        "allocationAlignmentMiB": 123,
+        "allocationIncrementMiB": 50,
+        "allowedSpeedsMHz": [
+          30
+        ],
+        "busWidthBits": 72,
+        "capacityMiB": 4096,
+        "constraints": {
+          "nonRemovableDevices": [
+            {
+              "deviceID": "b477ea1c-db3d-48b3-9725-b0ce6e25efc2"
+            }
+          ]
+        },
+        "dataWidthBits": 64,
+        "deviceID": "7c6f9db2-5d35-4310-90f6-7e004ad2f35a",
+        "enabled": true,
+        "infoTimestamp": "2025-01-14T01:14:56Z",
+        "links": [
+          {
+            "deviceID": "b477ea1c-db3d-48b3-9725-b0ce6e25efc2",
+            "type": "CPU"
+          }
+        ],
+        "logicalSizeMiB": 0,
+        "manufacturer": "Generic",
+        "maxTDPsMilliWatts": [
+          12000
+        ],
+        "memoryDeviceType": "DDR4",
+        "memoryLocation": {
+          "channel": 1,
+          "memoryController": 1,
+          "slot": 1,
+          "socket": 1
+        },
+        "memoryMedia": [
+          "DRAM"
+        ],
+        "memoryType": "DRAM",
+        "metricBandwidthPercent": 63,
+        "metricBlockSizeBytes": 4096,
+        "metricEnergyJoules": {
+          "reading": 68,
+          "readingTime": "2024-12-27T03:34:10Z",
+          "sensingInterval": 3,
+          "sensorResetTime": "2024-12-24T03:34:10Z"
+        },
+        "metricHealthData": {
+          "dataLossDetected": false,
+          "lastShutdownSuccess": true,
+          "performanceDegraded": false,
+          "predictedMediaLifeLeftPercent": 50
+        },
+        "metricOperatingSpeedMHz": 3200,
+        "model": "mem",
+        "nonVolatileSizeMiB": 0,
+        "operatingSpeedMHz": 3200,
+        "persistentRegionNumberLimit": 1,
+        "persistentRegionSizeLimitMiB": 8000,
+        "persistentRegionSizeMaxMiB": 8000,
+        "powerCapability": false,
+        "powerState": "On",
+        "serialNumber": "1002",
+        "status": {
+          "health": "OK",
+          "state": "Starting"
+        },
+        "swap": 0,
+        "type": "memory",
+        "usedMemory": 242236,
+        "volatileRegionSizeLimitMiB": 8000,
+        "volatileRegionSizeMaxMiB": 8000
+      },
+      "nodeIDs": [
+        "b477ea1c-db3d-48b3-9725-b0ce6e25efc2"
+      ],
+      "resourceGroupIDs": [
+        "00000000-0000-7000-8000-000000000000"
+      ]
+    },
+    {
+      "annotation": {
+        "available": true
+      },
+      "detected": true,
+      "device": {
+        "allocationAlignmentMiB": 123,
+        "allocationIncrementMiB": 50,
+        "allowedSpeedsMHz": [
+          30
+        ],
+        "busWidthBits": 72,
+        "capacityMiB": 8192,
+        "constraints": {
+          "nonRemovableDevices": [
+            {
+              "deviceID": "b9a1e642-da2e-403a-88f5-fa0eca0d9c52"
+            }
+          ]
+        },
+        "dataWidthBits": 64,
+        "deviceID": "98260b19-f7de-4461-b6e2-63bc60bd1783",
+        "enabled": true,
+        "infoTimestamp": "2025-01-14T01:15:08Z",
+        "links": [
+          {
+            "deviceID": "b9a1e642-da2e-403a-88f5-fa0eca0d9c52",
+            "type": "CPU"
+          }
+        ],
+        "logicalSizeMiB": 0,
+        "manufacturer": "Generic",
+        "maxTDPsMilliWatts": [
+          12000
+        ],
+        "memoryDeviceType": "DDR4",
+        "memoryLocation": {
+          "channel": 1,
+          "memoryController": 1,
+          "slot": 1,
+          "socket": 1
+        },
+        "memoryMedia": [
+          "DRAM"
+        ],
+        "memoryType": "DRAM",
+        "metricBandwidthPercent": 46,
+        "metricBlockSizeBytes": 4096,
+        "metricEnergyJoules": {
+          "reading": 77,
+          "readingTime": "2024-12-27T03:34:10Z",
+          "sensingInterval": 3,
+          "sensorResetTime": "2024-12-24T03:34:10Z"
+        },
+        "metricHealthData": {
+          "dataLossDetected": false,
+          "lastShutdownSuccess": true,
+          "performanceDegraded": false,
+          "predictedMediaLifeLeftPercent": 50
+        },
+        "metricOperatingSpeedMHz": 3200,
+        "model": "mem",
+        "nonVolatileSizeMiB": 0,
+        "operatingSpeedMHz": 3200,
+        "persistentRegionNumberLimit": 1,
+        "persistentRegionSizeLimitMiB": 8000,
+        "persistentRegionSizeMaxMiB": 8000,
+        "powerCapability": false,
+        "powerState": "On",
+        "serialNumber": "1004",
+        "status": {
+          "health": "OK",
+          "state": "Enabled"
+        },
+        "swap": 0,
+        "type": "memory",
+        "usedMemory": 240412,
+        "volatileRegionSizeLimitMiB": 8000,
+        "volatileRegionSizeMaxMiB": 8000
+      },
+      "nodeIDs": [
+        "b9a1e642-da2e-403a-88f5-fa0eca0d9c52"
+      ],
+      "resourceGroupIDs": [
+        "00000000-0000-7000-8000-000000000000"
+      ]
+    },
+    {
+      "annotation": {
+        "available": true
+      },
+      "detected": true,
+      "device": {
+        "LTSSMState": "L0",
+        "TDPWatts": 100,
+        "baseSpeedMHz": 1200,
+        "constraints": {
+          "nonRemovableDevices": [
+            {
+              "deviceID": "e63fbe90-1b8f-44bd-9f66-ca3a9ce159b2"
+            },
+            {
+              "deviceID": "4ca84d71-22da-4faf-94d8-5e159397115b"
+            },
+            {
+              "deviceID": "7c6f9db2-5d35-4310-90f6-7e004ad2f35a"
+            },
+            {
+              "deviceID": "e56a1a1c-0556-42ca-8cbb-7c6dc86561eb"
+            },
+            {
+              "deviceID": "2eb602dc-e4c2-4064-b272-e409ad5c9b42"
+            }
+          ]
+        },
+        "deviceID": "b477ea1c-db3d-48b3-9725-b0ce6e25efc2",
+        "idle": 99,
+        "infoTimestamp": "2025-01-14T01:14:55Z",
+        "instructionSet": "x86-64",
+        "links": [
+          {
+            "deviceID": "e63fbe90-1b8f-44bd-9f66-ca3a9ce159b2",
+            "type": "GPU"
+          },
+          {
+            "deviceID": "4ca84d71-22da-4faf-94d8-5e159397115b",
+            "type": "memory"
+          },
+          {
+            "deviceID": "7c6f9db2-5d35-4310-90f6-7e004ad2f35a",
+            "type": "memory"
+          },
+          {
+            "deviceID": "e56a1a1c-0556-42ca-8cbb-7c6dc86561eb",
+            "type": "storage"
+          },
+          {
+            "deviceID": "2eb602dc-e4c2-4064-b272-e409ad5c9b42",
+            "type": "networkInterface"
+          }
+        ],
+        "manufacturer": "GenuineIntel",
+        "memorySummary": {
+          "ECCModeEnabled": true,
+          "totalCacheSizeMiB": 4096,
+          "totalMemorySizeMiB": 8192
+        },
+        "metricBandwidthPercent": 54,
+        "metricCaches": [
+          {
+            "hitRatio": 0.719,
+            "miss": 0.12,
+            "missesPerInstruction": 0.00088,
+            "occupancyBytes": 3030144,
+            "occupancyPercent": 90.1
+          }
+        ],
+        "metricCoreMetrics": [
+          {
+            "coreCaches": [
+              {
+                "occupancyBytes": 198231,
+                "occupancyPercent": 77.4
+              }
+            ],
+            "coreID": "core0",
+            "instructionsPerCycle": 1.16
+          }
+        ],
+        "metricEnergyJoules": {
+          "reading": 59,
+          "readingTime": "2024-12-27T03:34:10Z",
+          "sensingInterval": 3,
+          "sensorResetTime": "2024-12-24T03:34:10Z"
+        },
+        "metricLocalMemoryBandwidthBytes": 18253611008,
+        "metricOperatingSpeedMHz": 2400,
+        "metricRemoteMemoryBandwidthBytes": 81788928,
+        "model": "Intel(R) Xeon(R) Gold 5218 CPU @ 2.30GHz",
+        "operatingSpeedMHz": 3200,
+        "powerCapability": true,
+        "powerState": "On",
+        "processorArchitecture": "x86",
+        "processorID": {
+          "effectiveFamily": "0x42",
+          "effectiveModel": "0x61",
+          "identificationRegister": "0x34AC34DC8901274A",
+          "microcodeInfo": "0x429943",
+          "protectedIdentificationNumber": "123456",
+          "step": "0x1",
+          "vendorID": "GenuineIntel"
+        },
+        "processorMemories": [
+          {
+            "capacityMiB": 4096,
+            "integrated": true,
+            "speedMHz": 1200,
+            "type": "DDR"
+          }
+        ],
+        "serialNumber": "PROCESSOR1",
+        "socketNum": 1,
+        "status": {
+          "health": "OK",
+          "state": "Disabled"
+        },
+        "system": 1,
+        "totalCores": 4,
+        "totalEnabledCores": 4,
+        "totalThreads": 8,
+        "type": "CPU",
+        "usageRate": 1,
+        "user": 0,
+        "wait": 0
+      },
+      "nodeIDs": [
+        "b477ea1c-db3d-48b3-9725-b0ce6e25efc2"
+      ],
+      "resourceGroupIDs": [
+        "00000000-0000-7000-8000-000000000000"
+      ]
+    },
+    {
+      "annotation": {
+        "available": true
+      },
+      "detected": true,
+      "device": {
+        "LTSSMState": "L0",
+        "TDPWatts": 100,
+        "baseSpeedMHz": 1200,
+        "constraints": {
+          "nonRemovableDevices": [
+            {
+              "deviceID": "0ca6a442-784d-47c7-ba0c-c4077953da48"
+            },
+            {
+              "deviceID": "54fd3675-8ad1-42d7-8d61-067dea3f446a"
+            },
+            {
+              "deviceID": "98260b19-f7de-4461-b6e2-63bc60bd1783"
+            },
+            {
+              "deviceID": "f843ae2c-4157-4469-9635-300fb04fdb7b"
+            },
+            {
+              "deviceID": "bfac0e5a-f1b7-42eb-bc69-2e28b5c9f9f8"
+            }
+          ]
+        },
+        "deviceID": "b9a1e642-da2e-403a-88f5-fa0eca0d9c52",
+        "idle": 99,
+        "infoTimestamp": "2025-01-14T01:15:07Z",
+        "instructionSet": "x86-64",
+        "links": [
+          {
+            "deviceID": "0ca6a442-784d-47c7-ba0c-c4077953da48",
+            "type": "GPU"
+          },
+          {
+            "deviceID": "54fd3675-8ad1-42d7-8d61-067dea3f446a",
+            "type": "memory"
+          },
+          {
+            "deviceID": "98260b19-f7de-4461-b6e2-63bc60bd1783",
+            "type": "memory"
+          },
+          {
+            "deviceID": "f843ae2c-4157-4469-9635-300fb04fdb7b",
+            "type": "storage"
+          },
+          {
+            "deviceID": "bfac0e5a-f1b7-42eb-bc69-2e28b5c9f9f8",
+            "type": "networkInterface"
+          }
+        ],
+        "manufacturer": "GenuineIntel",
+        "memorySummary": {
+          "ECCModeEnabled": true,
+          "totalCacheSizeMiB": 4096,
+          "totalMemorySizeMiB": 8192
+        },
+        "metricBandwidthPercent": 53,
+        "metricCaches": [
+          {
+            "hitRatio": 0.719,
+            "miss": 0.12,
+            "missesPerInstruction": 0.00088,
+            "occupancyBytes": 3030144,
+            "occupancyPercent": 90.1
+          }
+        ],
+        "metricCoreMetrics": [
+          {
+            "coreCaches": [
+              {
+                "occupancyBytes": 198231,
+                "occupancyPercent": 77.4
+              }
+            ],
+            "coreID": "core0",
+            "instructionsPerCycle": 1.16
+          }
+        ],
+        "metricEnergyJoules": {
+          "reading": 51,
+          "readingTime": "2024-12-27T03:34:10Z",
+          "sensingInterval": 3,
+          "sensorResetTime": "2024-12-24T03:34:10Z"
+        },
+        "metricLocalMemoryBandwidthBytes": 18253611008,
+        "metricOperatingSpeedMHz": 2400,
+        "metricRemoteMemoryBandwidthBytes": 81788928,
+        "model": "Intel(R) Xeon(R) Gold 5218 CPU @ 2.30GHz",
+        "operatingSpeedMHz": 3200,
+        "powerCapability": true,
+        "powerState": "On",
+        "processorArchitecture": "x86",
+        "processorID": {
+          "effectiveFamily": "0x42",
+          "effectiveModel": "0x61",
+          "identificationRegister": "0x34AC34DC8901274A",
+          "microcodeInfo": "0x429943",
+          "protectedIdentificationNumber": "123456",
+          "step": "0x1",
+          "vendorID": "GenuineIntel"
+        },
+        "processorMemories": [
+          {
+            "capacityMiB": 4096,
+            "integrated": true,
+            "speedMHz": 1200,
+            "type": "DDR"
+          }
+        ],
+        "serialNumber": "PROCESSOR2",
+        "socketNum": 1,
+        "status": {
+          "health": "OK",
+          "state": "Enabled"
+        },
+        "system": 0,
+        "totalCores": 4,
+        "totalEnabledCores": 4,
+        "totalThreads": 8,
+        "type": "CPU",
+        "usageRate": 1,
+        "user": 0,
+        "wait": 0
+      },
+      "nodeIDs": [
+        "b9a1e642-da2e-403a-88f5-fa0eca0d9c52"
+      ],
+      "resourceGroupIDs": [
+        "00000000-0000-7000-8000-000000000000"
+      ]
+    },
+    {
+      "annotation": {
+        "available": true
+      },
+      "detected": true,
+      "device": {
+        "bitRate": "9600",
+        "constraints": {
+          "nonRemovableDevices": [
+            {
+              "deviceID": "b9a1e642-da2e-403a-88f5-fa0eca0d9c52"
+            }
+          ]
+        },
+        "controllers": [
+          {
+            "PCIeInterface": {
+              "PCIeType": "Gen2",
+              "lanesInUse": 1,
+              "maxLanes": 4,
+              "maxPCIeType": "Gen3"
+            },
+            "capability": {
+              "dataCenterBridging": {
+                "capable": true
+              },
+              "networkDeviceFunctionCount": 8,
+              "networkPortCount": 2,
+              "npar": {
+                "capable": true,
+                "enabled": false
+              },
+              "npiv": {
+                "maxDeviceLogins": 4,
+                "maxPortLogins": 2
+              },
+              "virtualizationOffload": {
+                "sriov": {
+                  "VEPACapable": true
+                },
+                "virtualFunction": {
+                  "deviceMaxCount": 256,
+                  "minAssignmentGroupSize": 4,
+                  "networkPortMaxCount": 128
+                }
+              }
+            },
+            "firmwarePackageVersion": "7.4.10",
+            "identifiers": [
+              {
+                "durableName": "32ADF365CNIC3002",
+                "durableNameFormat": "NAA"
+              }
+            ],
+            "location": {
+              "partLocation": {
+                "ordinalValue": 0,
+                "orientation": "LeftToRight",
+                "reference": "Rear",
+                "serviceLabel": "Slot 1",
+                "type": "Slot"
+              }
+            }
+          }
+        ],
+        "deviceEnabled": true,
+        "deviceID": "bfac0e5a-f1b7-42eb-bc69-2e28b5c9f9f8",
+        "ethernet": {
+          "MACAddress": "52:54:00:06:e9:36",
+          "MTUSize": 1500,
+          "MTUSizeMaximum": 5000,
+          "permanentMACAddress": "52:54:00:06:e9:36",
+          "vlan": {
+            "Id": 101,
+            "enable": true
+          }
+        },
+        "fabricAdapterManufacturer": "Contoso",
+        "fabricAdapterModel": "nic",
+        "fabricAdapterSerialNumber": "3002",
+        "functionMaxBandwidths": [
+          {
+            "allocationPercent": 80
+          }
+        ],
+        "functionMinBandwidths": [
+          {
+            "allocationPercent": 80
+          }
+        ],
+        "infoTimestamp": "2025-01-14T01:15:08Z",
+        "limits": [
+          {
+            "burstBytesPerSecond": 80,
+            "burstPacketsPerSecond": 12,
+            "direction": "Ingress",
+            "sustainedBytesPerSecond": 20,
+            "sustainedPacketsPerSecond": 10
+          }
+        ],
+        "linkConfigurations": [
+          {
+            "capableLinkSpeedsGbps": [
+              10,
+              40
+            ]
+          }
+        ],
+        "links": [
+          {
+            "deviceID": "b9a1e642-da2e-403a-88f5-fa0eca0d9c52",
+            "type": "CPU"
+          }
+        ],
+        "maxSpeedGbps": 48,
+        "metricEnergyJoules": {
+          "reading": 13,
+          "readingTime": "2024-12-27T03:34:10Z",
+          "sensingInterval": 3,
+          "sensorResetTime": "2024-12-24T03:34:10Z"
+        },
+        "metricsCPUCorePercent": 8.35,
+        "metricsHostBusRXPercent": 6.75,
+        "metricsHostBusTXPercent": 12.21,
+        "metricsRXAvgQueueDepthPercent": 21.2,
+        "metricsRXBytes": 7754199970,
+        "metricsRXFrames": 27193387,
+        "metricsTXAvgQueueDepthPercent": 13.7,
+        "metricsTXBytes": 9436506547,
+        "metricsTXFrames": 18205770,
+        "model": "nic",
+        "networkAdapterManufacturer": "Contoso",
+        "networkAdapterModel": "nic",
+        "networkAdapterSerialNumber": "3002",
+        "networkInterfaceInformation": {
+          "networkSpeed": -1,
+          "networkTraffic": {
+            "bytesRecv": 87239589,
+            "bytesSent": 4384482,
+            "dropin": 260116,
+            "dropout": 0,
+            "errin": 0,
+            "errout": 0,
+            "receivePackets": 318379,
+            "transmitPackets": 60913
+          }
+        },
+        "powerCapability": false,
+        "powerState": "On",
+        "status": {
+          "health": "OK",
+          "state": "Enabled"
+        },
+        "type": "networkInterface"
+      },
+      "nodeIDs": [
+        "b9a1e642-da2e-403a-88f5-fa0eca0d9c52"
+      ],
+      "resourceGroupIDs": [
+        "00000000-0000-7000-8000-000000000000"
+      ]
+    },
+    {
+      "annotation": {
+        "available": true
+      },
+      "detected": true,
+      "device": {
+        "bitRate": "9600",
+        "constraints": {
+          "nonRemovableDevices": [
+            {
+              "deviceID": "b477ea1c-db3d-48b3-9725-b0ce6e25efc2"
+            }
+          ]
+        },
+        "controllers": [
+          {
+            "PCIeInterface": {
+              "PCIeType": "Gen2",
+              "lanesInUse": 1,
+              "maxLanes": 4,
+              "maxPCIeType": "Gen3"
+            },
+            "capability": {
+              "dataCenterBridging": {
+                "capable": true
+              },
+              "networkDeviceFunctionCount": 8,
+              "networkPortCount": 2,
+              "npar": {
+                "capable": true,
+                "enabled": false
+              },
+              "npiv": {
+                "maxDeviceLogins": 4,
+                "maxPortLogins": 2
+              },
+              "virtualizationOffload": {
+                "sriov": {
+                  "VEPACapable": true
+                },
+                "virtualFunction": {
+                  "deviceMaxCount": 256,
+                  "minAssignmentGroupSize": 4,
+                  "networkPortMaxCount": 128
+                }
+              }
+            },
+            "firmwarePackageVersion": "7.4.10",
+            "identifiers": [
+              {
+                "durableName": "32ADF365CNIC3002",
+                "durableNameFormat": "NAA"
+              }
+            ],
+            "location": {
+              "partLocation": {
+                "ordinalValue": 0,
+                "orientation": "LeftToRight",
+                "reference": "Rear",
+                "serviceLabel": "Slot 1",
+                "type": "Slot"
+              }
+            }
+          }
+        ],
+        "deviceEnabled": true,
+        "deviceID": "2eb602dc-e4c2-4064-b272-e409ad5c9b42",
+        "ethernet": {
+          "MACAddress": "52:54:00:06:e9:36",
+          "MTUSize": 1500,
+          "MTUSizeMaximum": 5000,
+          "permanentMACAddress": "52:54:00:06:e9:36",
+          "vlan": {
+            "Id": 101,
+            "enable": true
+          }
+        },
+        "fabricAdapterManufacturer": "Contoso",
+        "fabricAdapterModel": "nic",
+        "fabricAdapterSerialNumber": "3002",
+        "functionMaxBandwidths": [
+          {
+            "allocationPercent": 80
+          }
+        ],
+        "functionMinBandwidths": [
+          {
+            "allocationPercent": 80
+          }
+        ],
+        "infoTimestamp": "2025-01-14T01:15:08Z",
+        "limits": [
+          {
+            "burstBytesPerSecond": 80,
+            "burstPacketsPerSecond": 12,
+            "direction": "Ingress",
+            "sustainedBytesPerSecond": 20,
+            "sustainedPacketsPerSecond": 10
+          }
+        ],
+        "linkConfigurations": [
+          {
+            "capableLinkSpeedsGbps": [
+              10,
+              40
+            ]
+          }
+        ],
+        "links": [
+          {
+            "deviceID": "b477ea1c-db3d-48b3-9725-b0ce6e25efc2",
+            "type": "CPU"
+          }
+        ],
+        "maxSpeedGbps": 48,
+        "metricEnergyJoules": {
+          "reading": 13,
+          "readingTime": "2024-12-27T03:34:10Z",
+          "sensingInterval": 3,
+          "sensorResetTime": "2024-12-24T03:34:10Z"
+        },
+        "metricsCPUCorePercent": 8.35,
+        "metricsHostBusRXPercent": 6.75,
+        "metricsHostBusTXPercent": 12.21,
+        "metricsRXAvgQueueDepthPercent": 21.2,
+        "metricsRXBytes": 7754199970,
+        "metricsRXFrames": 27193387,
+        "metricsTXAvgQueueDepthPercent": 13.7,
+        "metricsTXBytes": 9436506547,
+        "metricsTXFrames": 18205770,
+        "model": "nic",
+        "networkAdapterManufacturer": "Contoso",
+        "networkAdapterModel": "nic",
+        "networkAdapterSerialNumber": "3002",
+        "networkInterfaceInformation": {
+          "networkSpeed": -1,
+          "networkTraffic": {
+            "bytesRecv": 87239589,
+            "bytesSent": 4384482,
+            "dropin": 260116,
+            "dropout": 0,
+            "errin": 0,
+            "errout": 0,
+            "receivePackets": 318379,
+            "transmitPackets": 60913
+          }
+        },
+        "powerCapability": false,
+        "powerState": "On",
+        "status": {
+          "health": "OK",
+          "state": "Enabled"
+        },
+        "type": "networkInterface"
+      },
+      "nodeIDs": [
+        "b477ea1c-db3d-48b3-9725-b0ce6e25efc2"
+      ],
+      "resourceGroupIDs": [
+        "00000000-0000-7000-8000-000000000000"
+      ]
+    },
+    {
+      "annotation": {
+        "available": true
+      },
+      "detected": true,
+      "device": {
+        "constraints": {
+          "nonRemovableDevices": [
+            {
+              "deviceID": "b477ea1c-db3d-48b3-9725-b0ce6e25efc2"
+            }
+          ]
+        },
+        "deviceID": "e56a1a1c-0556-42ca-8cbb-7c6dc86561eb",
+        "disk": {
+          "amountUsedDisk": 1919250432,
+          "usageIO": {
+            "busyRate": 1,
+            "readBytes": 155277824,
+            "readCount": 4614,
+            "readMergedCount": 1,
+            "readTime": 1852,
+            "writeBytes": 285068800,
+            "writeCount": 17315,
+            "writeMergedCount": 3137,
+            "writeTime": 12252
+          }
+        },
+        "driveCapableSpeedGbs": 3200,
+        "driveCapacityBytes": 4294967296,
+        "driveHotspareType": "None",
+        "driveIdentifiers": [
+          {
+            "durableName": "32ADF365CDRI2001",
+            "durableNameFormat": "NAA"
+          }
+        ],
+        "driveManufacturer": "Contoso",
+        "driveModel": "stg",
+        "driveNegotiatedSpeedGbs": 12,
+        "drivePredictedMediaLifeLeftPercent": 50,
+        "driveSerialNumber": "2001",
+        "infoTimestamp": "2025-01-14T01:14:56Z",
+        "links": [
+          {
+            "deviceID": "b477ea1c-db3d-48b3-9725-b0ce6e25efc2",
+            "type": "CPU"
+          }
+        ],
+        "metricEnergyJoules": {
+          "reading": 53,
+          "readingTime": "2024-12-27T03:34:10Z",
+          "sensingInterval": 3,
+          "sensorResetTime": "2024-12-24T03:34:10Z"
+        },
+        "model": "stg",
+        "powerCapability": false,
+        "powerState": "On",
+        "status": {
+          "health": "Critical",
+          "state": "Enabled"
+        },
+        "storageRedundancies": [
+          {
+            "enabled": true,
+            "maxNumSupported": 2,
+            "minNumNeeded": 1,
+            "mode": "Sharing",
+            "name": "Name"
+          }
+        ],
+        "type": "storage",
+        "volumeAccessCapabilities": [
+          "Append",
+          "Read"
+        ],
+        "volumeCapacity": {
+          "data": {
+            "allocatedBytes": 104857600,
+            "consumedBytes": 1024000,
+            "guaranteedBytes": 104857600,
+            "provisionedBytes": 107374182400
+          },
+          "metadata": {
+            "allocatedBytes": 104857600,
+            "consumedBytes": 0,
+            "guaranteedBytes": 104857600,
+            "provisionedBytes": 107374182400
+          },
+          "snapshot": {
+            "allocatedBytes": 104857600,
+            "consumedBytes": 0,
+            "guaranteedBytes": 104857600,
+            "provisionedBytes": 107374182400
+          }
+        },
+        "volumeCapacityBytes": 4294967296,
+        "volumeIdentifiers": [
+          {
+            "durableName": "32ADF365CVOL2001",
+            "durableNameFormat": "UUID"
+          }
+        ],
+        "volumeManufacturer": "Contoso",
+        "volumeMaxBlockSizeBytes": 1024,
+        "volumeModel": "Modelxx123",
+        "volumeOptimumIOSizeBytes": 8096,
+        "volumeRecoverableCapacitySourceCount": 16,
+        "volumeRemainingCapacityPercent": 2
+      },
+      "nodeIDs": [
+        "b477ea1c-db3d-48b3-9725-b0ce6e25efc2"
+      ],
+      "resourceGroupIDs": [
+        "00000000-0000-7000-8000-000000000000"
+      ]
+    },
+    {
+      "annotation": {
+        "available": true
+      },
+      "detected": true,
+      "device": {
+        "TDPWatts": 100,
+        "baseSpeedMHz": 1200,
+        "constraints": {
+          "nonRemovableDevices": [
+            {
+              "deviceID": "b477ea1c-db3d-48b3-9725-b0ce6e25efc2"
+            }
+          ]
+        },
+        "deviceID": "e63fbe90-1b8f-44bd-9f66-ca3a9ce159b2",
+        "infoTimestamp": "2025-01-14T01:14:56Z",
+        "instructionSet": "x86-64",
+        "links": [
+          {
+            "deviceID": "b477ea1c-db3d-48b3-9725-b0ce6e25efc2",
+            "type": "CPU"
+          }
+        ],
+        "manufacturer": "Intel(R) Corporation",
+        "memorySummary": {
+          "ECCModeEnabled": true,
+          "totalCacheSizeMiB": 4096,
+          "totalMemorySizeMiB": 8192
+        },
+        "metricBandwidthPercent": 69,
+        "metricCaches": [
+          {
+            "hitRatio": 0.719,
+            "miss": 0.12,
+            "missesPerInstruction": 0.00088,
+            "occupancyBytes": 3030144,
+            "occupancyPercent": 90.1
+          }
+        ],
+        "metricCoreMetrics": [
+          {
+            "coreCaches": [
+              {
+                "occupancyBytes": 198231,
+                "occupancyPercent": 77.4
+              }
+            ],
+            "coreID": "core0",
+            "instructionsPerCycle": 1.16
+          }
+        ],
+        "metricEnergyJoules": {
+          "reading": 64,
+          "readingTime": "2024-12-27T03:34:10Z",
+          "sensingInterval": 3,
+          "sensorResetTime": "2024-12-24T03:34:10Z"
+        },
+        "metricLocalMemoryBandwidthBytes": 18253611008,
+        "metricOperatingSpeedMHz": 2400,
+        "metricRemoteMemoryBandwidthBytes": 81788928,
+        "model": "gpu_2",
+        "operatingSpeedMHz": 3200,
+        "powerCapability": false,
+        "powerState": "On",
+        "processorArchitecture": "x86",
+        "processorID": {
+          "effectiveFamily": "0x42",
+          "effectiveModel": "0x61",
+          "identificationRegister": "0x34AC34DC8901274A",
+          "microcodeInfo": "0x429943",
+          "protectedIdentificationNumber": "123456",
+          "step": "0x1",
+          "vendorID": "GenuineIntel"
+        },
+        "processorMemories": [
+          {
+            "capacityMiB": 123,
+            "integrated": true,
+            "speedMHz": 1200,
+            "type": "DDR"
+          }
+        ],
+        "serialNumber": "5001",
+        "socketNum": 1,
+        "status": {
+          "health": "Warning",
+          "state": "Enabled"
+        },
+        "totalCores": 4,
+        "totalEnabledCores": 4,
+        "totalThreads": 8,
+        "type": "GPU"
+      },
+      "nodeIDs": [
+        "b477ea1c-db3d-48b3-9725-b0ce6e25efc2"
+      ],
+      "resourceGroupIDs": [
+        "00000000-0000-7000-8000-000000000000"
+      ]
+    },
+    {
+      "annotation": {
+        "available": true
+      },
+      "detected": true,
+      "device": {
+        "TDPWatts": 100,
+        "baseSpeedMHz": 1200,
+        "constraints": {
+          "nonRemovableDevices": [
+            {
+              "deviceID": "b9a1e642-da2e-403a-88f5-fa0eca0d9c52"
+            }
+          ]
+        },
+        "deviceID": "0ca6a442-784d-47c7-ba0c-c4077953da48",
+        "infoTimestamp": "2025-01-14T01:14:56Z",
+        "instructionSet": "x86-64",
+        "links": [
+          {
+            "deviceID": "b9a1e642-da2e-403a-88f5-fa0eca0d9c52",
+            "type": "CPU"
+          }
+        ],
+        "manufacturer": "Intel(R) Corporation",
+        "memorySummary": {
+          "ECCModeEnabled": true,
+          "totalCacheSizeMiB": 4096,
+          "totalMemorySizeMiB": 8192
+        },
+        "metricBandwidthPercent": 69,
+        "metricCaches": [
+          {
+            "hitRatio": 0.719,
+            "miss": 0.12,
+            "missesPerInstruction": 0.00088,
+            "occupancyBytes": 3030144,
+            "occupancyPercent": 90.1
+          }
+        ],
+        "metricCoreMetrics": [
+          {
+            "coreCaches": [
+              {
+                "occupancyBytes": 198231,
+                "occupancyPercent": 77.4
+              }
+            ],
+            "coreID": "core0",
+            "instructionsPerCycle": 1.16
+          }
+        ],
+        "metricEnergyJoules": {
+          "reading": 64,
+          "readingTime": "2024-12-27T03:34:10Z",
+          "sensingInterval": 3,
+          "sensorResetTime": "2024-12-24T03:34:10Z"
+        },
+        "metricLocalMemoryBandwidthBytes": 18253611008,
+        "metricOperatingSpeedMHz": 2400,
+        "metricRemoteMemoryBandwidthBytes": 81788928,
+        "model": "gpu_2",
+        "operatingSpeedMHz": 3200,
+        "powerCapability": false,
+        "powerState": "On",
+        "processorArchitecture": "x86",
+        "processorID": {
+          "effectiveFamily": "0x42",
+          "effectiveModel": "0x61",
+          "identificationRegister": "0x34AC34DC8901274A",
+          "microcodeInfo": "0x429943",
+          "protectedIdentificationNumber": "123456",
+          "step": "0x1",
+          "vendorID": "GenuineIntel"
+        },
+        "processorMemories": [
+          {
+            "capacityMiB": 123,
+            "integrated": true,
+            "speedMHz": 1200,
+            "type": "DDR"
+          }
+        ],
+        "serialNumber": "5001",
+        "socketNum": 1,
+        "status": {
+          "health": "Warning",
+          "state": "Enabled"
+        },
+        "totalCores": 4,
+        "totalEnabledCores": 4,
+        "totalThreads": 8,
+        "type": "GPU"
+      },
+      "nodeIDs": [
+        "b9a1e642-da2e-403a-88f5-fa0eca0d9c52"
+      ],
+      "resourceGroupIDs": [
+        "00000000-0000-7000-8000-000000000000"
+      ]
+    },
+    {
+      "annotation": {
+        "available": true
+      },
+      "detected": true,
+      "device": {
+        "constraints": {
+          "nonRemovableDevices": [
+            {
+              "deviceID": "b9a1e642-da2e-403a-88f5-fa0eca0d9c52"
+            }
+          ]
+        },
+        "deviceID": "f843ae2c-4157-4469-9635-300fb04fdb7b",
+        "disk": {
+          "amountUsedDisk": 1920270336,
+          "usageIO": {
+            "busyRate": 1,
+            "readBytes": 155281920,
+            "readCount": 4608,
+            "readMergedCount": 1,
+            "readTime": 1854,
+            "writeBytes": 283241984,
+            "writeCount": 19024,
+            "writeMergedCount": 3124,
+            "writeTime": 11980
+          }
+        },
+        "driveCapableSpeedGbs": 3200,
+        "driveCapacityBytes": 4294967296,
+        "driveHotspareType": "None",
+        "driveIdentifiers": [
+          {
+            "durableName": "32ADF365CDRI2002",
+            "durableNameFormat": "NAA"
+          }
+        ],
+        "driveManufacturer": "Contoso",
+        "driveModel": "stg",
+        "driveNegotiatedSpeedGbs": 12,
+        "drivePredictedMediaLifeLeftPercent": 50,
+        "driveSerialNumber": "2002",
+        "infoTimestamp": "2025-01-14T01:15:08Z",
+        "links": [
+          {
+            "deviceID": "b9a1e642-da2e-403a-88f5-fa0eca0d9c52",
+            "type": "CPU"
+          }
+        ],
+        "metricEnergyJoules": {
+          "reading": 57,
+          "readingTime": "2024-12-27T03:34:10Z",
+          "sensingInterval": 3,
+          "sensorResetTime": "2024-12-24T03:34:10Z"
+        },
+        "model": "stg",
+        "powerCapability": false,
+        "powerState": "On",
+        "status": {
+          "health": "OK",
+          "state": "Enabled"
+        },
+        "storageRedundancies": [
+          {
+            "enabled": true,
+            "maxNumSupported": 2,
+            "minNumNeeded": 1,
+            "mode": "Sharing",
+            "name": "Name"
+          }
+        ],
+        "type": "storage",
+        "volumeAccessCapabilities": [
+          "Append",
+          "Read"
+        ],
+        "volumeCapacity": {
+          "data": {
+            "allocatedBytes": 104857600,
+            "consumedBytes": 1024000,
+            "guaranteedBytes": 104857600,
+            "provisionedBytes": 107374182400
+          },
+          "metadata": {
+            "allocatedBytes": 104857600,
+            "consumedBytes": 0,
+            "guaranteedBytes": 104857600,
+            "provisionedBytes": 107374182400
+          },
+          "snapshot": {
+            "allocatedBytes": 104857600,
+            "consumedBytes": 0,
+            "guaranteedBytes": 104857600,
+            "provisionedBytes": 107374182400
+          }
+        },
+        "volumeCapacityBytes": 4294967296,
+        "volumeIdentifiers": [
+          {
+            "durableName": "32ADF365CVOL2002",
+            "durableNameFormat": "UUID"
+          }
+        ],
+        "volumeManufacturer": "Contoso",
+        "volumeMaxBlockSizeBytes": 1024,
+        "volumeModel": "Modelxx123",
+        "volumeOptimumIOSizeBytes": 8096,
+        "volumeRecoverableCapacitySourceCount": 16,
+        "volumeRemainingCapacityPercent": 17
+      },
+      "nodeIDs": [
+        "b9a1e642-da2e-403a-88f5-fa0eca0d9c52"
+      ],
+      "resourceGroupIDs": [
+        "00000000-0000-7000-8000-000000000000"
+      ]
+    }
+  ]
+}
