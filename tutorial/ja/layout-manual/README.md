@@ -162,7 +162,7 @@ $ vi test/template_1.json
    > 実行後、ノード一覧やリソース一覧に反映されるまで数分かかります。
 
    ![](imgs/result_templete_1.png)
-   FailedやSuspendの場合はもう一度[2.](#212-構成したい内容を記述する)から実行するか、 [トラブルシューティング](../appendix/troubleshooting/README.md)を参照してください。
+   FailedやSuspendの場合はもう一度[2.](#2112-構成したい内容を記述する)から実行するか、 [トラブルシューティング](../appendix/troubleshooting/README.md)を参照してください。
 
 ### 2.1.2. ノードを変更追加する
 
@@ -331,7 +331,7 @@ $ vi test/template_2.json
    > 実行後、ノード一覧やリソース一覧に反映されるまで数分かかります。
 
    ![](imgs/result_templete_2.png)
-   FailedやSuspendの場合はもう一度[2.](#222-構成したい内容を記述登録する)から実行するか、 [トラブルシューティング](../appendix/troubleshooting/README.md)を参照してください。
+   FailedやSuspendの場合はもう一度[2.](#2122-構成したい内容を記述登録する)から実行するか、 [トラブルシューティング](../appendix/troubleshooting/README.md)を参照してください。
 
 ### 2.1.3. ノードを削除する
 
@@ -403,7 +403,7 @@ $ vi test/template_3.json
    > 実行後、ノード一覧やリソース一覧に反映されるまで数分かかります。
 
    ![](imgs/result_templete_3.png)
-   FailedやSuspendの場合はもう一度[2.](#232-構成したい内容を記述登録する)から実行するか、 [トラブルシューティング](../appendix/troubleshooting/README.md)を参照してください。
+   FailedやSuspendの場合はもう一度[2.](#2132-構成したい内容を記述登録する)から実行するか、 [トラブルシューティング](../appendix/troubleshooting/README.md)を参照してください。
 
 ### 2.1.4. APIを用いた構成変更
 

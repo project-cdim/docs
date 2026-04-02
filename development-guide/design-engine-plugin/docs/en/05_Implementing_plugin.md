@@ -59,7 +59,7 @@ If an error occurs in the plugin/design engine, raise `PluginProcessException` o
 
 Follow these steps to call the [2.1. REST APIs of the Layout Design](02_LayoutDesignFunctions.md#21-rest-apis-of-the-layout-design):
 
-1. Prepare the [sample input data](samples/data/post_request_data.json) to be passed to the Layout Design Request.
+1. Prepare the [sample input data](../../samples/data/post_request_data.json) to be passed to the Layout Design Request.
 2. Run the layout design request with the file from step 1 as the request body.  
   Example:
   ```shell

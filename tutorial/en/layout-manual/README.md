@@ -162,7 +162,7 @@ $ vi test/template_1.json
 
    ![](imgs/result_template_1.png)
 
-   If the status indicates Failure or Suspension, retry from [step 2](#212-describe-the-desired-configuration) or refer to [Troubleshooting](../appendix/troubleshooting/README.md).
+   If the status indicates Failure or Suspension, retry from [step 2](#2112-describe-the-desired-configuration) or refer to [Troubleshooting](../appendix/troubleshooting/README.md).
 
 ### 2.1.2. Modify and Add Nodes
 
@@ -331,7 +331,7 @@ $ vi test/template_2.json
 
    ![](imgs/result_template_2.png)
 
-   If the status indicates Failure or Suspension, retry from [step 2](#222-describe-and-register-the-desired-configuration) or refer to [Troubleshooting guide](../appendix/troubleshooting/README.md).
+   If the status indicates Failure or Suspension, retry from [step 2](#2122-describe-and-register-the-desired-configuration) or refer to [Troubleshooting guide](../appendix/troubleshooting/README.md).
 
 ### 2.1.3. Delete Nodes
 
@@ -402,7 +402,7 @@ $ vi test/template_3.json
    > Please allow a few minutes for the node list and resource list to update reflecting the changes post-execution.
    
    ![](imgs/result_template_3.png)
-   Should it display as Failed or Suspended, retry from [step 2](#232-describe-and-register-the-desired-configuration) or consult [Troubleshooting](../appendix/troubleshooting/README.md).
+   Should it display as Failed or Suspended, retry from [step 2](#2132-describe-and-register-the-desired-configuration) or consult [Troubleshooting](../appendix/troubleshooting/README.md).
 
 ### 2.1.4. Configuration Change via API
 

@@ -59,7 +59,7 @@ request_design(args: dict) -> str
 
 以下の手順で[2.1. 構成案設計機能のREST API](02_LayoutDesignFunctions.md#21-構成案設計機能のrest-api)を実行します。
 
-1. 構成案設計要求に渡す[入力情報のサンプル](samples/data/post_request_data.json)を用意します。
+1. 構成案設計要求に渡す[入力情報のサンプル](../../samples/data/post_request_data.json)を用意します。
 
 2. 1で用意した入力情報をリクエストボディに指定して構成案設計要求を実行します。  
   実行例:

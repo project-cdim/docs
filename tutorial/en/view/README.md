@@ -16,13 +16,13 @@ This section explains how to check hardware configuration and information from t
 > Refer to the [Notes](#19-notes) for further details.
 
 - [1.1. Overview of Hardware Configuration and Information](#11-overview-of-hardware-configuration-and-information)
-- [1.2. Check power consumption and resource status by resource type](#12-check-power-consumption-and-resource-status-by-resource-type)
-- [1.3. Check the list of constructed nodes](#13-check-the-list-of-constructed-nodes)
-- [1.4. Check the details of constructed nodes](#14-check-the-details-of-constructed-nodes)
-- [1.5. Check the list of registered resources](#15-check-the-list-of-registered-resources)
-- [1.6. Check the details of registered resources](#16-check-the-details-of-registered-resources)
-- [1.7. Check the list of configuration application status](#17-check-the-list-of-configuration-application-status)
-- [1.8. Operate and check the details of configuration application status](#18-operate-and-check-the-details-of-configuration-application-status)
+- [1.2. Check Power Consumption and Resource Status by Resource Type](#12-check-power-consumption-and-resource-status-by-resource-type)
+- [1.3. Check the List of Constructed Nodes](#13-check-the-list-of-constructed-nodes)
+- [1.4. Check the Details of Constructed Nodes](#14-check-the-details-of-constructed-nodes)
+- [1.5. Check the List of Registered Resources](#15-check-the-list-of-registered-resources)
+- [1.6. Check the Details of Registered Resources](#16-check-the-details-of-registered-resources)
+- [1.7. Check the List of Configuration Application Status](#17-check-the-list-of-configuration-application-status)
+- [1.8. Operate and Check the Details of Configuration Application Status](#18-operate-and-check-the-details-of-configuration-application-status)
 - [1.9. Notes](#19-notes)
 
 ##### 1.1. Overview of Hardware Configuration and Information
@@ -197,4 +197,4 @@ The following actions are possible:
 
   To adjust display settings in an emulator, refer to [Emulator Operation Details](../appendix/emulator/README.md).
 
-[Next: 2. Configuration Changes](../layout/README.md)
+[Next: 2.1 Configuration Changes by Manual Configuration Definition](../layout-manual/README.md)
