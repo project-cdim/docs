@@ -5,7 +5,7 @@
     {
       "policyID": "d8eceb14da",
       "category": "nodeConfigurationPolicy",
-      "title": "ノード構成制約に関する制約条件",
+      "title": "Policy Constraints for Node Configuration",
       "policy": {
         "hardwareConnectionsLimit": {
           "cpu": {
@@ -21,7 +21,7 @@
     {
       "policyID": "abc10dfaa9",
       "category": "systemOperationPolicy",
-      "title": "構成案設計時に算出されるリソース使用率のしきい値に関する制約",
+      "title": "Policy Constraints for System Operation",
       "policy": {
         "useThreshold": {
           "cpu": {

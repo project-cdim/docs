@@ -6,7 +6,7 @@ This section explains various configuration methods for Composable Disaggregated
   - [3.1.2. Change Log Output Methods](#312-change-log-output-methods)
 - [3.2. Change Information Collection Settings](#32-change-information-collection-settings)
 - [3.3. Change User Authentication Methods and Permissions](#33-change-user-authentication-methods-and-permissions)
-  - [3.3.1. Add Users](#331-add-users)
+  - [3.3.1. Manage Users](#331-manage-users)
   - [3.3.2. Change User Permissions in CDIM](#332-change-user-permissions-in-cdim)
   - [3.3.3. Register and Change User Authentication Methods](#333-register-and-change-user-authentication-methods)
     - [3.3.3.1. Password Authentication Settings](#3331-password-authentication-settings)
@@ -30,7 +30,7 @@ Logs are organized by component into the following files.
 | Application Log (Policy Manager)               | app_policy.log | policy-manager |
 | Application Log (Configuration Information Management) | app_config_info.log          | configuration-manager |
 | Application Log (Configuration Exporter)               | app_exporter.log             | configuration-exporter |
-| Application Log（Sample Design Engine） | sample_design_engine.log | layout-design |
+| Application Log (Sample Design Engine)  | sample_design_engine.log | layout-design |
 
 ##### 3.1.2. Change Log Output Methods
 To modify the log output settings, update the settings file corresponding to each component.
@@ -52,6 +52,7 @@ After modifying the settings, restart the component using [this procedure](../ap
 | Audit Log (Performance Information Exporter) | main.go | performance-exporter-compose/performance-exporter/performance-exporter |
 | Audit Log (Configuration Information Exporter) | main.go | configuration-exporter-compose/configuration-exporter/configuration-exporter |
 | Audit Log (Configuration Information Management) | middleware.go | configuration-manager-compose/configuration-manager/configuration-manager/server |
+| Performance Information Collection | logger.go | performance-collector-compose/performance-collector/performance-collector/internal/service |
 | Performance Information Exporter | logger.go | performance-exporter-compose/performance-exporter/performance-exporter/internal/service |
 | Configuration Information Exporter | controller_common.go | configuration-exporter-compose/configuration-exporter/configuration-exporter/controller |
 | Configuration Information Management | cm_applog.go | configuration-manager-compose/configuration-manager/configuration-manager/common |
@@ -155,7 +156,7 @@ $ curl -i -s -X POST http://localhost:8080/cdim/api/v1/configs
 > Keycloak is used for authentication.  
 > For details, refer to the [official documentation (English version)](https://www.keycloak.org/documentation).
 
-##### 3.3.1. Add Users
+##### 3.3.1. Manage Users
 
 1. Access the Keycloak master URL for CDIM user management and log in
    - **When using the user management screen:**  
@@ -164,24 +165,25 @@ $ curl -i -s -X POST http://localhost:8080/cdim/api/v1/configs
      ![](imgs/user-dashboard.png)
 
    - **When using the Keycloak management URL:**  
-     Follow the instructions in [getting started](../../../getting-started/en/setup/setup.md#2-frontend) to log in directly to the Keycloak management screen.  
-     After logging in, switch to the CDIM management screen by changing the dropdown list in the upper left from Keycloak to CDIM.
+     Follow [getting started](../../../getting-started/en/setup/setup.md#2-frontend) to log in directly to the Keycloak Admin Console.  
+     After logging in, click "Manage realm" in the upper left, and then select "CDIM" on the next page.  
+     This switches you to the CDIM realm (CDIM management console).
 
 > [!NOTE]
 > If you access via the user management screen and encounter a "We are sorry" error, it is not an issue.  
 > Click "Back to Application" to proceed to the CDIM management URL.
 
 > [!NOTE]
-> Also, users without the cdim-administrator role can transition to the user management screen, but cannot make changes such as adding users.
+> Also, users without the cdim-administrator role can transition to the user management screen, but cannot make changes (for example, adding or deleting users)
 
-1. To add users:
+2. To add users:
    - Click "Users" in the menu on the left and then click the "Add User" button.
    ![](imgs/user-console-keycloak.png)
    - Choose "English/Japanese" for the locale and enter the user name.
    ![](imgs/add-user-keycloak.png)
    - After filling in other necessary fields, click the "Create" button.
 
-2. To delete a user:
+3. To delete a user:
    - Select the desired user and click "Delete User".
    ![](imgs/delete-user.png)
    ![](imgs/delete-user2.png)
@@ -194,17 +196,15 @@ $ curl -i -s -X POST http://localhost:8080/cdim/api/v1/configs
      ![](imgs/user-details-keycloak.png)
 
   2. Modify permissions via "Role mapping":
-     - Click "Role mapping" from the tabs at the top and click "Assign role".
+     - Click "Role mapping" in the tabs at the top and click "Assign role". In the drop-down list, select "Realm roles".   
      ![](imgs/user-rolemapping-keycloak.png)  
-     - Change the filter in the upper left to "Filter by realm roles".  
-     ![](imgs/change-filter-keycloak.png)  
      - Check the permissions to add and click "Assign".
      ![](imgs/add-roles-keycloak.png)
      - Require the user to log in again to apply the settings.
 
    <details>
    <summary> Details of CDIM Permissions </summary>
-   Available when filtering by "filter by realm roles".
+   Available after clicking "Assign role" and selecting "Realm roles".
 
    - User role
   
@@ -216,7 +216,7 @@ $ curl -i -s -X POST http://localhost:8080/cdim/api/v1/configs
    
    - Role for function
 
-   |名前|説明|
+   |Name|Description|
    |:--|:--|
    |cdim-manage-resource| Resource management :<br>&nbsp; - View any pages<br>&nbsp; - Operate resource(Power control/Aggregation resource) |
    |cdim-manage-layout| Layout management |

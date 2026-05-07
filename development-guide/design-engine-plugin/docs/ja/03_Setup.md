@@ -49,21 +49,21 @@
 開発ではこれらの接続先としてスタブを使用します。
 
 スタブは、本ガイドと同じGitリポジトリに登録されています。  
-本ガイドのGitリポジトリ(`design-engine-plugin-dev-guide`)を任意のディレクトリへクローンします。
+本ガイドが格納されたGitリポジトリ[`docs`](https://github.com/project-cdim/docs.git)を任意のディレクトリへクローンして、ディレクトリを移動します。
 
-<!-- TODO: 確定後に修正 -->
 ``` shell
 cd <任意のディレクトリパス>
-git clone <git url> --recursive
+git clone https://github.com/project-cdim/docs.git --recursive
+cd ./docs/development-guide/design-engine-plugin/
 ```
 
-以下、作成されたディレクトリを`design-engine-plugin-dev-guide`と表記します。
+以下、本ガイドのディレクトリを`design-engine-plugin`と表記します。
 
-`design-engine-plugin-dev-guide/rest-api-stub`にスタブが登録されています。  
-`design-engine-plugin-dev-guide/rest-api-stub`で以下を実行し、Python仮想環境(venv)の作成とパッケージのダウンロードを行います。
+`design-engine-plugin/rest-api-stub`にスタブが登録されています。  
+`design-engine-plugin/rest-api-stub`で以下を実行し、Python仮想環境(venv)の作成とパッケージのダウンロードを行います。
 
 ``` shell
-cd ./design-engine-plugin-dev-guide/rest-api-stub/
+cd <任意のディレクトリパス>/docs/development-guide/design-engine-plugin/rest-api-stub/
 pdm install
 ```
 
@@ -72,7 +72,7 @@ pdm install
 デフォルトで8002番ポートを使用します。
   変更する場合は以下のファイルを編集します。
 
-- 設定ファイル: `design-engine-plugin-dev-guide/rest-api-stub/src/settings.py`
+- 設定ファイル: `design-engine-plugin/rest-api-stub/src/settings.py`
 
 ``` python
 PORT = 8002  # ポート番号を変更する場合はこの値を修正
@@ -88,21 +88,21 @@ PORT = 8002  # ポート番号を変更する場合はこの値を修正
 
 以下のPythonファイルを実行して、スタブを起動します。
 
-- 起動ファイル: `design-engine-plugin-dev-guide/rest-api-stub/src/main.py`
+- 起動ファイル: `design-engine-plugin/rest-api-stub/src/main.py`
 
 起動コマンド例:
 ``` shell
+cd <任意のディレクトリパス>/docs/development-guide/design-engine-plugin/rest-api-stub/
 pdm run python src/main.py
 ```
 
 ## 3.2. 構成案設計のセットアップ
 
-構成案設計機能のGitリポジトリ(`layout-design-compose`)を任意のディレクトリへクローンします。
+構成案設計機能のGitリポジトリ[`layout-design-compose`](https://github.com/project-cdim/layout-design-compose.git)を任意のディレクトリへクローンします。
 
-<!-- TODO: 確定後に修正 -->
 ``` shell
 cd <任意のディレクトリパス>
-git clone <git url> --recursive
+git clone https://github.com/project-cdim/layout-design-compose.git --recursive
 ```
 
 以下、作成されたディレクトリを`layout-design-compose`と表記します。
@@ -162,7 +162,7 @@ configuration_manager:
 - スタブを使用する場合は、以下を修正してください
   - スタブはコンテナ外で動作するため、`localhost`をホストのIPアドレスに変更してください。
   - ポート番号をスタブ側の`PORT`設定 (デフォルト: `8002`) と一致するよう変更してください。
-  - デフォルト値のパスパラメータは`dapr`を経由して通信する場合の値です。スタブを使用する場合は以下の記入例を参考にパスパラメータを指定してください。
+  - デフォルト値のパスパラメータは`dapr`を経由して通信する場合の値です。スタブを使用する場合は`dapr`を経由しないため、以下の記入例を参考にパスパラメータを指定してください。
 
 変更後の記入例:
 ``` yaml
@@ -193,7 +193,7 @@ layout-design-compose/layout-design/plugins/
 ```
 
 プラグインは[5. プラグインの実装](05_Implementing_plugin.md)で説明する機能以外に制約などはありません。  
-プラグインの実装例として、サンプルプラグインを`design-engine-plugin-dev-guide/samples/sample-design-engine-plugin`に配置しています。
+プラグインの実装例として、サンプルプラグインを`design-engine-plugin/samples/sample-design-engine-plugin`に配置しています。
 
 サンプルプラグインを使用する場合、サンプルプラグインから構成案反映のREST APIを呼び出します。  
 サンプルプラグインの設定ファイル(`layout-design-compose/layout-design/config/config_sample_design_engine.yaml`)にログに関する設定項目、および構成案反映APIのURIが記載されています。  

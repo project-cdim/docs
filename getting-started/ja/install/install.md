@@ -94,7 +94,7 @@ cd base-compose
 サンプルファイル `.env.example` を元に設定ファイル `.env` を作成します。
 
 ```sh
-cp .env
+cp .env.example .env
 ```
 
 #### 3.1.2. 設定ファイルの修正

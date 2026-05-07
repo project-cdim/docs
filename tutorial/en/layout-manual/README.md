@@ -6,9 +6,7 @@ There are two main functionalities in configuration changes:
 - **Configuration Change Function**
   - This feature enables batch configuration changes across multiple nodes simultaneously.
 - **Configuration Change via API**
-  - This feature facilitates granular configuration adjustments such as toggling individual device states, especially useful when an error occurs in the batch configuration function.
-
-<br>
+  - This feature is used for granular operations such as turning devices on/off. It is also useful for troubleshooting and isolating issues.
 
 - [2.1.1. Create a New Node](#211-create-a-new-node)
   - [2.1.1.1. Check Device Information](#2111-check-device-information)
@@ -40,11 +38,11 @@ Validate the specifications of each device by accessing the detailed device scre
 Confirm the device IDs to be utilized post configuration change.
 
 > [!WARNING]
-> Some devices are pre-connected to a CPU as built-in devices, and these built-in devices cannot be connected to any CPU other than the one they are pre-connected to.
-> The method to check whether a device is a built-in device is as follows:
-> - If "nonRemovableDevices" is listed in the detailed information: It is a built-in device and is connected to the CPU with the listed device ID.
-> - If "nonRemovableDevices" is not listed in the detailed information: It is not a built-in device.
-> Note: CPUs is not built-in devices. The "nonRemovableDevices" listed for detailed information of the CPU indicate the CPU have those built-in devices.
+> Some devices are connected to a CPU in advance and cannot be removed from the CPU (e.g., devices built into the server chassis where the CPU is installed). In this document, such devices are referred to as non-removable devices.
+> The method to check whether a device is a non-removable device is as follows:
+> - If "nonRemovableDevices" is listed in the detailed information: It is a non-removable device and is connected to the CPU with the listed device ID.
+> - If "nonRemovableDevices" is not listed in the detailed information: It is not a non-removable device.
+> Note: CPUs is not non-removable devices. The "nonRemovableDevices" listed for detailed information of the CPU indicate the CPU have those non-removable devices.
 > ![](imgs/nonRemovableDevice.png)
 
 #### 2.1.1.2. Describe the Desired Configuration
@@ -62,8 +60,8 @@ $ vi test/template_1.json
 ```json
 {
     "targetNodeIDs": [
-            "408f0ee4-4570-4461-b6c4-4c1f4bf4756e",
-            "5a5cc33d-11e5-4b80-89ef-4af5cf342c6e"
+        "38ac1c7f-7abc-469f-a313-7d2851c80d66",
+        "3d7d3b72-216c-4e2d-a549-092ac11b7c0d"
     ],
     "desiredLayout": {
         "nodes": [
@@ -71,28 +69,28 @@ $ vi test/template_1.json
                 "device": {
                     "cpu": {
                         "deviceIDs": [
-                            "408f0ee4-4570-4461-b6c4-4c1f4bf4756e"
+                            "38ac1c7f-7abc-469f-a313-7d2851c80d66"
                         ]
                     },
                     "memory": {
                         "deviceIDs": [
-                            "1bb7cd4a-e635-49a5-9ca1-e97b7699c32c",
-                            "108ad96d-af9a-4af5-ab4f-9aee1d52698e"
+                            "aa58210b-a007-4fc8-9795-1b37907a87b9",
+                            "0a4588f1-3dc4-45d9-a246-b4694b099655"
                         ]
                     },
                     "storage": {
                         "deviceIDs": [
-                            "12836b47-e2ec-4209-8c91-875fade897e7"
+                            "084606d6-79e7-4ec0-a626-826e85ef807c"
                         ]
                     },
                     "networkInterface": {
                         "deviceIDs": [
-                            "cd3d1f47-fde5-4cb0-bc6e-bb79921280f8"
+                            "8e7a0894-c47a-4724-b686-a528eed78097"
                         ]
                     },
                     "gpu": [
                         {
-                            "deviceID": "060da9eb-4fba-4c06-9d0f-bf1c56992037"
+                            "deviceID": "34d40e14-8814-4f07-b9ab-5c839e7d7fbb"
                         }
                     ]
                 }
@@ -101,28 +99,28 @@ $ vi test/template_1.json
                 "device": {
                     "cpu": {
                         "deviceIDs": [
-                            "5a5cc33d-11e5-4b80-89ef-4af5cf342c6e"
+                            "3d7d3b72-216c-4e2d-a549-092ac11b7c0d"
                         ]
                     },
                     "memory": {
                         "deviceIDs": [
-                            "8c1e4a13-2d27-4431-9b82-d2f65f49313e",
-                            "3a2cd9bc-d4fb-4eaf-881b-a8ac98a91b1b"
+                            "b1ebc38b-f748-4188-a76e-567b7d99eef0",
+                            "14d20c12-7c53-4790-929c-c304595c3297"
                         ]
                     },
                     "storage": {
                         "deviceIDs": [
-                            "1ea189b4-ad07-4519-ac2b-e1301151bf1c"
+                            "0d4f64f4-fc8e-4314-8216-d37bb7a99102"
                         ]
                     },
                     "networkInterface": {
                         "deviceIDs": [
-                            "be347398-9179-4173-8bda-15d55083606c"
+                            "e79c6939-d20d-41c2-8685-13c05c910be3"
                         ]
                     },
                     "gpu": [
                         {
-                            "deviceID": "189a08b2-a609-489b-8958-9876925c426b"
+                            "deviceID": "78a8284c-a47c-4c1f-a554-bbe8807e41b3"
                         }
                     ]
                 }
@@ -173,12 +171,8 @@ Investigate the detailed screens of each device and select the specifications yo
 After settling on the node configuration, confirm both the device IDs currently in use and those that will be deployed post-configuration.
 
 > [!WARNING]
-> Some devices are pre-connected to a CPU as built-in devices, and these built-in devices cannot be connected to any CPU other than the one they are pre-connected to.
-> The method to check whether a device is a built-in device is as follows:
-> - If "nonRemovableDevices" is listed in the detailed information: It is a built-in device and is connected to the CPU with the listed device ID.
-> - If "nonRemovableDevices" is not listed in the detailed information: It is not a built-in device.
-> Note: CPUs is not built-in devices. The "nonRemovableDevices" listed for detailed information of the CPU indicate the CPU have those built-in devices.
-> ![](imgs/nonRemovableDevice.png)
+> Non-removable devices cannot be connected to any CPU other than the one they are originally connected to.  
+> For details on how to identify non-removable devices, see [2.1.1.1.](#2111-check-device-information).
 
 #### 2.1.2.2. Describe and Register the Desired Configuration
 
@@ -195,9 +189,9 @@ $ vi test/template_2.json
 ```json
 {
     "targetNodeIDs": [
-            "5a5cc33d-11e5-4b80-89ef-4af5cf342c6e",
-            "6e40fc9e-b99a-455e-bce3-21e360ed9f71",
-            "77683d0a-d257-4b4d-a7ec-57eba1466681"
+        "5a2abba5-5503-4df5-9950-f86e4c54bbc3",
+        "63a5b9f5-b411-4afe-b44e-e06a4315b1fd",
+        "3d7d3b72-216c-4e2d-a549-092ac11b7c0d"
     ],
     "desiredLayout": {
         "nodes": [
@@ -205,37 +199,37 @@ $ vi test/template_2.json
                 "device": {
                     "cpu": {
                         "deviceIDs": [
-                            "5a5cc33d-11e5-4b80-89ef-4af5cf342c6e"
+                            "3d7d3b72-216c-4e2d-a549-092ac11b7c0d"
                         ]
                     },
                     "memory": {
                         "deviceIDs": [
-                            "8c1e4a13-2d27-4431-9b82-d2f65f49313e",
-                            "3a2cd9bc-d4fb-4eaf-881b-a8ac98a91b1b",
-                            "5dd8f904-d466-4062-87b7-6f7f5a72afad"
+                            "b1ebc38b-f748-4188-a76e-567b7d99eef0",
+                            "14d20c12-7c53-4790-929c-c304595c3297",
+                            "28613785-05f1-4bc7-98ba-2c590926b59e"
                         ]
                     },
                     "storage": {
                         "deviceIDs": [
-                            "1ea189b4-ad07-4519-ac2b-e1301151bf1c",
-                            "24968a3b-0f23-4093-9a8f-bd1bb40b1189"
+                            "0d4f64f4-fc8e-4314-8216-d37bb7a99102",
+                            "1460ec26-32ea-450d-8817-c841b1b1fa08"
                         ]
                     },
                     "networkInterface": {
                         "deviceIDs": [
-                            "be347398-9179-4173-8bda-15d55083606c",
-                            "0d1601dd-f1d0-490b-b591-8c4e80c4806f"
+                            "e79c6939-d20d-41c2-8685-13c05c910be3",
+                            "1bf35a50-183f-43d7-8509-8318d308474b"
                         ]
                     },
                     "gpu": [
                         {
-                            "deviceID": "189a08b2-a609-489b-8958-9876925c426b"
+                            "deviceID": "78a8284c-a47c-4c1f-a554-bbe8807e41b3"
                         },
                         {
-                            "deviceID": "26a01737-5ae2-4d6e-aa1e-82f26cf16595"
+                            "deviceID": "795cb652-4b54-4da9-b4ed-f9aef77054c6"
                         },
                         {
-                            "deviceID": "3e679d00-c313-4f26-aa89-8415b7b6a085"
+                            "deviceID": "88258305-39b4-4db8-9265-b62cfb9483e2"
                         }
                     ]
                 }
@@ -244,29 +238,29 @@ $ vi test/template_2.json
                 "device": {
                     "cpu": {
                         "deviceIDs": [
-                            "6e40fc9e-b99a-455e-bce3-21e360ed9f71"
+                            "5a2abba5-5503-4df5-9950-f86e4c54bbc3"
                         ]
                     },
                     "memory": {
                         "deviceIDs": [
-                            "01c0be1e-b73b-42f0-9167-35f8f3c4d343",
-                            "810cbd3a-0808-4623-8f2d-e60a618d4b23"
+                            "1584de41-3f66-49f9-b749-70b5bf1be5db",
+                            "34485a33-8e2c-48f1-b8bb-41e2cab3dccd"
                         ]
                     },
                     "storage": {
                         "deviceIDs": [
-                            "5b3d6c29-2733-4542-814c-6381277f2ba7",
-                            "3e8eecc7-6c68-4d8d-8d21-12bcde4d2c50"
+                            "192e4531-8a22-450a-bb49-fd16963a28bf",
+                            "62d6fb1e-a298-470f-b015-a3348431adf6"
                         ]
                     },
                     "networkInterface": {
                         "deviceIDs": [
-                            "cb14c649-de57-482f-9198-23dbb58f51dc"
+                            "13ee71d4-e1b0-4631-bb62-c28338b83ae0"
                         ]
                     },
                     "gpu": [
                         {
-                            "deviceID": "4ba8f685-8a11-4086-bc6f-50c0d21e17fa"
+                            "deviceID": "8d33a2f6-ca58-4275-8b87-93ffd9237ce9"
                         }
                     ]
                 }
@@ -275,23 +269,23 @@ $ vi test/template_2.json
                 "device": {
                     "cpu": {
                         "deviceIDs": [
-                            "77683d0a-d257-4b4d-a7ec-57eba1466681"
+                            "63a5b9f5-b411-4afe-b44e-e06a4315b1fd"
                         ]
                     },
                     "memory": {
                         "deviceIDs": [
-                            "cf8b4abc-12e2-4af4-98c7-3077ebfaf1b7",
-                            "a87e2f63-7ff3-4656-b1f0-638c2487589b"
+                            "020277ad-a599-47f7-b640-dc7a168e83f0",
+                            "4566c945-e83a-41b6-b88d-26ff97005d02"
                         ]
                     },
                     "storage": {
                         "deviceIDs": [
-                            "7cd6b0c2-194b-4451-a5b4-6ac6e0478525"
+                            "68593170-5f44-41fb-9f14-52d4eb31df6b"
                         ]
                     },
                     "networkInterface": {
                         "deviceIDs": [
-                            "fd5f1c21-7116-445e-bb8e-4af8d80bd25b"
+                            "4bb1ac6b-ca96-4d63-b0af-8bb7166dfd05"
                         ]
                     }
                 }
@@ -343,12 +337,8 @@ Review the detailed screen of each device and choose the node you want to delete
 After you've identified the node to delete, confirm the device IDs currently used in that node and the device IDs that will be affected post-deletion.
 
 > [!WARNING]
-> Some devices are pre-connected to a CPU as built-in devices, and these built-in devices cannot be connected to any CPU other than the one they are pre-connected to.
-> The method to check whether a device is a built-in device is as follows:
-> - If "nonRemovableDevices" is listed in the detailed information: It is a built-in device and is connected to the CPU with the listed device ID.
-> - If "nonRemovableDevices" is not listed in the detailed information: It is not a built-in device.
-> Note: CPUs is not built-in devices. The "nonRemovableDevices" listed for detailed information of the CPU indicate the CPU have those built-in devices.
-> ![](imgs/nonRemovableDevice.png)
+> Non-removable devices cannot be connected to any CPU other than the one they are originally connected to.  
+> For details on how to identify non-removable devices, see [2.1.1.1.](#2111-check-device-information).
 
 #### 2.1.3.2. Describe and Register the Desired Configuration
 
@@ -365,10 +355,10 @@ $ vi test/template_3.json
 ```json
 {
     "targetNodeIDs": [
-            "5a5cc33d-11e5-4b80-89ef-4af5cf342c6e"
+        "3d7d3b72-216c-4e2d-a549-092ac11b7c0d"
     ],
     "desiredLayout": {
-        "nodes": [ ]
+        "nodes": []
     }
 }
 ```
@@ -393,7 +383,7 @@ $ vi test/template_3.json
    }
    ```
 
-3. Modify the output migration procedure if necessary:
+3. Apply the prepared migration procedure:
    ```sh
    $ curl -XPOST -H 'Content-Type: application/json' http://<ip-address>:8013/cdim/api/v1/layout-apply -d @test/procedure_template_3.json
    ```
@@ -415,12 +405,12 @@ This section explains how to perform configuration changes that are too complex 
    ```sh
     $ curl http://localhost:3500/v1.0/invoke/hw-control/method/cdim/api/v1/devices/<device ID to change power state> | jq
    {
-     "deviceID": "1ea189b4-ad07-4519-ac2b-e1301151bf1c",
-     "type": "storage",
-           :
-     "powerState": "Off"
-           :
-   }
+    "deviceID": "38ac1c7f-7abc-469f-a313-7d2851c80d66",
+    "type": "CPU",
+            :
+    "powerState": "Off"
+            :
+    }
    ```
 
 2. **Change the power state**:  
@@ -438,17 +428,17 @@ This section explains how to perform configuration changes that are too complex 
 
    ```sh
    $ curl -X PUT http://localhost:3500/v1.0/invoke/hw-control/method/cdim/api/v1/devices/<device ID to change power state>/power -d '{"action": "on"}' -H 'accept: application/json' -H 'Content-Type: application/json'
-   {"deviceID":"1ea189b4-ad07-4519-ac2b-e1301151bf1c"}
+   {"deviceID":"38ac1c7f-7abc-469f-a313-7d2851c80d66"}
    
    # Verify the change:
    $ curl http://localhost:3500/v1.0/invoke/hw-control/method/cdim/api/v1/devices/<device ID to change power state> | jq
    {
-     "deviceID": "1ea189b4-ad07-4519-ac2b-e1301151bf1c",
-     "type": "storage",
-           :
-     "powerState": "On"
-           :
-   }
+    "deviceID": "38ac1c7f-7abc-469f-a313-7d2851c80d66",
+    "type": "CPU",
+            :
+    "powerState": "On"
+            :
+    }
    ```
 
 #### 2.1.4.2. Change Device Connection State
@@ -459,22 +449,22 @@ This section explains how to perform configuration changes that are too complex 
    # Check CPU information
     $ curl http://localhost:3500/v1.0/invoke/hw-control/method/cdim/api/v1/devices/<CPU device ID> | jq
    {
-     "deviceID": "9ea47b1b-bf73-4267-95e2-31c702a274c9",
-     "type": "CPU",
-           :
-     "powerState": "On"
-           :
-   }
+    "deviceID": "38ac1c7f-7abc-469f-a313-7d2851c80d66",
+    "type": "CPU",
+            :
+    "powerState": "On"
+            :
+    }
    
    # Check the device information
    $ curl http://localhost:3500/v1.0/invoke/hw-control/method/cdim/api/v1/devices/<device ID to change connection state> | jq
    {
-     "deviceID": "1ea189b4-ad07-4519-ac2b-e1301151bf1c",
-     "type": "storage",
-           :
-     "powerState": "On"
-           :
-   }
+    "deviceID": "748c6ef3-ef66-4996-8761-8fc0db27b16e",
+    "type": "storage",
+            :
+    "powerState": "On"
+            :
+    }
    ```
 
 2. **Change the connection state**:   
@@ -484,7 +474,7 @@ This section explains how to perform configuration changes that are too complex 
     - disconnect
     ```sh
     $ curl -X PUT http://localhost:3500/v1.0/invoke/hw-control/method/cdim/api/v1/devices/<CPU device ID>/aggregations -d '{"destinationDeviceID": "<device ID to change connection state>", "action": "connect"}' -H 'accept: application/json' -H 'Content-Type: application/json'
-    {"CPUDeviceID":"9ea47b1b-bf73-4267-95e2-31c702a274c9","deviceID":"1ea189b4-ad07-4519-ac2b-e1301151bf1c"}
+    {"CPUDeviceID":"38ac1c7f-7abc-469f-a313-7d2851c80d66","deviceID":"748c6ef3-ef66-4996-8761-8fc0db27b16e"}
     ```
     Verify the connection state
     ![](imgs/check_cpu_after_connect.png)
@@ -585,7 +575,7 @@ This section provides an example of how to precisely formulate and describe the 
 | targetNodeIDs | A field listing the nodes targeted for changes. It's critical to specify this; otherwise, changes may apply to all nodes inadvertently. |
 | desiredLayout | Describes the planned node configuration after changes are applied. |
 | nodes | An object that details node information in a list format. |
-| devices | Lists all the devices either currently used or intended for future use in specified nodes. |
+| device | Lists all the devices either currently used or intended for future use in specified nodes. |
 
 </details>
 

@@ -44,7 +44,7 @@ Configuration Items:
 | deviceID | Unique identifier for recognizing the device. |
 | model | Model name of the device. |
 | manufacturer | Manufacturer of the device. |
-| link | Connectivity to built-in devices, specific to CPUs. |
+| link | Connectivity to non-removable devices, specific to CPUs. |
 </details>
 
 <details>

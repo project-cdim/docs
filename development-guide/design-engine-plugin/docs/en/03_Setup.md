@@ -49,21 +49,21 @@ When using the Sample Plugin/Sample Design Engine, it also communicates with Lay
 In development, use the Stub as the destination for these components.
 
 The Stub is in the same Git repository as this guide.
-Clone this guide's repository (`design-engine-plugin-dev-guide`) into any directory.
+Clone the repository [`docs`](https://github.com/project-cdim/docs.git) containing this guide into any directory, and move to directory of this guide.
 
-<!-- TODO: Update once URLs are confirmed -->
 ```shell
 cd <any directory path>
-git clone <git url> --recursive
+git clone https://github.com/project-cdim/docs.git --recursive
+cd ./docs/development-guide/design-engine-plugin/
 ```
 
-Below, the cloned directory is referred to as `design-engine-plugin-dev-guide`.
+Below, the directory for this guide is referred to as `design-engine-plugin`.
 
-The Stub is at `design-engine-plugin-dev-guide/rest-api-stub`.
-Run the following in `design-engine-plugin-dev-guide/rest-api-stub` to create a Python virtual environment (venv) and install packages:
+The Stub is at `design-engine-plugin/rest-api-stub`.
+Run the following in `design-engine-plugin/rest-api-stub` to create a Python virtual environment (venv) and install packages:
 
 ```shell
-cd ./design-engine-plugin-dev-guide/rest-api-stub/
+cd <any directory path>/docs/development-guide/design-engine-plugin/rest-api-stub/
 pdm install
 ```
 
@@ -72,7 +72,7 @@ pdm install
 Port 8002 is used by default.
 To change it, edit the file below.
 
-- Config file: `design-engine-plugin-dev-guide/rest-api-stub/src/settings.py`
+- Config file: `design-engine-plugin/rest-api-stub/src/settings.py`
 
 ```python
 PORT = 8002  # Change this value to modify the port
@@ -88,21 +88,21 @@ PORT = 8002  # Change this value to modify the port
 
 Run the following Python file to start the Stub.
 
-- Entry file: `design-engine-plugin-dev-guide/rest-api-stub/src/main.py`
+- Entry file: `design-engine-plugin/rest-api-stub/src/main.py`
 
 Example:
 ```shell
+cd <any directory path>/docs/development-guide/design-engine-plugin/rest-api-stub/
 pdm run python src/main.py
 ```
 
 ## 3.2. Setting up Layout Design
 
-Clone the Layout Design repository (`layout-design-compose`) into any directory.
+Clone the Layout Design repository [`layout-design-compose`](https://github.com/project-cdim/layout-design-compose.git) into any directory.
 
-<!-- TODO: Update once URLs are confirmed -->
 ```shell
 cd <any directory path>
-git clone <git url> --recursive
+git clone https://github.com/project-cdim/layout-design-compose.git  --recursive
 ```
 
 Below, the cloned directory is referred to as `layout-design-compose`.
@@ -162,7 +162,8 @@ configuration_manager:
 - If you use the stub, modify the following:
   - Because the stub runs outside the container, change localhost to the host machine’s IP address.
   - Change the port number so that it matches the stub-side PORT setting (default: 8002).
-  - The default path parameter value is intended for communication via dapr. If you are using the stub, specify the path parameter by referring to the example below.
+  - The default path parameter value is intended for communication via dapr. When using the stub, communication does not go through dapr, so specify the path parameter according to the example below.
+
 
 Example after the change:
 ``` yaml
@@ -193,7 +194,7 @@ layout-design-compose/layout-design/plugins/
 ```
 
 Beyond the functions explained in [5. Implementing the Plugin](05_Implementing_plugin.md), there are no extra constraints.  
-As an example implementation, the sample plugin is provided under `design-engine-plugin-dev-guide/samples/sample-design-engine-plugin`.
+As an example implementation, the sample plugin is provided under `design-engine-plugin/samples/sample-design-engine-plugin`.
 
 When using the Sample Plugin, it calls the Layout Apply REST API.
 The Sample Plugin config file (`layout-design-compose/layout-design/config/config_sample_design_engine.yaml`) contains logging settings and the Layout Apply API URI.

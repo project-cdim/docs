@@ -43,10 +43,10 @@ Design engine plugin is a component positioned between Layout Design and design 
 By implementing a corresponding plugin for each design engine, Layout Design can flexibly integrate with multiple design engines.
 
 At present, no design engine provides all functions, so sample programs for a simplified design engine and design engine plugin are provided.
-- [Sample Plugin / Sample Design Engine]()
+- [Sample Plugin / Sample Design Engine](https://github.com/project-cdim/sample-design-engine-plugin)
 
 When developing design engine plugin, refer to the following document.
-- [Design Engine Plugin Development Guide]()
+- [Design Engine Plugin Development Guide](../../../development-guide/design-engine-plugin/README.md)
 
 ### 2.2.2. Create, Modify/Add, and Delete Nodes
 
